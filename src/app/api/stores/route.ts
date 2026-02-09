@@ -109,6 +109,8 @@ function buildStoreFromBody(body: Record<string, unknown>, slugFromName: string)
     category,
     whyTrustUs,
     moreInfo,
+    shoppingTipsTitle,
+    shoppingTips,
     seoTitle,
     seoMetaDesc,
     trending,
@@ -134,6 +136,8 @@ function buildStoreFromBody(body: Record<string, unknown>, slugFromName: string)
     ...(category != null && String(category).trim() !== "" && { category: String(category).trim() }),
     ...(whyTrustUs != null && String(whyTrustUs).trim() !== "" && { whyTrustUs: String(whyTrustUs).trim() }),
     ...(moreInfo != null && String(moreInfo).trim() !== "" && { moreInfo: String(moreInfo).trim() }),
+    ...(shoppingTipsTitle != null && String(shoppingTipsTitle).trim() !== "" && { shoppingTipsTitle: String(shoppingTipsTitle).trim() }),
+    ...(Array.isArray(shoppingTips) && shoppingTips.length > 0 && { shoppingTips: shoppingTips.filter((t: unknown) => typeof t === "string" && String(t).trim() !== "").map((t: string) => String(t).trim()) }),
     ...(seoTitle != null && String(seoTitle).trim() !== "" && { seoTitle: String(seoTitle).trim() }),
     ...(seoMetaDesc != null && String(seoMetaDesc).trim() !== "" && { seoMetaDesc: String(seoMetaDesc).trim() }),
     ...(trending === true && { trending: true }),
@@ -204,6 +208,8 @@ export async function POST(request: Request) {
       category,
       whyTrustUs,
       moreInfo,
+      shoppingTipsTitle,
+      shoppingTips,
       seoTitle,
       seoMetaDesc,
       trending,
@@ -259,6 +265,8 @@ export async function POST(request: Request) {
         category,
         whyTrustUs,
         moreInfo,
+        shoppingTipsTitle,
+        shoppingTips,
         seoTitle,
         seoMetaDesc,
         trending,
@@ -376,13 +384,15 @@ export async function PATCH(request: Request) {
     const allowed = [
       "name", "logoUrl", "description", "expiry", "link", "subStoreName", "storePageHeading", "slug",
       "logoAltText", "logoMethod", "trackingUrl", "countryCodes",
-      "websiteUrl", "category", "whyTrustUs", "moreInfo", "seoTitle", "seoMetaDesc",
+      "websiteUrl", "category", "whyTrustUs", "moreInfo", "shoppingTipsTitle", "shoppingTips", "seoTitle", "seoMetaDesc",
       "trending", "status", "faqs", "couponType", "couponCode", "couponTitle", "badgeLabel", "badgeShipping", "badgeOffer", "priority", "active", "imageAlt",
     ];
     const nextStore = { ...current };
     for (const key of allowed) {
       if (key in updates && updates[key] !== undefined) {
-        (nextStore as Record<string, unknown>)[key] = key === "faqs" ? updates[key] : (typeof updates[key] === "string" ? updates[key].trim() : updates[key]);
+        if (key === "faqs") (nextStore as Record<string, unknown>)[key] = updates[key];
+        else if (key === "shoppingTips") (nextStore as Record<string, unknown>)[key] = Array.isArray(updates[key]) ? (updates[key] as unknown[]).filter((t): t is string => typeof t === "string" && t.trim() !== "").map((t) => t.trim()) : undefined;
+        else (nextStore as Record<string, unknown>)[key] = typeof updates[key] === "string" ? (updates[key] as string).trim() : updates[key];
       }
     }
     if (getSupabase()) await updateStore(id, nextStore);

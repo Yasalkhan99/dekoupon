@@ -22,6 +22,9 @@ export type Store = {
   category?: string;
   whyTrustUs?: string;
   moreInfo?: string;
+  /** Shopping Tips section on store page: custom title and bullet points. */
+  shoppingTipsTitle?: string;
+  shoppingTips?: string[];
   seoTitle?: string;
   seoMetaDesc?: string;
   trending?: boolean;

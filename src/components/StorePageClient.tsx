@@ -191,6 +191,10 @@ export default function StorePageClient({
   const moreInfo = storeInfo.moreInfo?.trim();
   const displayName = (storeInfo.name ?? "").trim() || "Store";
   const sidebarCardName = (storeInfo.subStoreName ?? storeInfo.name ?? "").trim() || "Store";
+  const shoppingTipsTitle = (storeInfo.shoppingTipsTitle ?? "").trim() || `${displayName} Coupon Code Shopping Tips`;
+  const shoppingTipsList = Array.isArray(storeInfo.shoppingTips) && storeInfo.shoppingTips.length > 0
+    ? storeInfo.shoppingTips.filter((t) => (t ?? "").trim() !== "")
+    : SHOPPING_TIPS;
   const faqsToShow = Array.isArray(storeInfo.faqs) && storeInfo.faqs.length > 0
     ? storeInfo.faqs.filter((f) => (String(f?.q ?? "").trim() !== "" || String(f?.a ?? "").trim() !== ""))
     : DEFAULT_FAQS;
@@ -410,10 +414,10 @@ export default function StorePageClient({
           {/* Shopping Tips */}
           <section className="mt-10 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
             <h2 className="mb-4 text-lg font-bold text-zinc-900">
-              {displayName} Coupon Code Shopping Tips
+              {shoppingTipsTitle}
             </h2>
             <ul className="list-disc space-y-2 pl-5 text-sm text-zinc-600">
-              {SHOPPING_TIPS.map((tip, i) => (
+              {shoppingTipsList.map((tip, i) => (
                 <li key={i}>{tip}</li>
               ))}
             </ul>

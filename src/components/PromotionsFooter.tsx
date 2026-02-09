@@ -1,12 +1,34 @@
 import Link from "next/link";
 import Image from "next/image";
+import { STORE_CATEGORIES } from "@/data/categories";
+
+/** Footer events – pehle wale 4 events (labels "X Deals") */
+const FOOTER_EVENTS = [
+  { name: "Black Friday Deals", slug: "black-friday" },
+  { name: "Christmas Deals", slug: "christmas" },
+  { name: "Cyber Monday Deals", slug: "cyber-monday" },
+  { name: "Halloween Deals", slug: "halloween" },
+];
+
+const FAVORITE_CATEGORY_NAMES = [
+  "Automotive",
+  "Baby & Kids",
+  "Beauty and Personal Care",
+  "Books & Magazines",
+  "Food And Beverage",
+];
 
 /**
  * Shared footer for promotions, brands, categories, share-a-coupon, about, and category [slug] pages.
- * Matches the promotions page footer: 4 columns + gradient bottom bar with copyright and social icons.
+ * Four columns: Logo, Favorite Categories, Important Links, Events.
  * Pass className e.g. "!mt-0" when footer sits directly under newsletter to remove top gap.
  */
 export default function PromotionsFooter({ className }: { className?: string }) {
+  const favoriteCategories = FAVORITE_CATEGORY_NAMES.map((name) => {
+    const cat = STORE_CATEGORIES.find((c) => c.name === name);
+    return cat ? { name: cat.name.toUpperCase(), slug: cat.slug } : null;
+  }).filter(Boolean) as { name: string; slug: string }[];
+
   return (
     <footer className={`mt-12 border-t border-zinc-800 bg-black text-white ${className ?? ""}`}>
       <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
@@ -20,31 +42,33 @@ export default function PromotionsFooter({ className }: { className?: string }) 
             </p>
           </div>
           <div>
-            <h4 className="mb-4 text-sm font-bold uppercase tracking-wide text-white">About</h4>
+            <h4 className="mb-4 text-sm font-bold uppercase tracking-wide text-white">Favorite Categories</h4>
+            <ul className="space-y-2 text-sm text-white/80">
+              {favoriteCategories.map((cat) => (
+                <li key={cat.slug}>
+                  <Link href={`/promotions/category/${cat.slug}`} className="transition hover:text-blue-400">{cat.name}</Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <h4 className="mb-4 text-sm font-bold uppercase tracking-wide text-white">Important Links</h4>
             <ul className="space-y-2 text-sm text-white/80">
               <li><Link href="/about" className="transition hover:text-blue-400">About Us</Link></li>
-              <li><Link href="/advertise" className="transition hover:text-blue-400">Advertise With Us</Link></li>
-              <li><Link href="/privacy" className="transition hover:text-blue-400">Privacy Policy</Link></li>
-              <li><Link href="/terms" className="transition hover:text-blue-400">Terms & Conditions</Link></li>
-              <li><Link href="/reward" className="transition hover:text-blue-400">Reward</Link></li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="mb-4 text-sm font-bold uppercase tracking-wide text-white">Browser</h4>
-            <ul className="space-y-2 text-sm text-white/80">
-              <li><Link href="/promotions" className="transition hover:text-blue-400">All Brands</Link></li>
+              <li><Link href="/promotions/brands" className="transition hover:text-blue-400">Brands</Link></li>
               <li><Link href="/contact" className="transition hover:text-blue-400">Contact Us</Link></li>
-              <li><Link href="/promotions/categories" className="transition hover:text-blue-400">Store & Category</Link></li>
-              <li><Link href="/sitemap" className="transition hover:text-blue-400">Sitemap</Link></li>
+              <li><Link href="/imprint" className="transition hover:text-blue-400">Imprint</Link></li>
+              <li><Link href="/promotions/share-a-coupon" className="transition hover:text-blue-400">Share A Coupon</Link></li>
             </ul>
           </div>
           <div>
-            <h4 className="mb-4 text-sm font-bold uppercase tracking-wide text-white">Special Event</h4>
+            <h4 className="mb-4 text-sm font-bold uppercase tracking-wide text-white">Events</h4>
             <ul className="space-y-2 text-sm text-white/80">
-              <li><Link href="/deals/black-friday" className="transition hover:text-blue-400">Black Friday Deals</Link></li>
-              <li><Link href="/deals/christmas" className="transition hover:text-blue-400">Christmas Deals</Link></li>
-              <li><Link href="/deals/cyber-monday" className="transition hover:text-blue-400">Cyber Monday Deals</Link></li>
-              <li><Link href="/deals/halloween" className="transition hover:text-blue-400">Halloween Deals</Link></li>
+              {FOOTER_EVENTS.map((ev) => (
+                <li key={ev.slug}>
+                  <Link href={`/deals/${ev.slug}`} className="transition hover:text-blue-400">{ev.name}</Link>
+                </li>
+              ))}
             </ul>
           </div>
         </div>

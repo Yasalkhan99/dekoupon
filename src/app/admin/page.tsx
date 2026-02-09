@@ -106,6 +106,8 @@ export default function AdminPage() {
     category: "",
     whyTrustUs: "",
     moreInfo: "",
+    shoppingTipsTitle: "",
+    shoppingTips: [] as string[],
     seoTitle: "",
     seoMetaDesc: "",
     trending: false,
@@ -675,6 +677,8 @@ export default function AdminPage() {
             category: storeForm.category.trim() || undefined,
             whyTrustUs: storeForm.whyTrustUs.trim() || undefined,
             moreInfo: storeForm.moreInfo.trim() || undefined,
+            shoppingTipsTitle: storeForm.shoppingTipsTitle?.trim() || undefined,
+            shoppingTips: Array.isArray(storeForm.shoppingTips) && storeForm.shoppingTips.length > 0 ? storeForm.shoppingTips.filter((t) => (t ?? "").trim() !== "").map((t) => t.trim()) : undefined,
             seoTitle: storeForm.seoTitle.trim() || undefined,
             seoMetaDesc: storeForm.seoMetaDesc.trim() || undefined,
             trending: storeForm.trending,
@@ -709,6 +713,8 @@ export default function AdminPage() {
             category: storeForm.category.trim() || undefined,
             whyTrustUs: storeForm.whyTrustUs.trim() || undefined,
             moreInfo: storeForm.moreInfo.trim() || undefined,
+            shoppingTipsTitle: storeForm.shoppingTipsTitle?.trim() || undefined,
+            shoppingTips: Array.isArray(storeForm.shoppingTips) && storeForm.shoppingTips.length > 0 ? storeForm.shoppingTips.filter((t) => (t ?? "").trim() !== "").map((t) => t.trim()) : undefined,
             seoTitle: storeForm.seoTitle.trim() || undefined,
             seoMetaDesc: storeForm.seoMetaDesc.trim() || undefined,
             trending: storeForm.trending,
@@ -738,6 +744,8 @@ export default function AdminPage() {
         category: "",
         whyTrustUs: "",
         moreInfo: "",
+        shoppingTipsTitle: "",
+        shoppingTips: [],
         seoTitle: "",
         seoMetaDesc: "",
         trending: false,
@@ -1748,6 +1756,8 @@ export default function AdminPage() {
                                       category: s.category ?? "",
                                       whyTrustUs: s.whyTrustUs ?? "",
                                       moreInfo: s.moreInfo ?? "",
+                                      shoppingTipsTitle: s.shoppingTipsTitle ?? "",
+                                      shoppingTips: Array.isArray(s.shoppingTips) && s.shoppingTips.length > 0 ? s.shoppingTips : [],
                                       seoTitle: s.seoTitle ?? "",
                                       seoMetaDesc: s.seoMetaDesc ?? "",
                                       trending: s.trending ?? false,
@@ -2103,6 +2113,37 @@ export default function AdminPage() {
                       className="w-full rounded border border-stone-300 px-3 py-2 text-stone-900 focus:border-amber-600 focus:outline-none focus:ring-1 focus:ring-amber-600"
                     />
                     <p className="mt-1 text-xs text-stone-500">Supports HTML formatting. Leave blank to use default content.</p>
+                  </div>
+                  <div className="mb-4">
+                    <label className="mb-1 block text-sm font-medium text-stone-700">Shopping Tips Section – Title (Optional)</label>
+                    <input
+                      type="text"
+                      value={storeForm.shoppingTipsTitle ?? ""}
+                      onChange={(e) => setStoreForm((f) => ({ ...f, shoppingTipsTitle: e.target.value }))}
+                      placeholder="e.g. Touchtunes Coupon Code Shopping Tips"
+                      className="w-full rounded border border-stone-300 px-3 py-2 text-stone-900 focus:border-amber-600 focus:outline-none focus:ring-1 focus:ring-amber-600"
+                    />
+                    <p className="mt-1 text-xs text-stone-500">Heading for the Shopping Tips block on the store page. Leave blank for default.</p>
+                  </div>
+                  <div className="mb-4">
+                    <label className="mb-2 block text-sm font-medium text-stone-700">Shopping Tips – Bullet points (Optional)</label>
+                    <p className="mb-2 text-xs text-stone-500">One tip per line. Leave empty to use default tips.</p>
+                    {(storeForm.shoppingTips ?? []).map((tip, i) => (
+                      <div key={i} className="mb-2 flex gap-2">
+                        <input
+                          type="text"
+                          value={tip}
+                          onChange={(e) => setStoreForm((f) => ({
+                            ...f,
+                            shoppingTips: (f.shoppingTips ?? []).map((t, j) => (j === i ? e.target.value : t)),
+                          }))}
+                          placeholder="Tip text"
+                          className="flex-1 rounded border border-stone-300 px-3 py-2 text-sm text-stone-900 focus:border-amber-600 focus:outline-none focus:ring-1 focus:ring-amber-600"
+                        />
+                        <button type="button" onClick={() => setStoreForm((f) => ({ ...f, shoppingTips: (f.shoppingTips ?? []).filter((_, j) => j !== i) }))} className="rounded border border-red-300 px-2 py-1 text-xs text-red-600 hover:bg-red-50">Remove</button>
+                      </div>
+                    ))}
+                    <button type="button" onClick={() => setStoreForm((f) => ({ ...f, shoppingTips: [...(f.shoppingTips ?? []), ""] }))} className="rounded border border-stone-300 bg-white px-3 py-1.5 text-sm font-medium text-stone-700 hover:bg-stone-50">Add tip</button>
                   </div>
                   <div className="mt-4">
                     <label className="mb-2 block text-sm font-medium text-stone-700">FAQs (shown on store page)</label>

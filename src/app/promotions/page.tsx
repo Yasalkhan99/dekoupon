@@ -15,7 +15,6 @@ const PER_PAGE = 24;
 const POPULAR_COUPONS_COUNT = 6;
 const TOP_STORES_COUNT = 12;
 const TRENDING_CATEGORIES_COUNT = 12;
-const ENDING_SOON_COUNT = 3;
 
 function buildUniqueStoresAndCouponCounts(enabled: Store[]) {
   const storeKeyToRow = new Map<string, Store>();
@@ -93,16 +92,11 @@ export default async function PromotionsPage({
   const withCoupons = [...uniqueStores].filter((s) => getCouponCount(s) > 0);
   const byCount = (a: (typeof uniqueStores)[0], b: (typeof uniqueStores)[0]) => getCouponCount(b) - getCouponCount(a);
   const trendingWithCoupons = withCoupons.filter((s) => s.trending === true).sort(byCount);
-  const othersWithCoupons = withCoupons.filter((s) => s.trending !== true);
-  const shuffledOthers = [...othersWithCoupons].sort(() => Math.random() - 0.5);
-  const popularCouponsStores = [...trendingWithCoupons, ...shuffledOthers].slice(0, POPULAR_COUPONS_COUNT);
+  const othersWithCoupons = withCoupons.filter((s) => s.trending !== true).sort((a, b) => (a.id ?? "").localeCompare(b.id ?? ""));
+  const popularCouponsStores = [...trendingWithCoupons, ...othersWithCoupons].slice(0, POPULAR_COUPONS_COUNT);
 
   const topStores = uniqueStores.slice(0, TOP_STORES_COUNT);
   const trendingCategories = STORE_CATEGORIES.slice(0, TRENDING_CATEGORIES_COUNT);
-  const endingSoonStores = [...uniqueStores]
-    .filter((s) => getCouponCount(s) > 0)
-    .sort((a, b) => getCouponCount(b) - getCouponCount(a))
-    .slice(POPULAR_COUPONS_COUNT, POPULAR_COUPONS_COUNT + ENDING_SOON_COUNT);
 
   const totalPages = Math.max(1, Math.ceil(searchFilteredStores.length / PER_PAGE));
   const pageStores = searchFilteredStores.slice((currentPage - 1) * PER_PAGE, currentPage * PER_PAGE);
@@ -369,62 +363,32 @@ export default async function PromotionsPage({
           </div>
         </section>
 
-        {/* Ending Soon Coupons - peach */}
-        {endingSoonStores.length > 0 && (
-          <section className="mb-14 rounded-2xl bg-amber-50/80 px-6 py-10 sm:px-8">
-            <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-              <h2 className="text-2xl font-bold tracking-tight text-zinc-900">
-                Ending Soon Coupons
-              </h2>
-              <Link
-                href="/promotions"
-                className="text-sm font-semibold text-blue-600 hover:underline"
-              >
-                View More →
-              </Link>
+        {/* How It Works */}
+        <section className="mb-14 rounded-2xl bg-[#e0f2f7] px-6 py-12 sm:px-8 lg:px-12">
+          <h2 className="mb-10 text-center text-2xl font-bold tracking-tight text-zinc-900">
+            How It Works
+          </h2>
+          <div className="mx-auto grid max-w-5xl gap-8 sm:grid-cols-3">
+            <div className="flex flex-col">
+              <h3 className="mb-3 text-lg font-bold text-zinc-900">What are coupon codes?</h3>
+              <p className="text-sm leading-relaxed text-zinc-700">
+                Coupon codes usually consist of numbers and letters that an online shopper can use when checking out on an e-commerce site to get a discount on their purchase.
+              </p>
             </div>
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {endingSoonStores.map((store) => {
-                const count = getCouponCount(store);
-                const storeSlug = store.slug || slugify(store.name);
-                return (
-                  <article
-                    key={store.id}
-                    className="flex flex-col overflow-hidden rounded-xl border border-amber-100 bg-white p-5 shadow-sm transition hover:shadow-md"
-                  >
-                    <div className="flex items-start gap-4">
-                      {store.logoUrl ? (
-                        <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-zinc-50">
-                          <Image src={store.logoUrl} alt={store.name} fill className="object-contain" sizes="56px" unoptimized />
-                        </div>
-                      ) : (
-                        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-lg font-bold text-zinc-500">
-                          {(store.name ?? "?")[0]}
-                        </div>
-                      )}
-                      <div className="min-w-0 flex-1">
-                        <h3 className="font-semibold text-zinc-900 line-clamp-1">
-                          {store.couponTitle || `${store.name} Coupons`}
-                        </h3>
-                        <p className="mt-0.5 line-clamp-2 text-sm text-zinc-600">{store.description}</p>
-                      </div>
-                    </div>
-                    <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-zinc-500">
-                      <span>Expires: {store.expiry}</span>
-                      <span>{count} Coupon{count !== 1 ? "s" : ""}</span>
-                    </div>
-                    <Link
-                      href={`/promotions/${storeSlug}`}
-                      className="mt-4 inline-flex w-full items-center justify-center rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
-                    >
-                      Get Code
-                    </Link>
-                  </article>
-                );
-              })}
+            <div className="flex flex-col">
+              <h3 className="mb-3 text-lg font-bold text-zinc-900">How can I find the best coupons?</h3>
+              <p className="text-sm leading-relaxed text-zinc-700">
+                There are many companies that have free coupons for online and in-store money-saving offers. Using SavingsHub4u can help you find the best and largest discounts available online.
+              </p>
             </div>
-          </section>
-        )}
+            <div className="flex flex-col">
+              <h3 className="mb-3 text-lg font-bold text-zinc-900">How to find promo codes that work.</h3>
+              <p className="text-sm leading-relaxed text-zinc-700">
+                Save time searching for promo codes that work by using SavingsHub4u. We work with merchants to offer promo codes that will actually work to save you money.
+              </p>
+            </div>
+          </div>
+        </section>
 
         {/* Newsletter banner */}
         <section className="mb-14 overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-10 text-white sm:px-10">
