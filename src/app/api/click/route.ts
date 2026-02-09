@@ -42,6 +42,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Invalid redirect URL" }, { status: 400 });
   }
 
-  await appendClick(storeId);
+  try {
+    await appendClick(storeId);
+  } catch {
+    // On Vercel/serverless, data/ may be read-only; still redirect the user
+  }
   return NextResponse.redirect(decoded, 302);
 }
