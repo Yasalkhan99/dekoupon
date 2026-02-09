@@ -218,6 +218,7 @@ export async function POST(request: Request) {
       priority,
       active,
       imageAlt,
+      events,
     } = body;
     if (!name || !description) {
       return NextResponse.json(
@@ -276,6 +277,7 @@ export async function POST(request: Request) {
     if (active === false) (newStore as Store).active = false;
     if (active === true) (newStore as Store).active = true;
     if (imageAlt != null && String(imageAlt).trim() !== "") (newStore as Store).imageAlt = String(imageAlt).trim();
+    if (Array.isArray(events) && events.length > 0) (newStore as Store).events = events.filter((e: unknown) => typeof e === "string" && e.trim() !== "").map((e: string) => e.trim().toLowerCase());
     const isCoupon = hasCouponData(newStore);
     if (isCoupon) {
       await insertCoupon(newStore);
@@ -352,12 +354,14 @@ export async function PATCH(request: Request) {
         "name", "logoUrl", "description", "expiry", "link", "subStoreName", "slug",
         "logoAltText", "logoMethod", "trackingUrl", "countryCodes",
         "websiteUrl", "category", "whyTrustUs", "moreInfo", "seoTitle", "seoMetaDesc",
-        "trending", "status", "faqs", "couponType", "couponCode", "couponTitle", "badgeLabel", "badgeShipping", "badgeOffer", "priority", "active", "imageAlt",
+        "trending", "status", "faqs", "couponType", "couponCode", "couponTitle", "badgeLabel", "badgeShipping", "badgeOffer", "priority", "active", "imageAlt", "events",
       ];
       const nextCoupon = { ...current };
       for (const key of allowed) {
         if (key in updates && updates[key] !== undefined) {
-          (nextCoupon as Record<string, unknown>)[key] = key === "faqs" ? updates[key] : (typeof updates[key] === "string" ? updates[key].trim() : updates[key]);
+          if (key === "faqs") (nextCoupon as Record<string, unknown>)[key] = updates[key];
+          else if (key === "events") (nextCoupon as Record<string, unknown>)[key] = Array.isArray(updates[key]) ? (updates[key] as unknown[]).filter((e): e is string => typeof e === "string" && e.trim() !== "").map((e) => e.trim().toLowerCase()) : undefined;
+          else (nextCoupon as Record<string, unknown>)[key] = typeof updates[key] === "string" ? (updates[key] as string).trim() : updates[key];
         }
       }
       await updateCoupon(id, nextCoupon);

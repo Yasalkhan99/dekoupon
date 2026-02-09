@@ -39,4 +39,6 @@ export type Store = {
   priority?: number;
   active?: boolean;
   imageAlt?: string;
+  /** Event slugs (e.g. black-friday, christmas) – coupon shows on /deals/[slug] pages when included */
+  events?: string[];
 };

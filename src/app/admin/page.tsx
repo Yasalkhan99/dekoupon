@@ -6,6 +6,7 @@ import type { Store } from "@/types/store";
 import type { BlogPost } from "@/data/blog";
 import { categories as blogCategories } from "@/data/blog";
 import { STORE_CATEGORY_NAMES } from "@/data/categories";
+import { SPECIAL_EVENTS } from "@/data/events";
 import { stripHtml, slugify } from "@/lib/slugify";
 import { hasCouponData } from "@/lib/store-utils";
 
@@ -82,6 +83,7 @@ export default function AdminPage() {
     priority: 0,
     active: true,
     trending: false,
+    events: [] as string[],
   });
   const [editingCouponId, setEditingCouponId] = useState<string | null>(null);
   const [couponStatusFilter, setCouponStatusFilter] = useState<"all" | "enable" | "disable">("all");
@@ -504,6 +506,7 @@ export default function AdminPage() {
             active: couponForm.active,
             imageAlt: couponForm.imageAlt.trim() || undefined,
             trending: couponForm.trending,
+            events: Array.isArray(couponForm.events) ? couponForm.events : undefined,
           }),
         });
         if (!res.ok) {
@@ -544,6 +547,7 @@ export default function AdminPage() {
             imageAlt: couponForm.imageAlt.trim() || undefined,
             trending: couponForm.trending,
             status: couponForm.active ? "enable" : "disable",
+            ...(Array.isArray(couponForm.events) && couponForm.events.length > 0 && { events: couponForm.events }),
             ...(slugToUse != null && slugToUse !== "" && { slug: slugToUse }),
           }),
         });
@@ -573,6 +577,7 @@ export default function AdminPage() {
         priority: 0,
         active: true,
         trending: false,
+        events: [],
       });
       await fetchStores();
     } catch (e) {
@@ -631,6 +636,7 @@ export default function AdminPage() {
       priority: store.priority ?? 0,
       active: store.active !== false,
       trending: store.trending ?? false,
+      events: Array.isArray(store.events) ? [...store.events] : [],
     });
     setSection("coupons");
     setShowCouponsCreateForm(true);
@@ -1387,6 +1393,27 @@ export default function AdminPage() {
                       <span className="text-sm font-medium text-stone-700">Mark as Trending</span>
                     </label>
                   </div>
+                  <div>
+                    <label className="mb-2 block text-sm font-medium text-stone-700">Show on event pages</label>
+                    <p className="mb-2 text-xs text-stone-500">Select which special event pages (e.g. Black Friday, Christmas) should display this coupon.</p>
+                    <div className="flex flex-wrap gap-4">
+                      {SPECIAL_EVENTS.map((ev) => (
+                        <label key={ev.slug} className="flex cursor-pointer items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={couponForm.events?.includes(ev.slug) ?? false}
+                            onChange={(e) => {
+                              const prev = couponForm.events ?? [];
+                              if (e.target.checked) setCouponForm((f) => ({ ...f, events: [...prev, ev.slug] }));
+                              else setCouponForm((f) => ({ ...f, events: prev.filter((s) => s !== ev.slug) }));
+                            }}
+                            className="h-4 w-4 rounded border-stone-300 text-amber-600 focus:ring-amber-500"
+                          />
+                          <span className="text-sm text-stone-700">{ev.name}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
                   <button
                     type="submit"
                     disabled={submitting}
@@ -1421,6 +1448,7 @@ export default function AdminPage() {
                           priority: 0,
                           active: true,
                           trending: false,
+                          events: [],
                         });
                       }}
                       className="ml-3 rounded border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50"

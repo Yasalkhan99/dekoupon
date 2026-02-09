@@ -80,13 +80,18 @@ function getBadgeForCoupon(
   return { type: "percent", percent: getPercentFromTitle(dealTitle, 10) };
 }
 
-/** Format expiry for display - use UTC to avoid server/client hydration mismatch */
+const MONTHS_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+/** Format expiry for display - deterministic UTC format to avoid hydration mismatch */
 function formatExpiry(expiry: string | undefined): string {
   if (!expiry || !expiry.trim()) return "31 Dec, 2027";
   try {
     const d = new Date(expiry.trim());
     if (Number.isNaN(d.getTime())) return "31 Dec, 2027";
-    return d.toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+    const day = d.getUTCDate();
+    const month = MONTHS_SHORT[d.getUTCMonth()];
+    const year = d.getUTCFullYear();
+    return `${day} ${month}, ${year}`;
   } catch {
     return "31 Dec, 2027";
   }
