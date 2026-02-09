@@ -1,5 +1,8 @@
 "use client";
 
+import Image from "next/image";
+import Link from "next/link";
+
 export default function CategoriesSidebar() {
   return (
     <aside className="w-full shrink-0 space-y-6 lg:w-72">
@@ -23,17 +26,29 @@ export default function CategoriesSidebar() {
         </div>
       </div>
 
-      {/* Disclaimer */}
-      <div className="flex gap-3 rounded-lg border border-emerald-200 bg-emerald-50 p-4">
-        <span className="shrink-0 text-emerald-600" aria-hidden>
-          <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-          </svg>
-        </span>
-        <p className="text-sm font-medium text-emerald-800">
-          Disclaimer: We may earn commission on the purchases made via affiliate link.
+      {/* Affiliate disclaimer – blue box with favicon, links to promotions */}
+      <Link
+        href="/promotions"
+        className="flex flex-col items-center justify-center rounded-2xl bg-blue-600 px-4 py-6 text-center text-white shadow-lg transition hover:bg-blue-700"
+      >
+        <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-white/20">
+          <Image
+            src="/fav%20icon%20final%20logo.png"
+            alt=""
+            width={24}
+            height={24}
+            className="h-6 w-6 object-contain"
+          />
+        </div>
+        <p className="mb-1.5 text-base font-bold">Disclaimer:</p>
+        <p className="text-xs leading-relaxed">
+          We May Earn Commission
+          <br />
+          On The Purchases Made
+          <br />
+          Via Affiliate Link
         </p>
-      </div>
+      </Link>
 
       {/* Newsletter */}
       <div className="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm">
