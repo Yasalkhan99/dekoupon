@@ -126,25 +126,34 @@ export type StorePageData = {
   otherStores: Store[];
 };
 
-/** Normalize slug for matching: strip -coupon-code / -coupon so same store matches regardless of URL. */
+/** Normalize slug for matching: strip -coupon-code, -promo-code, -coupon, -promo so same store matches regardless of URL. */
 export function canonicalSlug(s: string): string {
-  const lower = s.toLowerCase().trim();
+  let lower = s.toLowerCase().trim();
   if (lower.endsWith("-coupon-code")) return lower.slice(0, -"-coupon-code".length);
+  if (lower.endsWith("-promo-code")) return lower.slice(0, -"-promo-code".length);
   if (lower.endsWith("-coupon")) return lower.slice(0, -"-coupon".length);
+  if (lower.endsWith("-promo")) return lower.slice(0, -"-promo".length);
   return lower;
 }
 
 export { hasCouponData } from "./store-utils";
 
+function normalizeForMatch(s: string): string {
+  return canonicalSlug(s).toLowerCase().replace(/-/g, "");
+}
+
 function slugMatches(row: { slug?: string; name?: string }, wantRaw: string, wantCanonical: string): boolean {
   const sSlug = (row.slug || slugify(row.name ?? "")).toLowerCase().trim();
   const sCanonical = canonicalSlug(sSlug);
   const nameSlug = (row.name ?? "").toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+  const wantNorm = normalizeForMatch(wantRaw);
+  const rowNorm = normalizeForMatch(sSlug || nameSlug);
   return (
     sSlug === wantRaw ||
     sCanonical === wantCanonical ||
     nameSlug === wantRaw ||
-    canonicalSlug(nameSlug) === wantCanonical
+    canonicalSlug(nameSlug) === wantCanonical ||
+    rowNorm === wantNorm
   );
 }
 
@@ -154,13 +163,28 @@ export async function getStorePageData(slug: string): Promise<StorePageData> {
   const wantRaw = slug.toLowerCase().trim();
   const wantCanonical = canonicalSlug(wantRaw);
   const matchingStores = enabledStores.filter((s) => slugMatches(s, wantRaw, wantCanonical));
-  const storeRow = matchingStores.find((r) => !hasCouponData(r));
-  const rowWithLogo = matchingStores.find((r) => (r.logoUrl ?? "").trim() !== "");
-  const storeInfo = storeRow ?? rowWithLogo ?? matchingStores[0] ?? null;
   const allCouponsFromTable = await getCoupons();
   const coupons = allCouponsFromTable.filter(
     (c) => c.status !== "disable" && slugMatches(c, wantRaw, wantCanonical)
   );
+  const storeRow = matchingStores.find((r) => !hasCouponData(r));
+  const rowWithLogo = matchingStores.find((r) => (r.logoUrl ?? "").trim() !== "");
+  let storeInfo: Store | null = storeRow ?? rowWithLogo ?? matchingStores[0] ?? null;
+  if (!storeInfo && coupons.length > 0) {
+    const first = coupons[0];
+    storeInfo = {
+      id: first.id,
+      name: first.name ?? "Store",
+      logoUrl: first.logoUrl ?? "",
+      description: first.description ?? `${first.name ?? "Store"} coupons and discount codes.`,
+      expiry: first.expiry ?? "Dec 31, 2026",
+      link: first.link,
+      slug: first.slug ?? slugify(first.name ?? "store"),
+      trackingUrl: first.trackingUrl ?? first.link,
+      websiteUrl: first.link,
+      status: "enable",
+    };
+  }
   const currentName = storeInfo?.name?.toLowerCase();
   const otherStores = enabledStores
     .filter((s) => s.name?.toLowerCase() !== currentName)

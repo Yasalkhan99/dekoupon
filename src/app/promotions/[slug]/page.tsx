@@ -20,8 +20,8 @@ export default async function StorePage({ params }: Props) {
   const codesCount = coupons.filter((c) => c.couponType === "code").length;
   const dealsCount = coupons.filter((c) => c.couponType !== "code").length;
   const visitUrl = storeInfo.trackingUrl || storeInfo.link || storeInfo.websiteUrl || "#";
-  const displayNameRaw = storeInfo.subStoreName || storeInfo.name;
-  const displayName = (displayNameRaw ?? "").replace(/\s*Discount Code\s*$/i, "").trim() || displayNameRaw || "";
+  const displayName = (storeInfo.name ?? "").trim() || "Store";
+  const categoryLabel = (storeInfo.category ?? "").trim() || "Category";
 
   const siteName = "SavingsHub4u";
 
@@ -39,7 +39,7 @@ export default async function StorePage({ params }: Props) {
               </li>
               <li aria-hidden>›</li>
               <li>
-                <Link href="/promotions" className="hover:text-zinc-900">Coupon</Link>
+                <Link href="/promotions" className="hover:text-zinc-900">{categoryLabel}</Link>
               </li>
               <li aria-hidden>›</li>
               <li>

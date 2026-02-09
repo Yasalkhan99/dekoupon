@@ -189,8 +189,8 @@ export default function StorePageClient({
 
   const whyTrustUs = storeInfo.whyTrustUs?.trim() || DEFAULT_WHY_TRUST;
   const moreInfo = storeInfo.moreInfo?.trim();
-  const displayNameRaw = storeInfo.subStoreName || storeInfo.name;
-  const displayName = (displayNameRaw ?? "").replace(/\s*Discount Code\s*$/i, "").trim() || displayNameRaw || "";
+  const displayName = (storeInfo.name ?? "").trim() || "Store";
+  const sidebarCardName = (storeInfo.subStoreName ?? storeInfo.name ?? "").trim() || "Store";
   const faqsToShow = Array.isArray(storeInfo.faqs) && storeInfo.faqs.length > 0
     ? storeInfo.faqs.filter((f) => (String(f?.q ?? "").trim() !== "" || String(f?.a ?? "").trim() !== ""))
     : DEFAULT_FAQS;
@@ -233,10 +233,10 @@ export default function StorePageClient({
                       <Image src={storeInfo.logoUrl} alt={storeInfo.logoAltText || storeInfo.name} fill className="object-contain" sizes="(max-width: 640px) 200px, 240px" unoptimized />
                     </div>
                   ) : (
-                    <span className="text-2xl font-bold text-zinc-700">{displayName.slice(0, 4).toUpperCase()}</span>
+                    <span className="text-2xl font-bold text-zinc-700">{sidebarCardName.slice(0, 4).toUpperCase()}</span>
                   )}
                 </div>
-                <p className="mt-3 text-sm font-semibold text-zinc-900">{displayName}</p>
+                <p className="mt-3 text-sm font-semibold text-zinc-900">{sidebarCardName}</p>
                 <p className="mt-2 flex items-center gap-1.5 text-xs text-zinc-500">
                   <svg className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                   {locationLabel}
