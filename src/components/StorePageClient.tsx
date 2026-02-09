@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import type { Store } from "@/types/store";
@@ -148,6 +148,40 @@ export default function StorePageClient({
         ? coupons.filter((c) => c.couponType === "code")
         : coupons.filter((c) => c.couponType !== "code");
 
+  const sorted = useMemo(() => {
+    const list = [...filtered];
+    const getExpiryTime = (c: Store) => {
+      const e = c.expiry?.trim();
+      if (!e) return Number.MAX_SAFE_INTEGER;
+      const t = new Date(e).getTime();
+      return Number.isNaN(t) ? Number.MAX_SAFE_INTEGER : t;
+    };
+    const getClickCount = (c: Store) => (initialClickCounts[c.id] ?? 0) + (extraClicks[c.id] ?? 0);
+    const getPriority = (c: Store) => c.priority ?? 999;
+    if (sortBy === "ending") {
+      list.sort((a, b) => {
+        const ea = getExpiryTime(a);
+        const eb = getExpiryTime(b);
+        if (ea !== eb) return ea - eb;
+        return getPriority(a) - getPriority(b);
+      });
+    } else if (sortBy === "newest") {
+      list.sort((a, b) => {
+        const cmp = (b.createdAt ?? "").localeCompare(a.createdAt ?? "");
+        if (cmp !== 0) return cmp;
+        return getPriority(a) - getPriority(b);
+      });
+    } else {
+      list.sort((a, b) => {
+        const ua = getClickCount(a);
+        const ub = getClickCount(b);
+        if (ua !== ub) return ub - ua;
+        return getPriority(a) - getPriority(b);
+      });
+    }
+    return list;
+  }, [filtered, sortBy, initialClickCounts, extraClicks]);
+
   const whyTrustUs = storeInfo.whyTrustUs?.trim() || DEFAULT_WHY_TRUST;
   const moreInfo = storeInfo.moreInfo?.trim();
   const displayNameRaw = storeInfo.subStoreName || storeInfo.name;
@@ -272,13 +306,13 @@ export default function StorePageClient({
           </div>
 
           <div role="region" aria-label="Coupon list">
-            {filtered.length === 0 ? (
+            {sorted.length === 0 ? (
               <div className="rounded-xl border border-zinc-200 bg-white p-8 text-center text-zinc-500 shadow-sm">
                 No offers in this category.
               </div>
             ) : (
               <ul className={viewMode === "grid" ? "grid gap-5 sm:grid-cols-2 sm:gap-6" : "space-y-6"}>
-                {filtered.map((c) => {
+                {sorted.map((c) => {
                 const href = c.link || visitUrl;
                 const isCode = c.couponType === "code";
                 const clickUrl = href.startsWith("http")
@@ -291,34 +325,15 @@ export default function StorePageClient({
                   badgeOffer: c.badgeOffer,
                 });
                 const percent = badge.type === "percent" ? badge.percent : 10;
-                const revealParams = new URLSearchParams({
-                  code: c.couponCode || "",
-                  title: dealTitle,
-                  storeName: storeInfo.name,
-                  storeLogo: storeInfo.logoUrl || "",
-                  redirect: href,
-                  storeId: c.id,
-                });
-                const handleCouponClick = () => {
-                  setRevealingCoupon({
-                    code: c.couponCode || "",
-                    title: dealTitle,
-                    storeName: storeInfo.name,
-                    storeLogo: storeInfo.logoUrl || "",
-                    redirect: href,
-                    storeId: c.id,
-                    expiry: expiryDate,
-                    isCode,
-                    trending: c.trending === true,
-                  });
-                  // Update URL to #o-<id> so link can be shared (e.g. /promotions/store-slug/#o-1047)
-                  const hash = `#o-${encodeURIComponent(c.id)}`;
-                  if (typeof window !== "undefined") {
-                    history.replaceState(null, "", window.location.pathname + window.location.search + hash);
-                  }
-                  // Popup only – user stays on our site; "Continue to Store" in modal opens tracking link in new tab
-                };
                 const expiryDate = formatExpiry(c.expiry);
+                const handleCouponClick = () => {
+                  const samePageWithHash =
+                    typeof window !== "undefined"
+                      ? window.location.pathname + window.location.search + "#o-" + encodeURIComponent(c.id)
+                      : "#o-" + encodeURIComponent(c.id);
+                  window.open(samePageWithHash, "_blank", "noopener,noreferrer");
+                  window.location.href = clickUrl;
+                };
                 const clickCount = (initialClickCounts[c.id] ?? 0) + (extraClicks[c.id] ?? 0);
                 return (
                   <li

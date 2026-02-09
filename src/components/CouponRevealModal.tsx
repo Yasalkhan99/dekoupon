@@ -19,6 +19,8 @@ type Props = {
   isCode?: boolean;
   /** Show Exclusive badge */
   trending?: boolean;
+  /** When set (e.g. on /coupon/reveal page), Close & Continue to Store redirect to this URL (coupons page) */
+  returnUrl?: string;
 };
 
 export default function CouponRevealModal({
@@ -33,6 +35,7 @@ export default function CouponRevealModal({
   expiry,
   isCode = false,
   trending = false,
+  returnUrl,
 }: Props) {
   const [mounted, setMounted] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -61,16 +64,24 @@ export default function CouponRevealModal({
   }, [code]);
 
   const handleClose = useCallback(() => {
+    if (returnUrl) {
+      window.location.href = returnUrl;
+      return;
+    }
     if (onClose) onClose();
     else window.close();
-  }, [onClose]);
+  }, [onClose, returnUrl]);
 
-  /** Open tracking link in new tab; user stays on our site in current tab. Then close modal. */
+  /** Open tracking link in new tab; then redirect this tab to returnUrl (coupons page) or close. */
   const handleContinueToStore = useCallback(() => {
     window.open(trackingUrl, "_blank", "noopener,noreferrer");
+    if (returnUrl) {
+      window.location.href = returnUrl;
+      return;
+    }
     if (onClose) onClose();
     else window.close();
-  }, [trackingUrl, onClose]);
+  }, [trackingUrl, onClose, returnUrl]);
 
   // Avoid hydration mismatch: render same placeholder on server and initial client, then full modal after mount
   if (!mounted) {

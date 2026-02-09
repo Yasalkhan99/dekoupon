@@ -11,12 +11,16 @@ export default async function CouponRevealPage({ searchParams }: Props) {
   const storeLogo = params.storeLogo ?? "";
   const redirect = params.redirect ?? "";
   const storeId = params.storeId ?? "";
+  const expiry = params.expiry ?? "";
+  const isCode = params.isCode === "1" || params.isCode === "true";
+  const trending = params.trending === "1" || params.trending === "true";
+  const returnUrl = params.returnUrl ?? "";
 
   return (
-    <div className="min-h-screen bg-zinc-950">
+    <div className="min-h-screen bg-zinc-100">
       <Suspense
         fallback={
-          <div className="flex min-h-screen items-center justify-center">
+          <div className="flex min-h-screen items-center justify-center bg-zinc-100">
             <div className="h-10 w-10 animate-spin rounded-full border-2 border-amber-400 border-t-transparent" />
           </div>
         }
@@ -28,6 +32,10 @@ export default async function CouponRevealPage({ searchParams }: Props) {
           storeLogo={storeLogo || undefined}
           redirect={redirect || undefined}
           storeId={storeId || undefined}
+          expiry={expiry || undefined}
+          isCode={isCode}
+          trending={trending}
+          returnUrl={returnUrl || undefined}
         />
       </Suspense>
     </div>

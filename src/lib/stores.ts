@@ -46,6 +46,15 @@ async function getCouponsFromFile(): Promise<Store[]> {
   }
 }
 
+function sortCouponsByPriority(coupons: Store[]): void {
+  coupons.sort((a, b) => {
+    const pa = a.priority ?? 999;
+    const pb = b.priority ?? 999;
+    if (pa !== pb) return pa - pb;
+    return (b.createdAt ?? "").localeCompare(a.createdAt ?? "");
+  });
+}
+
 /** All coupons (from Supabase coupons table or data/coupons.json). */
 export async function getCoupons(): Promise<Store[]> {
   try {
@@ -54,14 +63,16 @@ export async function getCoupons(): Promise<Store[]> {
       const { data: rows, error } = await supabase.from(SUPABASE_COUPONS_TABLE).select("data");
       if (!error && rows?.length) {
         const coupons = rows.map((r: { data: Store }) => r.data).filter(Boolean);
-        coupons.sort((a, b) => ((b.createdAt ?? "").localeCompare(a.createdAt ?? "")));
+        sortCouponsByPriority(coupons);
         return coupons;
       }
     }
   } catch {
     // Connection closed / network error – fall back to file
   }
-  return getCouponsFromFile();
+  const fileCoupons = await getCouponsFromFile();
+  sortCouponsByPriority(fileCoupons);
+  return fileCoupons;
 }
 
 async function writeCouponsToFile(coupons: Store[]) {
