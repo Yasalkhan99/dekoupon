@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Geist, Geist_Mono } from "next/font/google";
 import BlogDataProvider from "@/components/BlogDataProvider";
 import "./globals.css";
@@ -23,6 +24,9 @@ export const metadata: Metadata = {
     "Save smarter with SavingsHub4u. Verified coupon codes, exclusive deals, and money-saving tips from top brands. Your personal savings partner for online shopping.",
   keywords: ["coupons", "deals", "promo codes", "savings", "discounts", "SavingsHub4u"],
   metadataBase: new URL("https://savingshub4u.com"),
+  verification: {
+    google: "-7AN96PpsD05XVDAVyGYpixzeS5Rb-_ySJ0F2mK5rLs",
+  },
   icons: {
     icon: "/fav%20icon%20final%20logo.png",
     apple: "/fav%20icon%20final%20logo.png",
@@ -51,11 +55,24 @@ export default async function RootLayout({
   } catch {
     blogData = getDefaultBlogData();
   }
+  const GA_ID = "G-FLH2P5CHV8";
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+          strategy="afterInteractive"
+        />
+        <Script id="gtag-init" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${GA_ID}');
+          `}
+        </Script>
         <BlogDataProvider
           initialData={{
             heroPost: blogData.heroPost,

@@ -119,23 +119,31 @@ export default function StorePageClient({
     trending?: boolean;
   } | null>(null);
 
-  // Open popup when URL has hash #o-<couponId> (e.g. /promotions/store-slug/#o-1047)
+  // Open modal when URL has ?copy=<id> or ?shopnow=<id> (or legacy #o-<couponId>)
   useEffect(() => {
-    const hash = typeof window !== "undefined" ? window.location.hash : "";
-    const match = hash.match(/^#o-(.+)$/);
-    if (!match) return;
-    const couponId = decodeURIComponent(match[1]);
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const copyId = params.get("copy");
+    const shopnowId = params.get("shopnow");
+    const couponId = copyId ?? shopnowId ?? (() => {
+      const hash = window.location.hash || "";
+      const m = hash.match(/^#o-(.+)$/);
+      return m ? decodeURIComponent(m[1]) : null;
+    })();
+    if (!couponId) return;
     const coupon = coupons.find((c) => c.id === couponId);
     if (!coupon) return;
     const href = coupon.link || visitUrl;
     const isCode = coupon.couponType === "code";
+    const sep = href.includes("?") ? "&" : "?";
+    const redirectWithParam = href.startsWith("http") ? `${href}${sep}${isCode ? "copy" : "shopnow"}=${encodeURIComponent(coupon.id)}` : href;
     const dealTitle = (coupon.couponTitle ?? "").trim() || (isCode ? `Use code ${coupon.couponCode || ""}` : "Deal");
     setRevealingCoupon({
       code: coupon.couponCode || "",
       title: dealTitle,
       storeName: storeInfo.name,
       storeLogo: storeInfo.logoUrl || "",
-      redirect: href,
+      redirect: redirectWithParam,
       storeId: coupon.id,
       expiry: formatExpiry(coupon.expiry),
       isCode,
@@ -212,10 +220,13 @@ export default function StorePageClient({
           key={revealingCoupon.storeId}
           {...revealingCoupon}
           onClose={() => {
-            setRevealingCoupon(null);
-            if (typeof window !== "undefined" && window.location.hash) {
-              history.replaceState(null, "", window.location.pathname + window.location.search);
+            if (typeof window !== "undefined") {
+              const u = new URL(window.location.href);
+              u.searchParams.delete("copy");
+              u.searchParams.delete("shopnow");
+              window.history.replaceState(null, "", u.pathname + u.search + u.hash);
             }
+            setRevealingCoupon(null);
           }}
           blurBackdrop
         />
@@ -339,8 +350,11 @@ export default function StorePageClient({
                 {sorted.map((c) => {
                 const href = c.link || visitUrl;
                 const isCode = c.couponType === "code";
+                const param = isCode ? "copy" : "shopnow";
+                const sep = href.includes("?") ? "&" : "?";
+                const redirectWithParam = href.startsWith("http") ? `${href}${sep}${param}=${encodeURIComponent(c.id)}` : href;
                 const clickUrl = href.startsWith("http")
-                  ? `/api/click?storeId=${encodeURIComponent(c.id)}&redirect=${encodeURIComponent(href)}`
+                  ? `/api/click?storeId=${encodeURIComponent(c.id)}&redirect=${encodeURIComponent(redirectWithParam)}`
                   : href;
                 const dealTitle = (c.couponTitle ?? "").trim() || (isCode ? `Use code ${c.couponCode || ""}` : "Deal");
                 const badge = getBadgeForCoupon(dealTitle, storeInfo.countryCodes, {
@@ -351,11 +365,9 @@ export default function StorePageClient({
                 const percent = badge.type === "percent" ? badge.percent : 10;
                 const expiryDate = formatExpiry(c.expiry);
                 const handleCouponClick = () => {
-                  const samePageWithHash =
-                    typeof window !== "undefined"
-                      ? window.location.pathname + window.location.search + "#o-" + encodeURIComponent(c.id)
-                      : "#o-" + encodeURIComponent(c.id);
-                  window.open(samePageWithHash, "_blank", "noopener,noreferrer");
+                  const param = isCode ? "copy" : "shopnow";
+                  const samePageUrl = typeof window !== "undefined" ? window.location.pathname + "?" + param + "=" + encodeURIComponent(c.id) : "";
+                  window.open(samePageUrl || "?", "_blank", "noopener,noreferrer");
                   window.location.href = clickUrl;
                 };
                 const clickCount = (initialClickCounts[c.id] ?? 0) + (extraClicks[c.id] ?? 0);

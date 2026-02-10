@@ -75,21 +75,29 @@ export default function EventDealsClient({ eventName, eventDescription, coupons,
   } | null>(null);
 
   useEffect(() => {
-    const hash = typeof window !== "undefined" ? window.location.hash : "";
-    const match = hash.match(/^#o-(.+)$/);
-    if (!match) return;
-    const couponId = decodeURIComponent(match[1]);
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const copyId = params.get("copy");
+    const shopnowId = params.get("shopnow");
+    const couponId = copyId ?? shopnowId ?? (() => {
+      const hash = window.location.hash || "";
+      const m = hash.match(/^#o-(.+)$/);
+      return m ? decodeURIComponent(m[1]) : null;
+    })();
+    if (!couponId) return;
     const c = coupons.find((x) => x.id === couponId);
     if (!c) return;
     const href = c.link || c.trackingUrl || "#";
     const isCode = c.couponType === "code";
+    const sep = href.includes("?") ? "&" : "?";
+    const redirectWithParam = href.startsWith("http") ? `${href}${sep}${isCode ? "copy" : "shopnow"}=${encodeURIComponent(c.id)}` : href;
     const dealTitle = (c.couponTitle ?? "").trim() || (isCode ? `Use code ${c.couponCode || ""}` : "Deal");
     setRevealingCoupon({
       code: c.couponCode || "",
       title: dealTitle,
       storeName: c.name || "Store",
       storeLogo: c.logoUrl || "",
-      redirect: href,
+      redirect: redirectWithParam,
       storeId: c.id,
       expiry: formatExpiry(c.expiry),
       isCode,
@@ -119,7 +127,15 @@ export default function EventDealsClient({ eventName, eventDescription, coupons,
         <CouponRevealModal
           key={revealingCoupon.storeId}
           {...revealingCoupon}
-          onClose={() => setRevealingCoupon(null)}
+          onClose={() => {
+            if (typeof window !== "undefined") {
+              const u = new URL(window.location.href);
+              u.searchParams.delete("copy");
+              u.searchParams.delete("shopnow");
+              window.history.replaceState(null, "", u.pathname + u.search + u.hash);
+            }
+            setRevealingCoupon(null);
+          }}
           blurBackdrop
         />
       )}
@@ -169,15 +185,19 @@ export default function EventDealsClient({ eventName, eventDescription, coupons,
                 {sorted.map((c) => {
                   const href = c.link || c.trackingUrl || "#";
                   const isCode = c.couponType === "code";
-                  const clickUrl = href.startsWith("http") ? `/api/click?storeId=${encodeURIComponent(c.id)}&redirect=${encodeURIComponent(href)}` : href;
+                  const param = isCode ? "copy" : "shopnow";
+                  const sep = href.includes("?") ? "&" : "?";
+                  const redirectWithParam = href.startsWith("http") ? `${href}${sep}${param}=${encodeURIComponent(c.id)}` : href;
+                  const clickUrl = href.startsWith("http") ? `/api/click?storeId=${encodeURIComponent(c.id)}&redirect=${encodeURIComponent(redirectWithParam)}` : href;
                   const dealTitle = (c.couponTitle ?? "").trim() || (isCode ? `Use code ${c.couponCode || ""}` : "Deal");
                   const badge = getBadgeForCoupon(dealTitle, c.countryCodes, { badgeLabel: c.badgeLabel, badgeShipping: c.badgeShipping, badgeOffer: c.badgeOffer });
                   const percent = badge.type === "percent" ? badge.percent : 10;
                   const expiryDate = formatExpiry(c.expiry);
                   const storeName = c.name || "Store";
                   const handleCouponClick = () => {
-                    const samePageWithHash = typeof window !== "undefined" ? window.location.pathname + window.location.search + "#o-" + encodeURIComponent(c.id) : "#o-" + encodeURIComponent(c.id);
-                    window.open(samePageWithHash, "_blank", "noopener,noreferrer");
+                    const param = isCode ? "copy" : "shopnow";
+                    const samePageUrl = typeof window !== "undefined" ? window.location.pathname + "?" + param + "=" + encodeURIComponent(c.id) : "";
+                    window.open(samePageUrl || "?", "_blank", "noopener,noreferrer");
                     window.location.href = clickUrl;
                   };
                   const handleRevealOnly = () => {
@@ -186,7 +206,7 @@ export default function EventDealsClient({ eventName, eventDescription, coupons,
                       title: dealTitle,
                       storeName,
                       storeLogo: c.logoUrl || "",
-                      redirect: href,
+                      redirect: redirectWithParam,
                       storeId: c.id,
                       expiry: expiryDate,
                       isCode,

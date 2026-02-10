@@ -106,11 +106,11 @@ export default async function PromotionsPage({
     <div className="min-h-screen bg-white text-zinc-900">
       <PromotionsHeader />
 
-      {/* Hero - peach background, two banner images (no Total Categories / AVG Reviews) */}
-      <section className="relative overflow-hidden bg-amber-50/95 px-4 py-12 sm:px-6 lg:px-8">
+      {/* Hero - peach background, two banner images (no Total Categories / AVG Reviews). overflow-visible so search dropdown is not clipped. */}
+      <section className="relative overflow-visible bg-amber-50/95 px-4 py-12 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-6xl">
           <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between lg:gap-10">
-            <div className="flex-1">
+            <div className="flex-1 overflow-visible">
               <h1 className="text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl">
                 Discover The Best Affiliate <span className="text-blue-600">Coupons</span>
               </h1>
