@@ -131,9 +131,9 @@ export async function PATCH(request: Request) {
     }
     if (body.niche !== undefined) {
       const arr = Array.isArray(body.niche) ? body.niche : [];
-      nextPost.niche = arr.filter((n: unknown) => typeof n === "string" && VALID_NICHES.includes(n as typeof VALID_NICHES[number]));
-      if (nextPost.niche.length === 0) nextPost.niche = undefined;
-      nextPost.featured = nextPost.featured || (nextPost.niche && nextPost.niche.includes("featured"));
+      const filtered = arr.filter((n: unknown) => typeof n === "string" && VALID_NICHES.includes(n as typeof VALID_NICHES[number]));
+      nextPost.niche = filtered.length === 0 ? undefined : filtered;
+      nextPost.featured = nextPost.featured || (nextPost.niche != null && nextPost.niche.includes("featured"));
     }
     posts[index] = nextPost;
     await writeBlogPosts(posts);

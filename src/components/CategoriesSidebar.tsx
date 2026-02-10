@@ -37,7 +37,7 @@ export default function CategoriesSidebar() {
             alt=""
             width={24}
             height={24}
-            className="h-6 w-6 object-contain"
+            className="h-6 w-6 object-contain brightness-0 invert"
           />
         </div>
         <p className="mb-1.5 text-base font-bold">Disclaimer:</p>
