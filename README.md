@@ -14,7 +14,7 @@ ss
 xx
 ```bash
 npm install
-npm run dev
+npm run devsss
 ```
 /
 Open [http://localhost:3000](http://localhost:3000).
