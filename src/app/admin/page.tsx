@@ -9,6 +9,7 @@ import { STORE_CATEGORY_NAMES } from "@/data/categories";
 import { SPECIAL_EVENTS } from "@/data/events";
 import { stripHtml, slugify } from "@/lib/slugify";
 import { hasCouponData } from "@/lib/store-utils";
+import RichTextEditor from "@/components/RichTextEditor";
 
 type Section = "dashboard" | "coupons" | "stores" | "blog" | "analytics" | "tracking";
 
@@ -106,6 +107,8 @@ export default function AdminPage() {
     category: "",
     whyTrustUs: "",
     moreInfo: "",
+    codesAndCouponsContent: "",
+    moreAboutContent: "",
     shoppingTipsTitle: "",
     shoppingTips: [] as string[],
     seoTitle: "",
@@ -677,6 +680,8 @@ export default function AdminPage() {
             category: storeForm.category.trim() || undefined,
             whyTrustUs: storeForm.whyTrustUs.trim() || undefined,
             moreInfo: storeForm.moreInfo.trim() || undefined,
+            codesAndCouponsContent: storeForm.codesAndCouponsContent?.trim() || undefined,
+            moreAboutContent: storeForm.moreAboutContent?.trim() || undefined,
             shoppingTipsTitle: storeForm.shoppingTipsTitle?.trim() || undefined,
             shoppingTips: Array.isArray(storeForm.shoppingTips) && storeForm.shoppingTips.length > 0 ? storeForm.shoppingTips.filter((t) => (t ?? "").trim() !== "").map((t) => t.trim()) : undefined,
             seoTitle: storeForm.seoTitle.trim() || undefined,
@@ -713,6 +718,8 @@ export default function AdminPage() {
             category: storeForm.category.trim() || undefined,
             whyTrustUs: storeForm.whyTrustUs.trim() || undefined,
             moreInfo: storeForm.moreInfo.trim() || undefined,
+            codesAndCouponsContent: storeForm.codesAndCouponsContent?.trim() || undefined,
+            moreAboutContent: storeForm.moreAboutContent?.trim() || undefined,
             shoppingTipsTitle: storeForm.shoppingTipsTitle?.trim() || undefined,
             shoppingTips: Array.isArray(storeForm.shoppingTips) && storeForm.shoppingTips.length > 0 ? storeForm.shoppingTips.filter((t) => (t ?? "").trim() !== "").map((t) => t.trim()) : undefined,
             seoTitle: storeForm.seoTitle.trim() || undefined,
@@ -744,6 +751,8 @@ export default function AdminPage() {
         category: "",
         whyTrustUs: "",
         moreInfo: "",
+        codesAndCouponsContent: "",
+        moreAboutContent: "",
         shoppingTipsTitle: "",
         shoppingTips: [],
         seoTitle: "",
@@ -1756,6 +1765,8 @@ export default function AdminPage() {
                                       category: s.category ?? "",
                                       whyTrustUs: s.whyTrustUs ?? "",
                                       moreInfo: s.moreInfo ?? "",
+                                      codesAndCouponsContent: s.codesAndCouponsContent ?? "",
+                                      moreAboutContent: s.moreAboutContent ?? "",
                                       shoppingTipsTitle: s.shoppingTipsTitle ?? "",
                                       shoppingTips: Array.isArray(s.shoppingTips) && s.shoppingTips.length > 0 ? s.shoppingTips : [],
                                       seoTitle: s.seoTitle ?? "",
@@ -2113,6 +2124,26 @@ export default function AdminPage() {
                       className="w-full rounded border border-stone-300 px-3 py-2 text-stone-900 focus:border-amber-600 focus:outline-none focus:ring-1 focus:ring-amber-600"
                     />
                     <p className="mt-1 text-xs text-stone-500">Supports HTML formatting. Leave blank to use default content.</p>
+                  </div>
+                  <div className="mb-4">
+                    <label className="mb-1 block text-sm font-medium text-stone-700">Sidebar: &quot;[Store name] Codes and Coupons&quot; (Optional)</label>
+                    <RichTextEditor
+                      value={storeForm.codesAndCouponsContent ?? ""}
+                      onChange={(html) => setStoreForm((f) => ({ ...f, codesAndCouponsContent: html }))}
+                      placeholder="Content for the sidebar box below About Store. HTML allowed."
+                      minHeight="140px"
+                    />
+                    <p className="mt-1 text-xs text-stone-500">Use the toolbar for bold, italic, lists, link. Appears in the sidebar below About Store.</p>
+                  </div>
+                  <div className="mb-4">
+                    <label className="mb-1 block text-sm font-medium text-stone-700">More About [store name] (Optional)</label>
+                    <RichTextEditor
+                      value={storeForm.moreAboutContent ?? ""}
+                      onChange={(html) => setStoreForm((f) => ({ ...f, moreAboutContent: html }))}
+                      placeholder="Content for the section below the coupon list. Same toolbar: bold, italic, lists, link."
+                      minHeight="140px"
+                    />
+                    <p className="mt-1 text-xs text-stone-500">Shows below the last coupon, above Shopping Tips. Use toolbar for formatting.</p>
                   </div>
                   <div className="mb-4">
                     <label className="mb-1 block text-sm font-medium text-stone-700">Shopping Tips Section – Title (Optional)</label>

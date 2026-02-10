@@ -17,9 +17,6 @@ type Props = {
   clickCounts: Record<string, number>;
 };
 
-const DEFAULT_WHY_TRUST =
-  "We verify and hand-test offers so you can shop with confidence. Our team updates deals regularly to bring you the best savings.";
-
 const DEFAULT_FAQS = [
   { q: "What is a discount code?", a: "A discount code is a promo code you enter at checkout to get a percentage or fixed amount off your order." },
   { q: "How do I use a promo code?", a: "Copy the code from our page, go to the store website, add items to cart, and paste the code in the checkout or promo field." },
@@ -187,7 +184,6 @@ export default function StorePageClient({
     return list;
   }, [filtered, sortBy, initialClickCounts, extraClicks]);
 
-  const whyTrustUs = storeInfo.whyTrustUs?.trim() || DEFAULT_WHY_TRUST;
   const moreInfo = storeInfo.moreInfo?.trim();
   const displayName = (storeInfo.name ?? "").trim() || "Store";
   const sidebarCardName = (storeInfo.subStoreName ?? storeInfo.name ?? "").trim() || "Store";
@@ -256,23 +252,42 @@ export default function StorePageClient({
               </p>
             </div>
 
+            {/* Store name Codes and Coupons – content from admin */}
             <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
-              <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-zinc-600">
-                How To Use {displayName} Coupons
+              <h3 className="text-base font-semibold text-zinc-900">
+                {displayName} Codes and Coupons
               </h3>
-              <ol className="list-inside list-decimal space-y-2 text-sm text-zinc-600">
-                <li>Click &quot;Get Code&quot; and copy the code.</li>
-                <li>Go to {displayName}&apos;s website and add items to your cart.</li>
-                <li>At checkout, paste the code in the promo or discount code box.</li>
-                <li>Click apply and complete your order to get the discount.</li>
-              </ol>
+              {storeInfo.codesAndCouponsContent?.trim() ? (
+                <div
+                  className="mt-3 text-sm leading-relaxed text-zinc-600 prose prose-sm max-w-none prose-p:my-1.5 prose-ul:my-1.5 prose-li:my-0"
+                  dangerouslySetInnerHTML={{ __html: storeInfo.codesAndCouponsContent.trim() }}
+                />
+              ) : null}
             </div>
 
-            {/* Why Trust Us */}
-            <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-5 shadow-sm">
-              <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-zinc-800">Why Trust Us?</h3>
-              <p className="text-sm leading-relaxed text-zinc-600">{whyTrustUs}</p>
+            {/* FAQ – sidebar below Codes and Coupons */}
+            <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
+              <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-zinc-800">
+                {displayName} coupon and promo codes FAQ
+              </h3>
+              <div className="space-y-2">
+                {faqsToShow.map((faq, i) => (
+                  <details
+                    key={i}
+                    className="group rounded-lg border border-zinc-100 bg-zinc-50/50"
+                  >
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-3 py-2.5 text-left text-sm font-medium text-zinc-900 [&::-webkit-details-marker]:hidden">
+                      {faq.q}
+                      <span className="shrink-0 text-zinc-400 transition group-open:rotate-180">
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                      </span>
+                    </summary>
+                    <p className="border-t border-zinc-100 px-3 py-2 text-xs text-zinc-600">{faq.a}</p>
+                  </details>
+                ))}
+              </div>
             </div>
+
           </div>
         </aside>
 
@@ -411,6 +426,21 @@ export default function StorePageClient({
             )}
           </div>
 
+          {/* More About [store name] – below coupons, admin-editable */}
+          <section className="mt-10 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
+            <h2 className="mb-4 text-lg font-bold text-zinc-900">
+              More About {displayName}
+            </h2>
+            {storeInfo.moreAboutContent?.trim() ? (
+              <div
+                className="prose prose-zinc max-w-none text-sm text-zinc-600 prose-p:my-2 prose-ul:my-2 prose-ol:my-2"
+                dangerouslySetInnerHTML={{ __html: storeInfo.moreAboutContent.trim() }}
+              />
+            ) : (
+              <p className="text-sm text-zinc-500">Add content from Admin → Stores → Edit this store → &quot;More About [store name]&quot;.</p>
+            )}
+          </section>
+
           {/* Shopping Tips */}
           <section className="mt-10 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
             <h2 className="mb-4 text-lg font-bold text-zinc-900">
@@ -436,28 +466,6 @@ export default function StorePageClient({
             </section>
           )}
 
-          {/* FAQ */}
-          <section className="mt-10 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
-            <h2 className="mb-4 text-lg font-bold text-zinc-900">
-              {displayName} coupon and promo codes FAQ
-            </h2>
-            <div className="space-y-3">
-              {faqsToShow.map((faq, i) => (
-                <details
-                  key={i}
-                  className="group rounded-lg border border-zinc-100 bg-zinc-50/50"
-                >
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-4 py-3 text-left font-medium text-zinc-900 [&::-webkit-details-marker]:hidden">
-                    {faq.q}
-                    <span className="shrink-0 text-zinc-400 transition group-open:rotate-180">
-                      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                    </span>
-                  </summary>
-                  <p className="border-t border-zinc-100 px-4 py-3 text-sm text-zinc-600">{faq.a}</p>
-                </details>
-              ))}
-            </div>
-          </section>
         </div>
       </div>
     </>

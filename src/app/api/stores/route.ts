@@ -109,6 +109,8 @@ function buildStoreFromBody(body: Record<string, unknown>, slugFromName: string)
     category,
     whyTrustUs,
     moreInfo,
+    codesAndCouponsContent,
+    moreAboutContent,
     shoppingTipsTitle,
     shoppingTips,
     seoTitle,
@@ -136,6 +138,8 @@ function buildStoreFromBody(body: Record<string, unknown>, slugFromName: string)
     ...(category != null && String(category).trim() !== "" && { category: String(category).trim() }),
     ...(whyTrustUs != null && String(whyTrustUs).trim() !== "" && { whyTrustUs: String(whyTrustUs).trim() }),
     ...(moreInfo != null && String(moreInfo).trim() !== "" && { moreInfo: String(moreInfo).trim() }),
+    ...(codesAndCouponsContent != null && String(codesAndCouponsContent).trim() !== "" && { codesAndCouponsContent: String(codesAndCouponsContent).trim() }),
+    ...(moreAboutContent != null && String(moreAboutContent).trim() !== "" && { moreAboutContent: String(moreAboutContent).trim() }),
     ...(shoppingTipsTitle != null && String(shoppingTipsTitle).trim() !== "" && { shoppingTipsTitle: String(shoppingTipsTitle).trim() }),
     ...(Array.isArray(shoppingTips) && shoppingTips.length > 0 && { shoppingTips: shoppingTips.filter((t: unknown) => typeof t === "string" && String(t).trim() !== "").map((t: string) => String(t).trim()) }),
     ...(seoTitle != null && String(seoTitle).trim() !== "" && { seoTitle: String(seoTitle).trim() }),
@@ -208,6 +212,8 @@ export async function POST(request: Request) {
       category,
       whyTrustUs,
       moreInfo,
+      codesAndCouponsContent,
+      moreAboutContent,
       shoppingTipsTitle,
       shoppingTips,
       seoTitle,
@@ -265,6 +271,7 @@ export async function POST(request: Request) {
         category,
         whyTrustUs,
         moreInfo,
+        codesAndCouponsContent,
         shoppingTipsTitle,
         shoppingTips,
         seoTitle,
@@ -384,7 +391,7 @@ export async function PATCH(request: Request) {
     const allowed = [
       "name", "logoUrl", "description", "expiry", "link", "subStoreName", "storePageHeading", "slug",
       "logoAltText", "logoMethod", "trackingUrl", "countryCodes",
-      "websiteUrl", "category", "whyTrustUs", "moreInfo", "shoppingTipsTitle", "shoppingTips", "seoTitle", "seoMetaDesc",
+      "websiteUrl", "category", "whyTrustUs", "moreInfo", "codesAndCouponsContent", "moreAboutContent", "shoppingTipsTitle", "shoppingTips", "seoTitle", "seoMetaDesc",
       "trending", "status", "faqs", "couponType", "couponCode", "couponTitle", "badgeLabel", "badgeShipping", "badgeOffer", "priority", "active", "imageAlt",
     ];
     const nextStore = { ...current };

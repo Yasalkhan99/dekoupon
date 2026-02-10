@@ -22,6 +22,10 @@ export type Store = {
   category?: string;
   whyTrustUs?: string;
   moreInfo?: string;
+  /** Sidebar box below "About Store": content for "{Store name} Codes and Coupons" (admin-editable). */
+  codesAndCouponsContent?: string;
+  /** Main content: "More About [store name]" section below coupon list (admin-editable, rich text). */
+  moreAboutContent?: string;
   /** Shopping Tips section on store page: custom title and bullet points. */
   shoppingTipsTitle?: string;
   shoppingTips?: string[];
