@@ -1,14 +1,34 @@
 @import "tailwindcss";
 
-/* Theme (Couponly-style from theme.html) – apna data SavingsHub4u ke saath */
+/* Theme – Hunted Editorial Magazine (homepage) + SavingsHub4u */
 :root {
   --background: #ffffff;
   --foreground: #171717;
-  --theme-primary: #2563eb;
-  --theme-primary-hover: #1d4ed8;
-  --theme-accent: #f59e0b;
-  --theme-accent-hover: #d97706;
-  --theme-breadcrumb-bg: #fffbeb;
+  /* Hunted theme colors */
+  --hunted-red: #d43939;
+  --hunted-red-hover: #b82e2e;
+  /* Footer accent – blue (brand blue) */
+  --footer-accent: #0F92F4;
+  --footer-accent-hover: #0d7ed6;
+  --hunted-navy: #162238;
+  --hunted-black: #000;
+  --hunted-gray: #ccc;
+  --hunted-text-gray: #555;
+  --hunted-text-light: #999;
+  --hunted-white: #fff;
+  /* Homepage – clearly visible (non-white) backgrounds */
+  --page-bg: #eae6e1;
+  --card-bg: #f5f0ea;
+  /* Sidebar widgets – blue theme (no pink) */
+  --sidebar-widget-1: #dce8f5;
+  --sidebar-widget-2: #e3eef9;
+  --sidebar-widget-3: #e8f0fa;
+  /* Legacy / compatibility */
+  --theme-primary: #d43939;
+  --theme-primary-hover: #b82e2e;
+  --theme-accent: #162238;
+  --theme-accent-hover: #1a2a47;
+  --theme-breadcrumb-bg: #f8f9fa;
   --theme-border: #e5e7eb;
 }
 
@@ -47,10 +67,217 @@ body {
 
 /* Blog post content – links clearly red and clickable */
 .blog-content a {
-  color: #dc2626;
+  color: var(--footer-accent);
   text-decoration: underline;
   cursor: pointer;
 }
 .blog-content a:hover {
   opacity: 0.9;
+}
+
+.clearfix::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+/* Hunted fullwidth=two_columns_sidebar: content LEFT, sidebar RIGHT, no overlap */
+.main-container-sidebar.main-container-sidebar-cc2 {
+  display: flex;
+  flex-wrap: nowrap;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  align-items: flex-start;
+  gap: 0;
+}
+/* Content column – left, takes remaining space */
+.site-content-sidebar.site-content-sidebar-cc2 {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding-right: 24px;
+  padding-bottom: 0;
+}
+/* Sidebar column – right, fixed width */
+.main-container-sidebar .sidebar {
+  flex: 0 0 300px;
+  width: 300px;
+  min-width: 300px;
+}
+@media (max-width: 759px) {
+  .main-container-sidebar.main-container-sidebar-cc2 {
+    flex-wrap: wrap;
+  }
+  .site-content-sidebar.site-content-sidebar-cc2 {
+    flex: 1 1 100%;
+    width: 100%;
+    padding-right: 0;
+    margin-bottom: 1rem;
+  }
+  .main-container-sidebar .sidebar {
+    flex: 1 1 100%;
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+/* Hunted layout – two-column grid inside content */
+.hunted-row-1-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  width: 100%;
+}
+@media (max-width: 759px) {
+  .hunted-row-1-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Hunted hero slider – fullwidth (like demo ?fullwidth=two_columns_sidebar) */
+.hunted-slider-container {
+  width: 100%;
+  overflow: hidden;
+  padding-bottom: 20px;
+  position: relative;
+}
+.hunted-slider-container .bxslider-main {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  transition: transform 0.4s ease;
+}
+.hunted-slider-container .bxslider-main li {
+  flex: 0 0 100%;
+  width: 100%;
+}
+.hunted-slider-container .slide-container {
+  position: relative;
+  width: 100%;
+  min-height: 400px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  text-align: center;
+}
+@media (min-width: 640px) {
+  .hunted-slider-container .slide-container {
+    min-height: 500px;
+  }
+}
+.hunted-slider-container .slide-info-outer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(22,34,56,0.75) 100%);
+}
+.hunted-slider-container .slide-info {
+  width: 100%;
+  max-width: 900px;
+  padding: 20px 15px;
+}
+.hunted-slider-container .slide-info-inner {
+  text-align: center;
+}
+.hunted-slider-container .slide-text-outer {
+  padding: 0;
+  margin: 0;
+}
+.hunted-slider-container .slide-text {
+  max-width: 600px;
+  margin: 0 auto;
+}
+.hunted-slider-container .slider-date {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  padding-bottom: 10px;
+  color: var(--hunted-gray);
+}
+.hunted-slider-container .slider-date a {
+  color: var(--hunted-gray);
+}
+.hunted-slider-container .slider-header {
+  font-size: 25px;
+  line-height: 1.1em;
+  font-weight: 700;
+  color: var(--hunted-white);
+  text-shadow: 2px 2px var(--hunted-black);
+  margin: 0 0 10px;
+}
+@media (min-width: 640px) {
+  .hunted-slider-container .slider-header {
+    font-size: 40px;
+  }
+}
+.hunted-slider-container .slider-caption {
+  font-size: 14px;
+  line-height: 1.5em;
+  color: var(--hunted-white);
+  margin: 0;
+}
+.hunted-slider-container .bx-controls-direction {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  transform: translateY(-50%);
+  pointer-events: none;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 20px;
+  gap: 12px;
+}
+.hunted-slider-container .bx-controls-direction a,
+.hunted-slider-container .bx-controls-direction button {
+  pointer-events: auto;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--footer-accent);
+  font-size: 28px;
+  font-weight: 300;
+  line-height: 1;
+  border: 2px solid var(--footer-accent);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.15);
+  transition: color 0.2s, background 0.2s, border-color 0.2s;
+  cursor: pointer;
+}
+.hunted-slider-container .bx-controls-direction a:hover,
+.hunted-slider-container .bx-controls-direction button:hover {
+  color: var(--hunted-white);
+  background: var(--footer-accent);
+  border-color: var(--footer-accent);
+}
+.hunted-slider-container .bx-pager {
+  text-align: center;
+  padding: 15px 0 0;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+.hunted-slider-container .bx-pager a,
+.hunted-slider-container .bx-pager button {
+  display: block;
+  width: 10px;
+  height: 10px;
+  border-radius: 5px;
+  border: none;
+  background: var(--hunted-gray);
+  text-indent: -9999px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.hunted-slider-container .bx-pager a.active,
+.hunted-slider-container .bx-pager button.active {
+  background: var(--footer-accent);
 }

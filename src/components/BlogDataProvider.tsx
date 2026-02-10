@@ -11,6 +11,7 @@ export type BlogDataContextValue = {
   mostPopularPosts: BlogPost[];
   latestPosts: BlogPost[];
   trendingPosts: BlogPost[];
+  heroFlowPosts: BlogPost[];
   footerCategories: { name: string; posts: BlogPost[] }[];
   navDropdownPosts: Record<string, NavDropdownPost[]>;
 };

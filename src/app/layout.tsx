@@ -56,13 +56,15 @@ export default async function RootLayout({
     blogData = getDefaultBlogData();
   }
   const GA_ID = "G-FLH2P5CHV8";
+  const AW_ID = "AW-17945301465"; // Google Ads
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        {/* Google tag (gtag.js) – Analytics + Ads, runs on every page */}
         <Script
-          src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+          src={`https://www.googletagmanager.com/gtag/js?id=${AW_ID}`}
           strategy="afterInteractive"
         />
         <Script id="gtag-init" strategy="afterInteractive">
@@ -70,6 +72,7 @@ export default async function RootLayout({
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
+            gtag('config', '${AW_ID}');
             gtag('config', '${GA_ID}');
           `}
         </Script>
@@ -80,6 +83,7 @@ export default async function RootLayout({
             mostPopularPosts: blogData.mostPopularPosts,
             latestPosts: blogData.latestPosts,
             trendingPosts: blogData.trendingPosts,
+            heroFlowPosts: blogData.heroFlowPosts,
             footerCategories: blogData.footerCategories,
             navDropdownPosts: blogData.navDropdownPosts,
           }}

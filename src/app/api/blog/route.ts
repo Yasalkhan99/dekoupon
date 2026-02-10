@@ -16,10 +16,13 @@ const allowedFields = [
   "slug",
   "image",
   "featured",
+  "niche",
   "content",
   "createdAt",
   "publishedDate",
 ] as const;
+
+const VALID_NICHES = ["featured", "trending", "popular"] as const;
 
 function slugFromTitle(title: string): string {
   return String(title)
@@ -74,6 +77,10 @@ export async function POST(request: Request) {
       body.publishedDate != null && String(body.publishedDate).trim() !== ""
         ? String(body.publishedDate).trim()
         : new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }).toUpperCase();
+    const nicheRaw = body.niche;
+    const niche: ("featured" | "trending" | "popular")[] = Array.isArray(nicheRaw)
+      ? nicheRaw.filter((n: unknown) => typeof n === "string" && VALID_NICHES.includes(n as typeof VALID_NICHES[number]))
+      : body.featured === true ? ["featured"] : [];
     const newPost: BlogPostWithContent = {
       id: crypto.randomUUID(),
       title,
@@ -81,7 +88,8 @@ export async function POST(request: Request) {
       category: body.category != null && categories.includes(body.category) ? body.category : categories[0],
       slug,
       image: body.image != null ? String(body.image).trim() : "",
-      featured: body.featured === true,
+      featured: body.featured === true || niche.includes("featured"),
+      niche: niche.length ? niche : undefined,
       content: body.content != null ? String(body.content).trim() : "",
       createdAt: now,
       publishedDate,
@@ -120,6 +128,12 @@ export async function PATCH(request: Request) {
     }
     if (body.category != null && categories.includes(body.category)) {
       nextPost.category = body.category;
+    }
+    if (body.niche !== undefined) {
+      const arr = Array.isArray(body.niche) ? body.niche : [];
+      nextPost.niche = arr.filter((n: unknown) => typeof n === "string" && VALID_NICHES.includes(n as typeof VALID_NICHES[number]));
+      if (nextPost.niche.length === 0) nextPost.niche = undefined;
+      nextPost.featured = nextPost.featured || (nextPost.niche && nextPost.niche.includes("featured"));
     }
     posts[index] = nextPost;
     await writeBlogPosts(posts);

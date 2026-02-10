@@ -40,29 +40,45 @@ export type BlogData = {
   mostPopularPosts: BlogPostWithContent[];
   latestPosts: BlogPostWithContent[];
   trendingPosts: BlogPostWithContent[];
+  /** Many posts for hero flow (featured + trending + popular), colorful section */
+  heroFlowPosts: BlogPostWithContent[];
   footerCategories: { name: string; posts: BlogPostWithContent[] }[];
   navDropdownPosts: Record<string, NavDropdownPost[]>;
   allPosts: BlogPostWithContent[];
 };
+
+function hasNiche(p: BlogPostWithContent, n: "featured" | "trending" | "popular"): boolean {
+  if (p.niche?.includes(n)) return true;
+  if (n === "featured" && p.featured) return true;
+  return false;
+}
 
 export const getBlogData = cache(async (): Promise<BlogData> => {
   const posts = await readBlogPosts();
   const sorted = [...posts].sort(
     (a, b) => new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime()
   );
-  const featured = posts.filter((p) => p.featured);
+  const featured = posts.filter((p) => hasNiche(p, "featured"));
   const heroPost = featured[0] ?? sorted[0];
   const featuredPosts = featured.slice(0, 3);
-  const mostPopularPosts = sorted.slice(0, 10);
+  const withPopular = posts.filter((p) => hasNiche(p, "popular"));
+  const withTrending = posts.filter((p) => hasNiche(p, "trending"));
+  const mostPopularPosts = withPopular.length > 0 ? withPopular.slice(0, 10) : sorted.slice(0, 10);
   const latestPosts = sorted.slice(0, 6);
-  const trendingPosts = [
-    ...(sorted[0] ? [sorted[0]] : []),
-    ...(sorted[1] ? [sorted[1]] : []),
-    ...(sorted[2] ? [sorted[2]] : []),
-    ...(sorted[3] ? [sorted[3]] : []),
-    ...(sorted[4] ? [sorted[4]] : []),
-    ...(sorted[5] ? [sorted[5]] : []),
-  ];
+  const trendingPosts = withTrending.length > 0 ? withTrending.slice(0, 6) : sorted.slice(0, 6);
+  const seenIds = new Set<string>();
+  const heroFlowPosts: BlogPostWithContent[] = [];
+  for (const p of [...featured, ...withTrending, ...withPopular]) {
+    if (seenIds.has(p.id)) continue;
+    seenIds.add(p.id);
+    heroFlowPosts.push(p);
+  }
+  for (const p of sorted) {
+    if (heroFlowPosts.length >= 18) break;
+    if (seenIds.has(p.id)) continue;
+    seenIds.add(p.id);
+    heroFlowPosts.push(p);
+  }
   const withDate = (p: BlogPostWithContent, date: string): NavDropdownPost => ({
     ...p,
     date: p.publishedDate ?? date,
@@ -93,6 +109,7 @@ export const getBlogData = cache(async (): Promise<BlogData> => {
     mostPopularPosts,
     latestPosts,
     trendingPosts,
+    heroFlowPosts,
     footerCategories,
     navDropdownPosts,
     allPosts: posts,
@@ -117,6 +134,7 @@ export function getDefaultBlogData(): BlogData {
     mostPopularPosts: [],
     latestPosts: [],
     trendingPosts: [],
+    heroFlowPosts: [],
     footerCategories: [],
     navDropdownPosts: { fashion: [], lifestyle: [], featured: [] },
     allPosts: [],

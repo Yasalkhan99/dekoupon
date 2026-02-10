@@ -20,9 +20,9 @@ const MenuIcon = ({ className = "h-4 w-4" }: { className?: string }) => (
 
 const navLinks = [
   { label: "Home", href: "/", activeRed: true },
-  { label: "Fashion", href: "/fashion", dropdownKey: "fashion" as const, showMenuIcon: true },
-  { label: "Lifestyle", href: "/lifestyle", dropdownKey: "lifestyle" as const, showMenuIcon: true },
-  { label: "Featured", href: "/featured", dropdownKey: "featured" as const, showMenuIcon: true },
+  { label: "Fashion", href: "/promotions/categories", dropdownKey: "fashion" as const },
+  { label: "Lifestyle", href: "/promotions/categories", dropdownKey: "lifestyle" as const },
+  { label: "Featured", href: "/#latest", dropdownKey: "featured" as const },
   { label: "Promotions", href: "/promotions" },
   { label: "Contact Us", href: "/contact" },
 ];
@@ -33,9 +33,9 @@ function DropdownCard({ post }: { post: NavDropdownPost }) {
   return (
     <Link
       href={`/blog/${post.slug}`}
-      className="group flex flex-col overflow-hidden rounded border border-zinc-100 bg-white transition hover:shadow-md"
+      className="group flex flex-col overflow-hidden border-2 border-[var(--theme-border)] bg-white transition hover:shadow-md"
     >
-      <div className="relative aspect-[4/3] w-full overflow-hidden bg-zinc-100">
+      <div className="relative aspect-[4/3] w-full overflow-hidden bg-[var(--hunted-gray)]">
         <Image
           src={post.image}
           alt={stripHtml(post.title)}
@@ -45,11 +45,11 @@ function DropdownCard({ post }: { post: NavDropdownPost }) {
         />
       </div>
       <div className="flex flex-1 flex-col p-3">
-        <span className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-red-600">
+        <span className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-[var(--footer-accent)]">
           {post.category}
         </span>
-        <span className="mb-2 line-clamp-2 text-sm font-bold leading-snug text-zinc-900 group-hover:text-red-600 [&_a]:text-red-600 [&_a]:underline" dangerouslySetInnerHTML={{ __html: post.title }} />
-        <span className="mt-auto text-xs text-zinc-500">WEBADMIN · {post.date}</span>
+        <span className="mb-2 line-clamp-2 text-sm font-bold leading-snug text-[var(--hunted-navy)] group-hover:text-[var(--footer-accent)] [&_a]:text-[var(--footer-accent)] [&_a]:underline" dangerouslySetInnerHTML={{ __html: post.title }} />
+        <span className="mt-auto text-xs text-[var(--hunted-text-gray)]">WEBADMIN · {post.date}</span>
       </div>
     </Link>
   );
@@ -90,21 +90,34 @@ export default function Header({ transparent }: HeaderProps = {}) {
   useEffect(() => () => clearCloseTimer(), [clearCloseTimer]);
 
   const isLight = transparent && scrolled;
-  const textClass = isLight ? "text-zinc-900 hover:text-zinc-700" : "text-white hover:text-zinc-200";
-  const iconClass = isLight ? "text-zinc-900 hover:opacity-80" : "text-white hover:opacity-80";
+  const textClass = isLight ? "text-[var(--hunted-navy)] hover:text-[var(--footer-accent)]" : "text-white hover:text-white/80";
+  const iconClass = isLight ? "text-[var(--hunted-navy)] hover:opacity-80" : "text-white hover:opacity-80";
 
   return (
-    <header
-      className={`sticky top-0 z-50 w-full transition-colors duration-200 ${
-        transparent
-          ? scrolled
-            ? "border-b border-zinc-200 bg-white/95 text-zinc-900 shadow-sm backdrop-blur-md"
-            : "bg-transparent text-white"
-          : "border-b border-zinc-800 bg-zinc-900 text-white"
-      }`}
-    >
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-12 items-center justify-between gap-4 sm:h-14">
+    <>
+      {/* Top line – Hunted style (navy strip) */}
+      <div className="top-line-outer border-b-2 border-[var(--hunted-navy)] bg-[var(--hunted-navy)] text-white">
+        <div className="top-line-container mx-auto flex max-w-[1240px] items-center justify-between px-5 py-2 text-xs sm:px-6 lg:px-8">
+          <div className="flex items-center gap-4">
+            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="opacity-80 hover:opacity-100" aria-label="Facebook">Facebook</a>
+            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="opacity-80 hover:opacity-100" aria-label="Twitter">Twitter</a>
+            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="opacity-80 hover:opacity-100" aria-label="Instagram">Instagram</a>
+            <a href="https://pinterest.com" target="_blank" rel="noopener noreferrer" className="opacity-80 hover:opacity-100" aria-label="Pinterest">Pinterest</a>
+          </div>
+          <div className="text-white/70">Best deals &amp; coupons</div>
+        </div>
+      </div>
+      <header
+        className={`sticky top-0 z-50 w-full transition-colors duration-200 ${
+          transparent
+            ? scrolled
+              ? "border-b-2 border-[var(--theme-border)] bg-white/95 text-[var(--hunted-navy)] shadow-sm backdrop-blur-md"
+              : "bg-[var(--hunted-navy)]/90 text-white shadow-md backdrop-blur-sm"
+            : "border-b-2 border-[var(--hunted-navy)] bg-[var(--hunted-navy)] text-white"
+        }`}
+      >
+        <div className="mx-auto max-w-[1240px] px-5 sm:px-6 lg:px-8">
+          <div className="flex h-12 items-center justify-between gap-4 sm:h-14">
           <Link href="/" className="flex items-center" aria-label="SavingsHub4u">
             <Image
               src={isLight ? "/black final logo.svg" : "/final final logo.svg"}
@@ -123,11 +136,11 @@ export default function Header({ transparent }: HeaderProps = {}) {
               const isOpen = hasDropdown && openDropdown === link.dropdownKey;
               let linkClass = textClass;
               if (isRed) {
-                linkClass = "text-red-500 hover:text-red-400";
+                linkClass = "text-[var(--footer-accent)] hover:text-[var(--footer-accent-hover)]";
               } else if (hasDropdown) {
                 linkClass = isLight
-                  ? "text-zinc-900 hover:!text-red-600"
-                  : "text-white hover:!text-red-400";
+                  ? "text-[var(--hunted-navy)] hover:!text-[var(--footer-accent)]"
+                  : "text-white hover:!text-[var(--footer-accent)]";
               }
 
               if (hasDropdown && link.dropdownKey) {
@@ -135,7 +148,7 @@ export default function Header({ transparent }: HeaderProps = {}) {
                 const posts = navDropdownPosts[key] ?? [];
                 return (
                   <div
-                    key={link.href}
+                    key={link.label}
                     className="relative"
                     onMouseEnter={() => handleDropdownEnter(key)}
                     onMouseLeave={handleDropdownLeave}
@@ -143,7 +156,7 @@ export default function Header({ transparent }: HeaderProps = {}) {
                     <Link
                       href={link.href}
                       className={`inline-flex items-center gap-1.5 py-4 text-sm font-medium sm:text-base transition-colors duration-150 ${linkClass} ${
-                        isOpen ? (isLight ? "!text-red-600" : "!text-red-400") : ""
+                        isOpen ? (isLight ? "!text-[var(--footer-accent)]" : "!text-[var(--footer-accent)]") : ""
                       }`}
                     >
                       {link.label}
@@ -191,10 +204,10 @@ export default function Header({ transparent }: HeaderProps = {}) {
 
               return (
                 <Link
-                  key={link.href}
+                  key={link.label}
                   href={link.href}
                   className={`py-4 text-sm font-medium sm:text-base transition-colors duration-150 ${linkClass} ${
-                    isLight && isRed ? "!text-red-600 hover:!text-red-500" : ""
+                    isLight && isRed ? "!text-[var(--footer-accent)] hover:!text-[var(--footer-accent-hover)]" : ""
                   }`}
                 >
                   {link.label}
@@ -237,5 +250,6 @@ export default function Header({ transparent }: HeaderProps = {}) {
         </div>
       </div>
     </header>
+    </>
   );
 }

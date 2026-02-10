@@ -8,44 +8,55 @@ type ArticleCardProps = {
 };
 
 export default function ArticleCard({ post }: ArticleCardProps) {
+  const date = (post as { publishedDate?: string; date?: string }).publishedDate ?? (post as { date?: string }).date ?? "";
+
   return (
-    <article className="group flex flex-col overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm transition hover:shadow-md">
-      <Link href={`/blog/${post.slug}`} className="relative block aspect-[16/10] overflow-hidden">
-        <Image
-          src={post.image}
-          alt={stripHtml(post.title)}
-          fill
-          className="object-cover transition group-hover:scale-105"
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-        />
-      </Link>
-      <div className="flex flex-1 flex-col p-4">
-        <span className="mb-2 text-xs font-semibold uppercase tracking-wide text-red-600">
-          {post.category}
-        </span>
-        <Link href={`/blog/${post.slug}`} className="mb-2 flex-1">
-          <h2 className="text-lg font-bold leading-snug text-zinc-900 line-clamp-2 group-hover:underline [&_a]:text-red-600 [&_a]:underline" dangerouslySetInnerHTML={{ __html: post.title }} />
-        </Link>
-        <div className="blog-content mb-4 line-clamp-2 text-sm text-zinc-600" dangerouslySetInnerHTML={{ __html: post.excerpt }} />
-        <Link
-          href={`/blog/${post.slug}`}
-          className="inline-flex w-fit items-center text-sm font-semibold text-red-600 hover:underline"
-        >
-          READ MORE
-          <svg
-            className="ml-1 h-4 w-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9 5l7 7-7 7"
-            />
-          </svg>
-        </Link>
+    <article className="post clearfix mb-5 rounded-lg border border-gray-200 p-4 shadow-sm" style={{ backgroundColor: "#f2ebe2" }}>
+      <div className="article-outer-sidebar-cc2">
+        <div className="article-inner">
+          <div className="article-container clearfix">
+            <div className="fea-img-container mb-0">
+              <Link href={`/blog/${post.slug}`} className="block overflow-hidden">
+                <div className="relative aspect-[4/3] w-full overflow-hidden bg-[var(--hunted-gray)]">
+                  <Image
+                    src={post.image}
+                    alt={stripHtml(post.title)}
+                    fill
+                    quality={90}
+                    className="object-cover transition hover:scale-105"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 480px"
+                  />
+                </div>
+              </Link>
+            </div>
+            <div className="home-excerpt-outer pt-4">
+              {date && (
+                <div className="listing-date mb-1 text-xs font-bold uppercase tracking-wide text-[var(--hunted-text-gray)]">
+                  <Link href={`/blog/${post.slug}`} className="text-[var(--hunted-text-gray)] hover:text-[var(--footer-accent)]">
+                    {date}
+                  </Link>
+                </div>
+              )}
+              <div className="listing-title mb-2 font-bold">
+                <h1 className="home-listing-title-inner text-[25px] leading-[1.1em] text-[var(--hunted-navy)]">
+                  <Link href={`/blog/${post.slug}`} className="text-[var(--hunted-navy)] hover:text-[var(--footer-accent)] hover:underline [&_a]:text-inherit [&_a]:hover:text-[var(--footer-accent)]">
+                    <span dangerouslySetInnerHTML={{ __html: post.title }} />
+                  </Link>
+                </h1>
+              </div>
+              <div
+                className="home-excerpt mb-3 line-clamp-2 text-sm leading-relaxed text-[var(--hunted-text-gray)]"
+                dangerouslySetInnerHTML={{ __html: post.excerpt }}
+              />
+              <Link
+                href={`/blog/${post.slug}`}
+                className="btnReadMore inline-block text-sm font-bold text-[var(--footer-accent)] hover:underline"
+              >
+                READ MORE
+              </Link>
+            </div>
+          </div>
+        </div>
       </div>
     </article>
   );

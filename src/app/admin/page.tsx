@@ -3,8 +3,14 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
 import type { Store } from "@/types/store";
-import type { BlogPost } from "@/data/blog";
+import type { BlogPost, BlogNiche } from "@/data/blog";
 import { categories as blogCategories } from "@/data/blog";
+
+const BLOG_NICHES: { value: BlogNiche; label: string }[] = [
+  { value: "featured", label: "Featured" },
+  { value: "trending", label: "Trending" },
+  { value: "popular", label: "Popular" },
+];
 import { STORE_CATEGORY_NAMES } from "@/data/categories";
 import { SPECIAL_EVENTS } from "@/data/events";
 import { stripHtml, slugify } from "@/lib/slugify";
@@ -146,6 +152,7 @@ export default function AdminPage() {
     excerpt: string;
     image: string;
     featured: boolean;
+    niche: BlogNiche[];
     content: string;
     publishedDate: string;
   }>({
@@ -155,6 +162,7 @@ export default function AdminPage() {
     excerpt: "",
     image: "",
     featured: false,
+    niche: [],
     content: "",
     publishedDate: "",
   });
@@ -263,6 +271,7 @@ export default function AdminPage() {
             excerpt: blogForm.excerpt.trim(),
             image: blogForm.image.trim(),
             featured: blogForm.featured,
+            niche: blogForm.niche,
             content: blogForm.content.trim(),
             publishedDate: blogForm.publishedDate.trim() || undefined,
           }),
@@ -285,6 +294,7 @@ export default function AdminPage() {
             excerpt: blogForm.excerpt.trim(),
             image: blogForm.image.trim(),
             featured: blogForm.featured,
+            niche: blogForm.niche,
             content: blogForm.content.trim(),
             publishedDate: blogForm.publishedDate.trim() || undefined,
           }),
@@ -302,6 +312,7 @@ export default function AdminPage() {
         excerpt: "",
         image: "",
         featured: false,
+        niche: [],
         content: "",
         publishedDate: "",
       });
@@ -2617,22 +2628,27 @@ export default function AdminPage() {
                           <th className="px-3 py-2 text-left font-semibold text-stone-700">Title</th>
                           <th className="px-3 py-2 text-left font-semibold text-stone-700">Slug</th>
                           <th className="px-3 py-2 text-left font-semibold text-stone-700">Category</th>
+                          <th className="px-3 py-2 text-left font-semibold text-stone-700">Niche</th>
                           <th className="px-3 py-2 text-left font-semibold text-stone-700">Featured</th>
                           <th className="px-3 py-2 text-left font-semibold text-stone-700">Actions</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {blogPosts.map((p) => (
+                        {blogPosts.map((p) => {
+                          const nicheList = (p as { niche?: BlogNiche[] }).niche ?? (p.featured ? ["featured"] : []);
+                          return (
                           <tr key={p.id} className="border-b border-stone-100 hover:bg-stone-50/50">
                             <td className="px-3 py-2 font-medium text-stone-900">{p.title}</td>
                             <td className="px-3 py-2 text-stone-600">{p.slug}</td>
                             <td className="px-3 py-2 text-stone-600">{p.category}</td>
+                            <td className="px-3 py-2 text-stone-600">{nicheList.length ? nicheList.join(", ") : "—"}</td>
                             <td className="px-3 py-2">{p.featured ? "✓" : "—"}</td>
                             <td className="px-3 py-2">
                               <a href={`/blog/${p.slug}`} target="_blank" rel="noopener noreferrer" className="mr-2 text-sky-600 hover:underline">View</a>
                               <button
                                 type="button"
                                 onClick={() => {
+                                  const niche = (p as { niche?: BlogNiche[] }).niche ?? (p.featured ? (["featured"] as BlogNiche[]) : []);
                                   setEditingBlogId(p.id);
                                   setBlogForm({
                                     title: p.title,
@@ -2641,6 +2657,7 @@ export default function AdminPage() {
                                     excerpt: p.excerpt ?? "",
                                     image: p.image ?? "",
                                     featured: p.featured ?? false,
+                                    niche,
                                     content: (p as { content?: string }).content ?? "",
                                     publishedDate: (p as { publishedDate?: string }).publishedDate ?? "",
                                   });
@@ -2668,7 +2685,7 @@ export default function AdminPage() {
                               </button>
                             </td>
                           </tr>
-                        ))}
+                        ); })}
                       </tbody>
                     </table>
                   )}
@@ -2722,6 +2739,27 @@ export default function AdminPage() {
                               <option key={c} value={c}>{c}</option>
                             ))}
                           </select>
+                        </div>
+                        <div>
+                          <label className="mb-2 block text-sm font-medium text-stone-700">Niche (hero: Featured / Trending / Popular)</label>
+                          <div className="flex flex-wrap gap-4">
+                            {BLOG_NICHES.map(({ value, label }) => (
+                              <label key={value} className="flex cursor-pointer items-center gap-2">
+                                <input
+                                  type="checkbox"
+                                  checked={blogForm.niche?.includes(value) ?? false}
+                                  onChange={(e) => {
+                                    const next = e.target.checked
+                                      ? [...(blogForm.niche ?? []), value]
+                                      : (blogForm.niche ?? []).filter((n) => n !== value);
+                                    setBlogForm((f) => ({ ...f, niche: next }));
+                                  }}
+                                  className="h-4 w-4 rounded border-stone-300 text-amber-600 focus:ring-amber-500"
+                                />
+                                <span className="text-sm text-stone-700">{label}</span>
+                              </label>
+                            ))}
+                          </div>
                         </div>
                         <div>
                           <label className="mb-1 block text-sm font-medium text-stone-700">Excerpt</label>

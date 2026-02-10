@@ -1,60 +1,157 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useBlogData } from "@/components/BlogDataProvider";
 import { stripHtml } from "@/lib/slugify";
+import type { BlogPost } from "@/data/blog";
+import { useState, useEffect, useCallback } from "react";
+
+const SLIDER_HEIGHT_PX = 500;
+
+function HuntedSlide({
+  post,
+  isActive,
+}: {
+  post: BlogPost;
+  isActive: boolean;
+}) {
+  const date = (post as { publishedDate?: string }).publishedDate ?? "";
+  const excerpt = post.excerpt?.replace(/<[^>]+>/g, "").slice(0, 140) || "";
+  const href = post.slug ? `/blog/${post.slug}` : "#";
+  const img = post.image || "https://picsum.photos/id/1/1200/600";
+
+  return (
+    <li style={{ display: isActive ? "block" : "none" }}>
+      <Link href={href} className="block h-full">
+        <div
+          className="slide-container"
+          style={{
+            backgroundImage: `url(${img})`,
+            height: `${SLIDER_HEIGHT_PX}px`,
+          }}
+        >
+          <div className="slide-info-outer">
+            <div className="slide-info">
+              <div className="slide-info-inner">
+                <div className="slide-text-outer">
+                  <div className="slide-text">
+                    {date && (
+                      <div className="slider-date">
+                        <span>{date}</span>
+                      </div>
+                    )}
+                    <h2
+                      className="slider-header"
+                      dangerouslySetInnerHTML={{ __html: post.title }}
+                    />
+                    {excerpt && (
+                      <p className="slider-caption">{excerpt}…</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Link>
+    </li>
+  );
+}
 
 export default function Hero() {
-  const { heroPost, featuredPosts } = useBlogData();
+  const { heroPost, featuredPosts, latestPosts } = useBlogData();
+  const [index, setIndex] = useState(0);
+
+  const slides: BlogPost[] = [heroPost];
+  const seen = new Set<string>([heroPost.id]);
+  for (const p of [...featuredPosts, ...latestPosts]) {
+    if (slides.length >= 5) break;
+    if (!seen.has(p.id)) {
+      seen.add(p.id);
+      slides.push(p);
+    }
+  }
+
+  const go = useCallback(
+    (dir: number) => {
+      setIndex((i) => {
+        const next = i + dir;
+        if (next < 0) return slides.length - 1;
+        if (next >= slides.length) return 0;
+        return next;
+      });
+    },
+    [slides.length]
+  );
+
+  useEffect(() => {
+    if (slides.length <= 1) return;
+    const t = setInterval(() => go(1), 5000);
+    return () => clearInterval(t);
+  }, [slides.length, go]);
+
+  if (slides.length === 0) return null;
+
   return (
-    <section className="relative -mt-14 w-full bg-zinc-900">
-      {/* Full-width dark background image - taller hero (extends under navbar so transparent nav shows hero) */}
-      <div className="relative h-[78vh] w-full overflow-hidden min-h-[420px] max-h-[620px] md:min-h-[460px] md:max-h-[680px]">
-        <Image
-          src={heroPost.image || "https://picsum.photos/id/1/1200/600"}
-          alt={stripHtml(heroPost.title)}
-          fill
-          className="object-cover object-center brightness-[0.85]"
-          sizes="100vw"
-          priority
-        />
-        <div className="absolute inset-0 bg-black/50" />
-        {/* Centered white headline on the image (screenshot style) */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center">
-          <Link href={`/blog/${heroPost.slug}`} className="block group">
-            <h1 className="max-w-4xl text-2xl font-bold leading-tight text-white drop-shadow-lg sm:text-3xl md:text-4xl lg:text-5xl group-hover:underline [&_a]:text-white [&_a]:underline" dangerouslySetInnerHTML={{ __html: heroPost.title }} />
-          </Link>
-        </div>
-      </div>
-      {/* White box below headline - 3 sections, slightly overlaps content below (screenshot) */}
-      <div className="relative z-10 mx-4 -mt-8 max-w-5xl rounded-none bg-zinc-50 shadow-xl md:mx-8 md:-mt-12 lg:mx-auto lg:max-w-6xl xl:mx-auto xl:px-4">
-        <div className="grid grid-cols-1 gap-0 sm:grid-cols-3">
-          {featuredPosts.map((post) => (
-            <Link
+    <div className="hunted-slider-container clearfix -mt-14 w-full pt-14">
+      <div className="relative">
+        <ul
+          className="bxslider-main"
+          style={{ overflow: "hidden", height: `${SLIDER_HEIGHT_PX}px`, margin: 0, padding: 0, listStyle: "none" }}
+        >
+          {slides.map((post, i) => (
+            <HuntedSlide
               key={post.id}
-              href={`/blog/${post.slug}`}
-              className="group flex gap-4 border-b border-zinc-200 p-4 last:border-b-0 sm:border-b-0 sm:border-r sm:border-zinc-200 sm:last:border-r-0 md:p-5 lg:p-6"
-            >
-              <div className="relative h-20 w-24 shrink-0 overflow-hidden rounded bg-zinc-100 md:h-24 md:w-28">
-                <Image
-                  src={post.image}
-                  alt={stripHtml(post.title)}
-                  fill
-                  className="object-cover transition group-hover:scale-105"
-                  sizes="112px"
-                />
-              </div>
-              <div className="min-w-0 flex-1">
-                <span className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-red-600 md:text-xs">
-                  {post.category}
-                </span>
-                <span className="line-clamp-2 text-sm font-semibold leading-snug text-zinc-800 group-hover:underline md:text-base [&_a]:text-red-600 [&_a]:underline" dangerouslySetInnerHTML={{ __html: post.title }} />
-              </div>
-            </Link>
+              post={post}
+              isActive={i === index}
+            />
           ))}
-        </div>
+        </ul>
+
+        {slides.length > 1 && (
+          <>
+            <div className="bx-controls-direction" aria-hidden>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  go(-1);
+                }}
+                className="bx-prev"
+                aria-label="Previous slide"
+              >
+                ‹
+              </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  go(1);
+                }}
+                className="bx-next"
+                aria-label="Next slide"
+              >
+                ›
+              </button>
+            </div>
+            <div className="bx-pager">
+              {slides.map((_, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setIndex(i);
+                  }}
+                  className={i === index ? "active" : ""}
+                  aria-label={`Go to slide ${i + 1}`}
+                  aria-current={i === index ? "true" : undefined}
+                />
+              ))}
+            </div>
+          </>
+        )}
       </div>
-    </section>
+    </div>
   );
 }

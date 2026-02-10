@@ -1,3 +1,6 @@
+/** Niche for hero/home: show in Featured, Trending, or Popular sections */
+export type BlogNiche = "featured" | "trending" | "popular";
+
 export type BlogPost = {
   id: string;
   title: string;
@@ -6,6 +9,8 @@ export type BlogPost = {
   slug: string;
   image: string;
   featured?: boolean;
+  /** Which hero sections to show this in (admin-editable). Backward compat: featured=true => niche includes "featured" */
+  niche?: BlogNiche[];
   /** Full article HTML – editable in Admin → Blog */
   content?: string;
   createdAt?: string;
