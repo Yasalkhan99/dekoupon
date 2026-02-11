@@ -220,12 +220,7 @@ export default function StorePageClient({
           key={revealingCoupon.storeId}
           {...revealingCoupon}
           onClose={() => {
-            if (typeof window !== "undefined") {
-              const u = new URL(window.location.href);
-              u.searchParams.delete("copy");
-              u.searchParams.delete("shopnow");
-              window.history.replaceState(null, "", u.pathname + u.search + u.hash);
-            }
+            // Do not remove copy/shopnow from URL – keep them so the param stays in the address bar
             setRevealingCoupon(null);
           }}
           blurBackdrop
