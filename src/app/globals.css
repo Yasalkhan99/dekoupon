@@ -76,6 +76,12 @@ body {
 .blog-content a:hover {
   opacity: 0.9;
 }
+/* In-article images: responsive, no layout shift, lazy-loaded for performance */
+.blog-content img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
 
 .clearfix::after {
   content: "";

@@ -6,12 +6,19 @@ import Footer from "@/components/Footer";
 import { getPostBySlug, readBlogPosts } from "@/lib/blog";
 import { stripHtml } from "@/lib/slugify";
 
+/** Add lazy loading to all images in HTML so the page doesn't lag when opening a blog */
+function addLazyToContentImages(html: string): string {
+  return html.replace(/<img /gi, '<img loading="lazy" decoding="async" ');
+}
+
 type Props = { params: Promise<{ slug: string }> };
 
 export default async function BlogPostPage({ params }: Props) {
   const { slug } = await params;
   const post = await getPostBySlug(slug);
   if (!post) notFound();
+
+  const safeContent = post.content ? addLazyToContentImages(post.content) : "";
 
   return (
     <div className="min-h-screen bg-white text-zinc-900">
@@ -45,8 +52,8 @@ export default async function BlogPostPage({ params }: Props) {
             <div className="blog-content text-lg text-zinc-600" dangerouslySetInnerHTML={{ __html: post.excerpt }} />
             {post.content ? (
               <div
-                className="blog-content mt-4 text-zinc-700 [&_h2]:mt-6 [&_h2]:text-xl [&_ul]:list-disc [&_ul]:pl-6"
-                dangerouslySetInnerHTML={{ __html: post.content }}
+                className="blog-content mt-4 text-zinc-700 [&_h2]:mt-8 [&_h2]:text-xl [&_h2]:font-bold [&_ul]:list-disc [&_ul]:pl-6 [&_img]:rounded-lg [&_img]:my-4 [&_img]:w-full [&_img]:h-auto"
+                dangerouslySetInnerHTML={{ __html: safeContent }}
               />
             ) : (
               <p className="mt-4 text-zinc-700">
