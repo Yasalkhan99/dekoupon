@@ -3,7 +3,7 @@
 Blog-based homepage for a coupon & savings website. Built with Next.js 16, TypeScript, and Tailwzzzind CSS. 
 
 ## Features
-ss
+ss7
 - **Blog-style homepage** – Hero featured article, 3 small featured posts,sss Mossst Populssar Articles grid, Latesttttlll Articl2666es grid
 - **TRENDING sidebar** – Right-hand sidebassr with trending posts
 - **Footer** – Category columns (Fashion, Home & Garden, Lifestyle, Beauty) with article linksslllssll
