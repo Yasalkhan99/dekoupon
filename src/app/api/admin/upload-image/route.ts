@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { verifySession, getCookieName } from "@/lib/admin-auth";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
+import { getSupabase, SUPABASE_UPLOADS_BUCKET } from "@/lib/supabase-server";
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
 const MAX_SIZE = 5 * 1024 * 1024; // 5MB
@@ -49,18 +50,41 @@ export async function POST(request: Request) {
       );
     }
 
-    const dir = path.join(process.cwd(), UPLOAD_DIR);
-    await mkdir(dir, { recursive: true });
     const ext = getExt(file.type);
     const name = `blog-${Date.now()}-${Math.random().toString(36).slice(2, 10)}${ext}`;
+
+    const supabase = getSupabase();
+    if (supabase) {
+      const { data, error } = await supabase.storage
+        .from(SUPABASE_UPLOADS_BUCKET)
+        .upload(name, file, { contentType: file.type, upsert: false });
+      if (error) {
+        return NextResponse.json(
+          { error: `Upload failed. ${error.message} Create a public bucket named "${SUPABASE_UPLOADS_BUCKET}" in Supabase Storage if needed.` },
+          { status: 500 }
+        );
+      }
+      const { data: urlData } = supabase.storage.from(SUPABASE_UPLOADS_BUCKET).getPublicUrl(data.path);
+      return NextResponse.json({ url: urlData.publicUrl, name });
+    }
+
+    const dir = path.join(process.cwd(), UPLOAD_DIR);
+    await mkdir(dir, { recursive: true });
     const filePath = path.join(dir, name);
     const bytes = await file.arrayBuffer();
     await writeFile(filePath, Buffer.from(bytes));
-
-    // URL that the browser can load (relative to site root)
-    const url = `/uploads/${name}`;
-    return NextResponse.json({ url, name });
+    return NextResponse.json({ url: `/uploads/${name}`, name });
   } catch (err) {
+    const e = err as NodeJS.ErrnoException;
+    if (e?.code === "EROFS" || e?.code === "EACCES") {
+      return NextResponse.json(
+        {
+          error:
+            "Image upload needs Supabase. Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in Vercel, then create a public Storage bucket named 'uploads'.",
+        },
+        { status: 503 }
+      );
+    }
     console.error("Upload image error:", err);
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "Upload failed" },
