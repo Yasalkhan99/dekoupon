@@ -10,6 +10,7 @@ import {
   latestPosts as staticLatest,
 } from "@/data/blog";
 import type { NavDropdownPost } from "@/data/blog";
+import { getSupabase, SUPABASE_BLOG_TABLE } from "@/lib/supabase-server";
 
 export type BlogPostWithContent = BlogPost & {
   content?: string;
@@ -40,13 +41,28 @@ function getStaticBlogPosts(): BlogPostWithContent[] {
 }
 
 export async function readBlogPosts(): Promise<BlogPostWithContent[]> {
-  let posts: BlogPostWithContent[];
-  try {
-    const data = await readFile(getBlogPath(), "utf-8");
-    posts = JSON.parse(data);
-  } catch {
-    posts = [];
+  const supabase = getSupabase();
+  let posts: BlogPostWithContent[] = [];
+
+  if (supabase) {
+    const { data: rows, error } = await supabase
+      .from(SUPABASE_BLOG_TABLE)
+      .select("id, data")
+      .order("id");
+    if (!error && rows?.length) {
+      posts = rows.map((r) => r.data as BlogPostWithContent);
+    }
   }
+
+  if (posts.length === 0) {
+    try {
+      const data = await readFile(getBlogPath(), "utf-8");
+      posts = JSON.parse(data);
+    } catch {
+      posts = [];
+    }
+  }
+
   const staticPosts = getStaticBlogPosts();
   const existingIds = new Set(posts.map((p) => p.id));
   const existingSlugs = new Set(posts.map((p) => p.slug));
@@ -64,6 +80,17 @@ export async function readBlogPosts(): Promise<BlogPostWithContent[]> {
 }
 
 export async function writeBlogPosts(posts: BlogPostWithContent[]) {
+  const supabase = getSupabase();
+  if (supabase) {
+    const { error: delErr } = await supabase.from(SUPABASE_BLOG_TABLE).delete().neq("id", "");
+    if (delErr) throw new Error(`Supabase delete: ${delErr.message}`);
+    if (posts.length > 0) {
+      const rows = posts.map((p) => ({ id: p.id, data: p }));
+      const { error: insertErr } = await supabase.from(SUPABASE_BLOG_TABLE).insert(rows);
+      if (insertErr) throw new Error(`Supabase insert: ${insertErr.message}`);
+    }
+    return;
+  }
   const filePath = getBlogPath();
   const dir = path.dirname(filePath);
   await mkdir(dir, { recursive: true });

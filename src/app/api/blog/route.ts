@@ -95,7 +95,16 @@ export async function POST(request: Request) {
       publishedDate,
     };
     posts.push(newPost);
-    await writeBlogPosts(posts);
+    try {
+      await writeBlogPosts(posts);
+    } catch (writeErr) {
+      const msg =
+        typeof (writeErr as NodeJS.ErrnoException)?.code === "string" &&
+        ((writeErr as NodeJS.ErrnoException).code === "EROFS" || (writeErr as NodeJS.ErrnoException).code === "EACCES")
+          ? "Blog cannot be updated on this deployment (read-only server). Edit blog locally or use a database/KV for production."
+          : "Failed to save blog (server may be read-only).";
+      return NextResponse.json({ error: msg }, { status: 503 });
+    }
     return NextResponse.json(newPost);
   } catch (e) {
     return NextResponse.json({ error: "Failed to create post" }, { status: 500 });
@@ -136,7 +145,16 @@ export async function PATCH(request: Request) {
       nextPost.featured = nextPost.featured || (nextPost.niche != null && nextPost.niche.includes("featured"));
     }
     posts[index] = nextPost;
-    await writeBlogPosts(posts);
+    try {
+      await writeBlogPosts(posts);
+    } catch (writeErr) {
+      const msg =
+        typeof (writeErr as NodeJS.ErrnoException)?.code === "string" &&
+        ((writeErr as NodeJS.ErrnoException).code === "EROFS" || (writeErr as NodeJS.ErrnoException).code === "EACCES")
+          ? "Blog cannot be updated on this deployment (read-only server). Edit blog locally or use a database/KV for production."
+          : "Failed to save blog (server may be read-only).";
+      return NextResponse.json({ error: msg }, { status: 503 });
+    }
     return NextResponse.json(nextPost);
   } catch (e) {
     return NextResponse.json({ error: "Failed to update post" }, { status: 500 });
@@ -158,7 +176,16 @@ export async function DELETE(request: Request) {
     if (nextPosts.length === posts.length) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
-    await writeBlogPosts(nextPosts);
+    try {
+      await writeBlogPosts(nextPosts);
+    } catch (writeErr) {
+      const msg =
+        typeof (writeErr as NodeJS.ErrnoException)?.code === "string" &&
+        ((writeErr as NodeJS.ErrnoException).code === "EROFS" || (writeErr as NodeJS.ErrnoException).code === "EACCES")
+          ? "Blog cannot be updated on this deployment (read-only server). Edit blog locally or use a database/KV for production."
+          : "Failed to save blog (server may be read-only).";
+      return NextResponse.json({ error: msg }, { status: 503 });
+    }
     return NextResponse.json({ deleted: 1 });
   } catch (e) {
     return NextResponse.json({ error: "Failed to delete post" }, { status: 500 });

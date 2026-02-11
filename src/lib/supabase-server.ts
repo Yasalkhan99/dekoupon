@@ -16,3 +16,4 @@ export function getSupabase(): SupabaseClient | null {
 
 export const SUPABASE_STORES_TABLE = "stores";
 export const SUPABASE_COUPONS_TABLE = "coupons";
+export const SUPABASE_BLOG_TABLE = "blog_posts";
