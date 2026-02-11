@@ -98,11 +98,12 @@ export async function POST(request: Request) {
     try {
       await writeBlogPosts(posts);
     } catch (writeErr) {
-      const msg =
-        typeof (writeErr as NodeJS.ErrnoException)?.code === "string" &&
-        ((writeErr as NodeJS.ErrnoException).code === "EROFS" || (writeErr as NodeJS.ErrnoException).code === "EACCES")
-          ? "Blog cannot be updated on this deployment (read-only server). Edit blog locally or use a database/KV for production."
-          : "Failed to save blog (server may be read-only).";
+      const err = writeErr as NodeJS.ErrnoException;
+      const isReadOnly =
+        typeof err?.code === "string" && (err.code === "EROFS" || err.code === "EACCES");
+      const msg = isReadOnly
+        ? "Blog cannot be updated on this deployment (read-only server). Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in Vercel so blog saves to Supabase."
+        : `Failed to save blog. ${err instanceof Error ? err.message : String(err)}`;
       return NextResponse.json({ error: msg }, { status: 503 });
     }
     return NextResponse.json(newPost);
@@ -148,11 +149,12 @@ export async function PATCH(request: Request) {
     try {
       await writeBlogPosts(posts);
     } catch (writeErr) {
-      const msg =
-        typeof (writeErr as NodeJS.ErrnoException)?.code === "string" &&
-        ((writeErr as NodeJS.ErrnoException).code === "EROFS" || (writeErr as NodeJS.ErrnoException).code === "EACCES")
-          ? "Blog cannot be updated on this deployment (read-only server). Edit blog locally or use a database/KV for production."
-          : "Failed to save blog (server may be read-only).";
+      const err = writeErr as NodeJS.ErrnoException;
+      const isReadOnly =
+        typeof err?.code === "string" && (err.code === "EROFS" || err.code === "EACCES");
+      const msg = isReadOnly
+        ? "Blog cannot be updated on this deployment (read-only server). Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in Vercel so blog saves to Supabase."
+        : `Failed to save blog. ${err instanceof Error ? err.message : String(err)}`;
       return NextResponse.json({ error: msg }, { status: 503 });
     }
     return NextResponse.json(nextPost);
@@ -179,11 +181,12 @@ export async function DELETE(request: Request) {
     try {
       await writeBlogPosts(nextPosts);
     } catch (writeErr) {
-      const msg =
-        typeof (writeErr as NodeJS.ErrnoException)?.code === "string" &&
-        ((writeErr as NodeJS.ErrnoException).code === "EROFS" || (writeErr as NodeJS.ErrnoException).code === "EACCES")
-          ? "Blog cannot be updated on this deployment (read-only server). Edit blog locally or use a database/KV for production."
-          : "Failed to save blog (server may be read-only).";
+      const err = writeErr as NodeJS.ErrnoException;
+      const isReadOnly =
+        typeof err?.code === "string" && (err.code === "EROFS" || err.code === "EACCES");
+      const msg = isReadOnly
+        ? "Blog cannot be updated on this deployment (read-only server). Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in Vercel so blog saves to Supabase."
+        : `Failed to save blog. ${err instanceof Error ? err.message : String(err)}`;
       return NextResponse.json({ error: msg }, { status: 503 });
     }
     return NextResponse.json({ deleted: 1 });
