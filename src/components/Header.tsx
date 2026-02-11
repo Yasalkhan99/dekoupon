@@ -18,8 +18,14 @@ const MenuIcon = ({ className = "h-4 w-4" }: { className?: string }) => (
   </svg>
 );
 
+const ChevronDown = ({ className = "h-4 w-4" }: { className?: string }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+  </svg>
+);
+
 const navLinks = [
-  { label: "Home", href: "/", activeRed: true },
+  { label: "Home", href: "/", activeRed: true, noDropdown: true },
   { label: "Fashion", href: "/promotions/categories", dropdownKey: "fashion" as const },
   { label: "Lifestyle", href: "/promotions/categories", dropdownKey: "lifestyle" as const },
   { label: "Featured", href: "/#latest", dropdownKey: "featured" as const },
@@ -61,7 +67,24 @@ export default function Header({ transparent }: HeaderProps = {}) {
   const isHome = pathname === "/";
   const [scrolled, setScrolled] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<"fashion" | "lifestyle" | "featured" | null>(null);
+  const [usTime, setUsTime] = useState<string>("");
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    const formatUsTime = () => {
+      const formatter = new Intl.DateTimeFormat("en-US", {
+        timeZone: "America/New_York",
+        hour: "numeric",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true,
+      });
+      setUsTime(formatter.format(new Date()) + " ET");
+    };
+    formatUsTime();
+    const id = setInterval(formatUsTime, 1000);
+    return () => clearInterval(id);
+  }, []);
 
   useEffect(() => {
     if (!transparent) return;
@@ -132,7 +155,7 @@ export default function Header({ transparent }: HeaderProps = {}) {
           <nav className="hidden items-center gap-6 md:flex lg:gap-8">
             {navLinks.map((link) => {
               const isRed = link.activeRed && isHome;
-              const hasDropdown = "dropdownKey" in link && link.dropdownKey;
+              const hasDropdown = !("noDropdown" in link && link.noDropdown) && "dropdownKey" in link && link.dropdownKey;
               const isOpen = hasDropdown && openDropdown === link.dropdownKey;
               let linkClass = textClass;
               if (isRed) {
@@ -155,12 +178,12 @@ export default function Header({ transparent }: HeaderProps = {}) {
                   >
                     <Link
                       href={link.href}
-                      className={`inline-flex items-center gap-1.5 py-4 text-sm font-medium sm:text-base transition-colors duration-150 ${linkClass} ${
+                      className={`inline-flex items-center gap-1.5 whitespace-nowrap py-4 text-sm font-medium sm:text-base transition-colors duration-150 ${linkClass} ${
                         isOpen ? (isLight ? "!text-[var(--footer-accent)]" : "!text-[var(--footer-accent)]") : ""
                       }`}
                     >
                       {link.label}
-                      <MenuIcon />
+                      <ChevronDown className={`h-4 w-4 shrink-0 transition-transform duration-150 ${isOpen ? "rotate-180" : ""}`} />
                     </Link>
                     {posts.length > 0 && (
                       <div
@@ -206,7 +229,7 @@ export default function Header({ transparent }: HeaderProps = {}) {
                 <Link
                   key={link.label}
                   href={link.href}
-                  className={`py-4 text-sm font-medium sm:text-base transition-colors duration-150 ${linkClass} ${
+                  className={`whitespace-nowrap py-4 text-sm font-medium sm:text-base transition-colors duration-150 ${linkClass} ${
                     isLight && isRed ? "!text-[var(--footer-accent)] hover:!text-[var(--footer-accent-hover)]" : ""
                   }`}
                 >
@@ -217,6 +240,11 @@ export default function Header({ transparent }: HeaderProps = {}) {
           </nav>
 
           <div className="ml-6 flex items-center gap-5 sm:ml-8 lg:gap-6">
+            {usTime ? (
+              <span className={`hidden text-xs font-medium tabular-nums sm:block ${isLight ? "text-zinc-600" : "text-white/80"}`} aria-label="US Eastern Time">
+                {usTime}
+              </span>
+            ) : null}
             <Link href="/#menu" className={`text-sm font-medium md:hidden ${textClass}`}>
               Menu
             </Link>

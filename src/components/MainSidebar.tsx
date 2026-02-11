@@ -40,28 +40,30 @@ export default function MainSidebar() {
           </form>
         </div>
 
-        {/* 2. About Us */}
-        <div className="rounded-lg p-4 shadow-sm" style={{ backgroundColor: "var(--sidebar-widget-2)" }}>
-          <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-[var(--hunted-navy)]">
-            About Us
-          </h3>
-          <div className="flex gap-3">
-            <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full bg-white shadow-sm ring-1 ring-[var(--footer-accent)]/20">
-              <Image
-                src="/savingshub4u-logo.png"
-                alt="SavingsHub4u"
-                fill
-                className="object-contain p-1.5"
-                sizes="64px"
-              />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-sm leading-relaxed text-[var(--hunted-text-gray)]">
-                Your gateway to smart savings. We bring you verified coupon codes, exclusive deals and money-saving tips — all in one place.
-              </p>
-            </div>
+        {/* 2. Disclaimer – same as categories page */}
+        <Link
+          href="/promotions"
+          className="flex flex-col items-center justify-center rounded-2xl px-4 py-6 text-center text-white shadow-lg transition hover:opacity-90"
+          style={{ backgroundColor: "var(--footer-accent)" }}
+        >
+          <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-white/20">
+            <Image
+              src="/fav%20icon%20final%20logo.png"
+              alt=""
+              width={24}
+              height={24}
+              className="h-6 w-6 object-contain brightness-0 invert"
+            />
           </div>
-        </div>
+          <p className="mb-1.5 text-base font-bold">Disclaimer:</p>
+          <p className="text-xs leading-relaxed">
+            We May Earn Commission
+            <br />
+            On The Purchases Made
+            <br />
+            Via Affiliate Link
+          </p>
+        </Link>
 
         {/* 3. Trending Posts */}
         <div className="rounded-lg p-4 shadow-sm" style={{ backgroundColor: "var(--sidebar-widget-3)" }}>
@@ -103,13 +105,13 @@ export default function MainSidebar() {
             Categories
           </h3>
           <ul className="space-y-2">
-            {blogCategories.slice(0, 10).map((cat) => (
+            {blogCategories.slice(0, 14).map((cat) => (
               <li key={cat}>
                 <Link
-                  href="/promotions/categories"
+                  href="/#latest"
                   className="block py-1.5 text-sm text-[var(--hunted-text-gray)] hover:text-[var(--footer-accent)]"
                 >
-                  {cat} (3)
+                  {cat}
                 </Link>
               </li>
             ))}

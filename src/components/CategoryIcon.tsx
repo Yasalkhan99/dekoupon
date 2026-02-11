@@ -1,5 +1,81 @@
 "use client";
 
+import Image from "next/image";
+
+const ICONS_BASE = "/Icons 1";
+
+/** Category icon PNGs from public/Icons 1 – same order as STORE_CATEGORY_NAMES (first N categories). */
+const categoryIconPngs: string[] = [
+  "Group 1171275444.png",
+  "Group 1171275453.png",
+  "Group 1171275454.png",
+  "Group 1171275455.png",
+  "Group 1171275456.png",
+  "Group 1171275457.png",
+  "Group 1171275458.png",
+  "Group 1171275459.png",
+  "Group 1171275460.png",
+  "Group 1171275461.png",
+  "Group 1171275462.png",
+  "Group 1171275463.png",
+  "Group 1171275464.png",
+  "Group 1171275465.png",
+  "Group 1171275466.png",
+  "Group 1171275467.png",
+  "Group 1171275468.png",
+  "Group 1171275470.png",
+  "Group 1171275471.png",
+  "Group 1171275472.png",
+  "Group 1171275473.png",
+  "Group 1171275474.png",
+  "Group 1171275475.png",
+  "Group 1171275476.png",
+  "Group 1171275477.png",
+  "Group 1171275478.png",
+  "Group 1171275479.png",
+];
+
+const STORE_CATEGORY_NAMES_FOR_ICONS = [
+  "Beauty and Personal Care",
+  "Food And Beverage",
+  "Automotive",
+  "Baby & Kids",
+  "Books & Magazines",
+  "Business",
+  "Clothing & Accessories",
+  "Computers & Software",
+  "Education",
+  "Electronics",
+  "Entertainment",
+  "Finance & Insurance",
+  "Footwear",
+  "Games & Toys",
+  "Gifts & Flowers",
+  "Health & Fitness",
+  "Home & Garden",
+  "Internet Service",
+  "Jewelry & Watches",
+  "Office Supplies",
+  "Online Departmental Stores",
+  "Online Services",
+  "Pet",
+  "Photography",
+  "Services",
+  "Sports & Outdoors",
+  "Student",
+];
+
+const categoryToPng: Record<string, string> = {};
+STORE_CATEGORY_NAMES_FOR_ICONS.forEach((name, i) => {
+  if (categoryIconPngs[i]) categoryToPng[name] = `${ICONS_BASE}/${categoryIconPngs[i]}`;
+});
+
+// Last 4 categories: reuse relevant PNGs (only 27 files, 30 categories)
+categoryToPng["Technology"] = `${ICONS_BASE}/Group 1171275461.png`;       // Electronics
+categoryToPng["Telecom"] = `${ICONS_BASE}/Group 1171275470.png`;         // Internet Service
+categoryToPng["Travel"] = `${ICONS_BASE}/Group 1171275478.png`;          // Sports & Outdoors
+categoryToPng["Women's Fashion"] = `${ICONS_BASE}/Group 1171275458.png`; // Clothing & Accessories
+
 const iconMap: Record<string, React.ReactNode> = {
   "Beauty and Personal Care": (
     <svg className="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
@@ -121,6 +197,24 @@ const defaultIcon = (
 );
 
 export default function CategoryIcon({ categoryName, className }: { categoryName: string; className?: string }) {
+  const pngSrc = categoryToPng[categoryName];
+  const baseClass = className ?? "flex shrink-0 items-center justify-center text-zinc-700";
+
+  if (pngSrc) {
+    return (
+      <span className={baseClass}>
+        <Image
+          src={pngSrc}
+          alt=""
+          width={56}
+          height={56}
+          className="h-full w-full object-contain"
+          unoptimized
+        />
+      </span>
+    );
+  }
+
   const icon = iconMap[categoryName] ?? defaultIcon;
-  return <span className={className ?? "flex shrink-0 items-center justify-center text-zinc-700"}>{icon}</span>;
+  return <span className={baseClass}>{icon}</span>;
 }

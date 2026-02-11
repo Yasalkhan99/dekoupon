@@ -10,6 +10,8 @@
   /* Footer accent – blue (brand blue) */
   --footer-accent: #0F92F4;
   --footer-accent-hover: #0d7ed6;
+  /* Newsletter bar – blue */
+  --newsletter-bg: #155DFC;
   --hunted-navy: #162238;
   --hunted-black: #000;
   --hunted-gray: #ccc;
@@ -280,4 +282,17 @@ body {
 .hunted-slider-container .bx-pager a.active,
 .hunted-slider-container .bx-pager button.active {
   background: var(--footer-accent);
+}
+
+/* Top Brand Blogs – continuous left-to-right auto scroll */
+.top-deals-track {
+  animation: top-deals-slide 30s linear infinite;
+}
+@keyframes top-deals-slide {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
 }
