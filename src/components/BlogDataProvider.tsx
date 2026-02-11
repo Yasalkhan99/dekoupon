@@ -14,6 +14,7 @@ export type BlogDataContextValue = {
   heroFlowPosts: BlogPost[];
   footerCategories: { name: string; posts: BlogPost[] }[];
   navDropdownPosts: Record<string, NavDropdownPost[]>;
+  allPosts: BlogPost[];
 };
 
 const BlogDataContext = createContext<BlogDataContextValue | null>(null);

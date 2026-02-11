@@ -15,14 +15,70 @@ const QUICK_LINKS = [
   { label: "Blog", href: "/#latest" },
 ];
 
-const POPULAR_TAGS = [
-  "Deals", "Coupons", "Fashion", "Lifestyle", "Travel", "Tech",
-  "Food", "Health", "Stores", "Savings", "Blog",
-];
+type BlogPostForCard = { id: string; title: string; slug?: string; image: string; publishedDate?: string };
+
+function FooterCategoryCard({
+  title,
+  posts,
+  viewAllHref,
+  fallbackPosts,
+}: {
+  title: string;
+  posts: BlogPostForCard[];
+  viewAllHref: string;
+  fallbackPosts: BlogPostForCard[];
+}) {
+  const displayPosts = posts.length >= 4 ? posts : [...posts, ...fallbackPosts.filter((f) => !posts.some((p) => p.id === f.id))].slice(0, 4);
+  const main = displayPosts[0];
+  const list = displayPosts.slice(1, 4);
+  if (!main) return null;
+  const mainDate = (main as { publishedDate?: string }).publishedDate ?? "";
+  return (
+    <div className="flex w-full flex-col rounded-lg border border-zinc-300/80 bg-[#f2ebe2] p-5 shadow-sm lg:w-full" style={{ backgroundColor: "#f2ebe2" }}>
+      <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-[var(--hunted-navy)]">{title}</h2>
+      <Link href={main.slug ? `/blog/${main.slug}` : "#"} className="listing-box block border-b-2 border-[var(--hunted-navy)] pb-3">
+        <div className="mb-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-bold text-zinc-600">
+          {mainDate && <span className="listing-date">{mainDate}</span>}
+          <span className="listing-comment">0 Comments</span>
+        </div>
+        <h3
+          className="listing-title text-lg font-bold leading-tight text-[var(--hunted-navy)] hover:text-[var(--footer-accent)] sm:text-xl"
+          dangerouslySetInnerHTML={{ __html: main.title }}
+        />
+      </Link>
+      <ul className="mt-4 space-y-0">
+        {list.map((post) => (
+          <li key={post.id} className="widget-listing-z border-b border-zinc-300/60 py-3 last:border-b-0">
+            <Link href={post.slug ? `/blog/${post.slug}` : "#"} className="flex gap-3">
+              <div className="relative h-[60px] w-[96px] shrink-0 overflow-hidden bg-zinc-200">
+                <Image
+                  src={post.image}
+                  alt={stripHtml(post.title)}
+                  fill
+                  className="object-cover"
+                  sizes="96px"
+                />
+              </div>
+              <span
+                className="widget-listing-z-title flex-1 text-base font-medium leading-snug text-[var(--hunted-navy)] hover:text-[var(--footer-accent)]"
+                dangerouslySetInnerHTML={{ __html: post.title }}
+              />
+            </Link>
+          </li>
+        ))}
+      </ul>
+      <Link
+        href={viewAllHref}
+        className="mt-4 inline-block bg-[var(--footer-accent)] px-6 py-3 text-center text-sm font-bold uppercase tracking-wide text-white hover:opacity-90"
+      >
+        VIEW ALL
+      </Link>
+    </div>
+  );
+}
 
 export default function Footer() {
-  const { heroPost, latestPosts } = useBlogData();
-  const featuredPost = heroPost || latestPosts[0];
+  const { latestPosts, allPosts } = useBlogData();
   const recentPosts = latestPosts.slice(0, 3);
   const [showScrollTop, setShowScrollTop] = useState(false);
 
@@ -30,6 +86,13 @@ export default function Footer() {
   const mid = Math.ceil(categories.length / 2);
   const col1 = categories.slice(0, mid);
   const col2 = categories.slice(mid);
+
+  const entertainmentPosts = (allPosts || []).filter(
+    (p) => (p.category || "").toLowerCase().includes("entertainment")
+  ).slice(0, 4);
+  const healthFitnessPosts = (allPosts || []).filter(
+    (p) => (p.category || "").toLowerCase().includes("health") || (p.category || "").toLowerCase().includes("fitness")
+  ).slice(0, 4);
 
   useEffect(() => {
     const onScroll = () => setShowScrollTop(window.scrollY > 400);
@@ -39,66 +102,26 @@ export default function Footer() {
 
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
+  const peachBg = "#f2ebe2";
+
   return (
-    <footer id="footer-box-outer" className="footer-box-outer mt-12 bg-[#0f0f0f] text-white">
-      {/* 3-column section: SavingsHub4u | Featured post | Popular Tags – newsletter ke oopr */}
-      <div className="mx-auto max-w-[1240px] px-5 py-12 sm:px-6 lg:px-8" style={{ backgroundColor: "#162238" }}>
-        <div className="grid gap-10 lg:grid-cols-3">
-          <div>
-            <h2 className="mb-4 flex items-center gap-3 text-lg font-bold uppercase tracking-wide text-white">
-              <span className="h-8 w-0.5 shrink-0 rounded-full bg-white" aria-hidden />
-              SavingsHub4u
-            </h2>
-            <p className="mb-3 text-sm leading-relaxed text-gray-300">
-              Your gateway to smart savings. We bring you verified coupon codes, exclusive deals and money-saving tips — all in one place.
-            </p>
-            <p className="text-sm leading-relaxed text-gray-300">
-              Explore top stores, grab the best coupons and never miss a deal again.
-            </p>
-          </div>
-          <div>
-            {featuredPost && (
-              <Link href={featuredPost.slug ? `/blog/${featuredPost.slug}` : "#"} className="group block overflow-hidden rounded">
-                <div className="relative aspect-[4/3] w-full overflow-hidden bg-gray-800">
-                  <Image
-                    src={featuredPost.image}
-                    alt={stripHtml(featuredPost.title)}
-                    fill
-                    className="object-cover transition group-hover:scale-105"
-                    sizes="(max-width: 1024px) 100vw, 33vw"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 bg-[var(--footer-accent)] p-4">
-                    <p className="mb-1 text-xs font-bold text-white/90">
-                      {(featuredPost as { publishedDate?: string }).publishedDate ?? ""}
-                    </p>
-                    <h3
-                      className="mb-1 line-clamp-2 text-base font-bold leading-snug text-white"
-                      dangerouslySetInnerHTML={{ __html: featuredPost.title }}
-                    />
-                    <p className="text-xs text-white/80">0 Comments</p>
-                  </div>
-                </div>
-              </Link>
-            )}
-          </div>
-          <div>
-            <h2 className="mb-4 flex items-center gap-3 text-lg font-bold uppercase tracking-wide text-white">
-              <span className="h-8 w-0.5 shrink-0 rounded-full bg-white" aria-hidden />
-              Popular Tags
-            </h2>
-            <div className="flex flex-wrap gap-2">
-              {POPULAR_TAGS.map((tag) => (
-                <Link
-                  key={tag}
-                  href="/#latest"
-                  className="rounded border border-white px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-white transition hover:bg-white hover:text-[var(--footer-accent)]"
-                  style={{ backgroundColor: "#162238" }}
-                >
-                  {tag}
-                </Link>
-              ))}
-            </div>
+    <footer id="footer-box-outer" className="footer-box-outer mt-12 text-zinc-800" style={{ backgroundColor: peachBg }}>
+      {/* 2-column section: full width – Entertainment (left) | Health & Fitness (right) */}
+      <div className="w-full px-5 py-12 sm:px-6 lg:px-8" style={{ backgroundColor: peachBg }}>
+        <div className="mx-auto max-w-[1240px]">
+          <div className="grid gap-8 lg:grid-cols-2">
+          <FooterCategoryCard
+            title="Entertainment"
+            posts={entertainmentPosts}
+            viewAllHref="/#latest"
+            fallbackPosts={latestPosts}
+          />
+          <FooterCategoryCard
+            title="Health & Fitness"
+            posts={healthFitnessPosts}
+            viewAllHref="/#latest"
+            fallbackPosts={latestPosts}
+          />
           </div>
         </div>
       </div>
@@ -142,8 +165,9 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* 4-column section: Brand | Quick Links | Categories | Recent Post (pehla wala footer) */}
-      <div className="mx-auto max-w-[1240px] px-5 py-14 sm:px-6 lg:px-8">
+      {/* 4-column section: Brand | Quick Links | Categories | Recent Post – black, full width */}
+      <div className="w-full" style={{ backgroundColor: "#000000" }}>
+        <div className="mx-auto max-w-[1240px] px-5 py-14 sm:px-6 lg:px-8">
         <div className="grid gap-10 lg:grid-cols-4">
           <div>
             <Link href="/" className="mb-4 inline-flex items-center gap-2" aria-label="SavingsHub4u">
@@ -155,7 +179,7 @@ export default function Footer() {
                 className="h-8 w-auto object-contain"
               />
             </Link>
-            <p className="text-sm leading-relaxed text-gray-400">
+            <p className="text-sm leading-relaxed text-white/80">
               Your gateway to smart savings. We bring you verified coupon codes, exclusive deals and money-saving tips — all in one place.
             </p>
           </div>
@@ -164,7 +188,7 @@ export default function Footer() {
             <ul className="space-y-2">
               {QUICK_LINKS.map(({ label, href }) => (
                 <li key={href}>
-                  <Link href={href} className="text-sm text-gray-400 hover:text-white">
+                  <Link href={href} className="text-sm text-white/80 hover:text-white">
                     {label}
                   </Link>
                 </li>
@@ -173,7 +197,7 @@ export default function Footer() {
           </div>
           <div>
             <h3 className="mb-4 text-sm font-bold uppercase tracking-wide text-white">Categories</h3>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm text-gray-400">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm text-white/80">
               {col1.map((cat) => (
                 <Link key={cat} href="/#latest" className="flex items-center gap-2 hover:text-white">
                   <span className="text-[var(--footer-accent)]">•</span> {cat}
@@ -192,7 +216,7 @@ export default function Footer() {
               {recentPosts.map((post, i) => (
                 <li key={post.id}>
                   <Link href={post.slug ? `/blog/${post.slug}` : "#"} className="group flex gap-3">
-                    <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded bg-gray-800">
+                    <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded bg-white/10">
                       <Image
                         src={post.image}
                         alt={stripHtml(post.title)}
@@ -208,10 +232,10 @@ export default function Footer() {
                       </span>
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="mb-0.5 text-[10px] font-bold uppercase tracking-wide text-gray-500">
+                      <p className="mb-0.5 text-[10px] font-bold uppercase tracking-wide text-white/60">
                         {(post as { publishedDate?: string }).publishedDate ?? "Blog"}
                       </p>
-                      <p className="line-clamp-2 text-sm font-medium text-white group-hover:text-[var(--footer-accent)]">
+                      <p className="line-clamp-2 text-sm font-medium text-white/90 group-hover:text-[var(--footer-accent)]">
                         <span dangerouslySetInnerHTML={{ __html: post.title }} />
                       </p>
                     </div>
@@ -221,29 +245,30 @@ export default function Footer() {
             </ul>
           </div>
         </div>
+        </div>
       </div>
 
-      {/* Bottom bar: copyright | social | terms | scroll to top */}
-      <div className="relative border-t border-white/10 bg-black py-5">
+      {/* Bottom bar: copyright | social | scroll to top – black, full width */}
+      <div className="relative w-full border-t border-white/10 py-5" style={{ backgroundColor: "#000000" }}>
         <div className="mx-auto flex max-w-[1240px] flex-col items-center justify-between gap-4 px-5 sm:flex-row sm:px-6 lg:px-8">
-          <p className="text-center text-xs text-gray-400 sm:text-left">
+          <p className="text-center text-xs text-white/80 sm:text-left">
             © {new Date().getFullYear()} SavingsHub4u. All Rights Reserved
           </p>
           <div className="flex items-center gap-6">
             <div className="flex gap-2">
-              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="flex h-9 w-9 items-center justify-center rounded-full border border-white/30 bg-black text-white hover:border-[var(--footer-accent)] hover:text-[var(--footer-accent)]" aria-label="Facebook">
+              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white hover:border-[var(--footer-accent)] hover:text-[var(--footer-accent)]" aria-label="Facebook">
                 f
               </a>
-              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="flex h-9 w-9 items-center justify-center rounded-full border border-white/30 bg-black text-white hover:border-[var(--footer-accent)] hover:text-[var(--footer-accent)]" aria-label="Twitter">
+              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white hover:border-[var(--footer-accent)] hover:text-[var(--footer-accent)]" aria-label="Twitter">
                 𝕏
               </a>
-              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="flex h-9 w-9 items-center justify-center rounded-full border border-white/30 bg-black text-white hover:border-[var(--footer-accent)] hover:text-[var(--footer-accent)]" aria-label="Instagram">
+              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white hover:border-[var(--footer-accent)] hover:text-[var(--footer-accent)]" aria-label="Instagram">
                 📷
               </a>
-              <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="flex h-9 w-9 items-center justify-center rounded-full border border-white/30 bg-black text-white hover:border-[var(--footer-accent)] hover:text-[var(--footer-accent)]" aria-label="YouTube">
+              <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white hover:border-[var(--footer-accent)] hover:text-[var(--footer-accent)]" aria-label="YouTube">
                 ▶
               </a>
-              <a href="https://pinterest.com" target="_blank" rel="noopener noreferrer" className="flex h-9 w-9 items-center justify-center rounded-full border border-white/30 bg-black text-white hover:border-[var(--footer-accent)] hover:text-[var(--footer-accent)]" aria-label="Pinterest">
+              <a href="https://pinterest.com" target="_blank" rel="noopener noreferrer" className="flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white hover:border-[var(--footer-accent)] hover:text-[var(--footer-accent)]" aria-label="Pinterest">
                 P
               </a>
             </div>

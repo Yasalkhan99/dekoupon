@@ -1,80 +1,53 @@
 "use client";
 
 import Image from "next/image";
+import { STORE_CATEGORIES } from "@/data/categories";
 
 const ICONS_BASE = "/Icons 1";
 
-/** Category icon PNGs from public/Icons 1 – same order as STORE_CATEGORY_NAMES (first N categories). */
+/** Icon PNGs in same order as STORE_CATEGORIES (first 27). Each file matched to the category it depicts. */
 const categoryIconPngs: string[] = [
-  "Group 1171275444.png",
-  "Group 1171275453.png",
-  "Group 1171275454.png",
-  "Group 1171275455.png",
-  "Group 1171275456.png",
-  "Group 1171275457.png",
-  "Group 1171275458.png",
-  "Group 1171275459.png",
-  "Group 1171275460.png",
-  "Group 1171275461.png",
-  "Group 1171275462.png",
-  "Group 1171275463.png",
-  "Group 1171275464.png",
-  "Group 1171275465.png",
-  "Group 1171275466.png",
-  "Group 1171275467.png",
-  "Group 1171275468.png",
-  "Group 1171275470.png",
-  "Group 1171275471.png",
-  "Group 1171275472.png",
-  "Group 1171275473.png",
-  "Group 1171275474.png",
-  "Group 1171275475.png",
-  "Group 1171275476.png",
-  "Group 1171275477.png",
-  "Group 1171275478.png",
-  "Group 1171275479.png",
+  "Group 1171275471.png", // 0 Beauty and Personal Care (mirror/lipstick style)
+  "Group 1171275453.png", // 1 Food And Beverage (globe + fork/spoon)
+  "Group 1171275458.png", // 2 Automotive (car/vehicle)
+  "Group 1171275455.png", // 3 Baby & Kids (baby bottle/cart)
+  "Group 1171275459.png", // 4 Books & Magazines (books)
+  "Group 1171275457.png", // 5 Business (person/refresh)
+  "Group 1171275454.png", // 6 Clothing & Accessories (dress)
+  "Group 1171275461.png", // 7 Computers & Software (laptop/chip)
+  "Group 1171275460.png", // 8 Education (graduation/book)
+  "Group 1171275461.png", // 9 Electronics (gear/circuit)
+  "Group 1171275462.png", // 10 Entertainment (play/screen)
+  "Group 1171275463.png", // 11 Finance & Insurance
+  "Group 1171275466.png", // 12 Footwear (sneakers)
+  "Group 1171275465.png", // 13 Games & Toys (dice)
+  "Group 1171275464.png", // 14 Gifts & Flowers (gift box)
+  "Group 1171275478.png", // 15 Health & Fitness (sports/shuttlecock – fitness)
+  "Group 1171275468.png", // 16 Home & Garden (house)
+  "Group 1171275444.png", // 17 Internet Service (satellite)
+  "Group 1171275472.png", // 18 Jewelry & Watches
+  "Group 1171275473.png", // 19 Office Supplies
+  "Group 1171275473.png", // 20 Online Departmental Stores (shopping cart)
+  "Group 1171275474.png", // 21 Online Services (cursor/screen)
+  "Group 1171275475.png", // 22 Pet (paw)
+  "Group 1171275476.png", // 23 Photography (camera)
+  "Group 1171275477.png", // 24 Services (cogwheel – generic)
+  "Group 1171275467.png", // 25 Sports & Outdoors (gamepad – active/games)
+  "Group 1171275479.png", // 26 Student
 ];
 
-const STORE_CATEGORY_NAMES_FOR_ICONS = [
-  "Beauty and Personal Care",
-  "Food And Beverage",
-  "Automotive",
-  "Baby & Kids",
-  "Books & Magazines",
-  "Business",
-  "Clothing & Accessories",
-  "Computers & Software",
-  "Education",
-  "Electronics",
-  "Entertainment",
-  "Finance & Insurance",
-  "Footwear",
-  "Games & Toys",
-  "Gifts & Flowers",
-  "Health & Fitness",
-  "Home & Garden",
-  "Internet Service",
-  "Jewelry & Watches",
-  "Office Supplies",
-  "Online Departmental Stores",
-  "Online Services",
-  "Pet",
-  "Photography",
-  "Services",
-  "Sports & Outdoors",
-  "Student",
-];
-
+/** Build map from category name to PNG using STORE_CATEGORIES order (single source of truth). */
 const categoryToPng: Record<string, string> = {};
-STORE_CATEGORY_NAMES_FOR_ICONS.forEach((name, i) => {
-  if (categoryIconPngs[i]) categoryToPng[name] = `${ICONS_BASE}/${categoryIconPngs[i]}`;
+STORE_CATEGORIES.forEach((cat, i) => {
+  if (i < categoryIconPngs.length) {
+    categoryToPng[cat.name] = `${ICONS_BASE}/${categoryIconPngs[i]}`;
+  }
 });
-
-// Last 4 categories: reuse relevant PNGs (only 27 files, 30 categories)
-categoryToPng["Technology"] = `${ICONS_BASE}/Group 1171275461.png`;       // Electronics
-categoryToPng["Telecom"] = `${ICONS_BASE}/Group 1171275470.png`;         // Internet Service
-categoryToPng["Travel"] = `${ICONS_BASE}/Group 1171275478.png`;          // Sports & Outdoors
-categoryToPng["Women's Fashion"] = `${ICONS_BASE}/Group 1171275458.png`; // Clothing & Accessories
+// Categories 27–29 (Technology, Telecom, Travel, Women's Fashion): reuse icons (only 27 PNGs)
+categoryToPng["Technology"] = `${ICONS_BASE}/Group 1171275461.png`;       // same as Electronics
+categoryToPng["Telecom"] = `${ICONS_BASE}/Group 1171275470.png`;         // same as Internet Service
+categoryToPng["Travel"] = `${ICONS_BASE}/Group 1171275478.png`;          // same as Sports & Outdoors
+categoryToPng["Women's Fashion"] = `${ICONS_BASE}/Group 1171275454.png`; // same as Clothing (dress)
 
 const iconMap: Record<string, React.ReactNode> = {
   "Beauty and Personal Care": (

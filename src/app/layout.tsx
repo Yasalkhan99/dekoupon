@@ -86,6 +86,7 @@ export default async function RootLayout({
             heroFlowPosts: blogData.heroFlowPosts,
             footerCategories: blogData.footerCategories,
             navDropdownPosts: blogData.navDropdownPosts,
+            allPosts: blogData.allPosts,
           }}
         >
           {children}

@@ -2,7 +2,13 @@ import { readFile, writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { cache } from "react";
 import type { BlogPost } from "@/data/blog";
-import { categories } from "@/data/blog";
+import {
+  categories,
+  heroPost as staticHero,
+  featuredPosts as staticFeatured,
+  mostPopularPosts as staticMostPopular,
+  latestPosts as staticLatest,
+} from "@/data/blog";
 import type { NavDropdownPost } from "@/data/blog";
 
 export type BlogPostWithContent = BlogPost & {
@@ -13,13 +19,48 @@ export type BlogPostWithContent = BlogPost & {
 
 const getBlogPath = () => path.join(process.cwd(), "data", "blog.json");
 
+/** All static posts from data/blog.ts (unique by id) – used to fill blog.json if missing. */
+function getStaticBlogPosts(): BlogPostWithContent[] {
+  const byId = new Map<string, BlogPostWithContent>();
+  const add = (p: BlogPost) => {
+    if (!byId.has(p.id)) {
+      byId.set(p.id, {
+        ...p,
+        content: "",
+        createdAt: new Date(0).toISOString(),
+        publishedDate: "",
+      });
+    }
+  };
+  add(staticHero);
+  staticFeatured.forEach(add);
+  staticMostPopular.forEach(add);
+  staticLatest.forEach(add);
+  return Array.from(byId.values());
+}
+
 export async function readBlogPosts(): Promise<BlogPostWithContent[]> {
+  let posts: BlogPostWithContent[];
   try {
     const data = await readFile(getBlogPath(), "utf-8");
-    return JSON.parse(data);
+    posts = JSON.parse(data);
   } catch {
-    return [];
+    posts = [];
   }
+  const staticPosts = getStaticBlogPosts();
+  const existingIds = new Set(posts.map((p) => p.id));
+  const existingSlugs = new Set(posts.map((p) => p.slug));
+  let merged = posts;
+  for (const s of staticPosts) {
+    if (existingIds.has(s.id) || existingSlugs.has(s.slug)) continue;
+    existingIds.add(s.id);
+    existingSlugs.add(s.slug);
+    merged = [...merged, { ...s, createdAt: s.createdAt ?? new Date().toISOString(), publishedDate: s.publishedDate ?? "" }];
+  }
+  if (merged.length > posts.length) {
+    await writeBlogPosts(merged);
+  }
+  return merged;
 }
 
 export async function writeBlogPosts(posts: BlogPostWithContent[]) {

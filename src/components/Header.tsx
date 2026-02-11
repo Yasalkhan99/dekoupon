@@ -69,22 +69,22 @@ export default function Header({ transparent }: HeaderProps = {}) {
   const [openDropdown, setOpenDropdown] = useState<"fashion" | "lifestyle" | "featured" | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarExpand, setSidebarExpand] = useState<"fashion" | "lifestyle" | "featured" | null>(null);
-  const [usTime, setUsTime] = useState<string>("");
+  const [usDate, setUsDate] = useState<string>("");
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    const formatUsTime = () => {
+    const formatUsDate = () => {
       const formatter = new Intl.DateTimeFormat("en-US", {
         timeZone: "America/New_York",
-        hour: "numeric",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: true,
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
       });
-      setUsTime(formatter.format(new Date()) + " ET");
+      setUsDate(formatter.format(new Date()));
     };
-    formatUsTime();
-    const id = setInterval(formatUsTime, 1000);
+    formatUsDate();
+    const id = setInterval(formatUsDate, 60_000);
     return () => clearInterval(id);
   }, []);
 
@@ -134,18 +134,6 @@ export default function Header({ transparent }: HeaderProps = {}) {
 
   return (
     <>
-      {/* Top line – Hunted style (navy strip). On mobile only tagline to avoid overlap */}
-      <div className="top-line-outer border-b-0 bg-[var(--hunted-navy)] text-white md:border-b-2 md:border-[var(--hunted-navy)]">
-        <div className="top-line-container mx-auto flex max-w-[1240px] items-center justify-between gap-3 px-4 py-2 text-xs sm:px-6 sm:py-2 lg:px-8">
-          <div className="hidden shrink-0 items-center gap-4 sm:flex">
-            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="opacity-80 hover:opacity-100" aria-label="Facebook">Facebook</a>
-            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="opacity-80 hover:opacity-100" aria-label="Twitter">Twitter</a>
-            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="opacity-80 hover:opacity-100" aria-label="Instagram">Instagram</a>
-            <a href="https://pinterest.com" target="_blank" rel="noopener noreferrer" className="opacity-80 hover:opacity-100" aria-label="Pinterest">Pinterest</a>
-          </div>
-          <div className="min-w-0 flex-1 text-center text-white/90 sm:flex-none sm:flex-1 sm:text-right sm:text-white/70">Best deals &amp; coupons</div>
-        </div>
-      </div>
       <header
         className={`sticky top-0 z-50 w-full transition-colors duration-200 ${
           transparent
@@ -256,9 +244,9 @@ export default function Header({ transparent }: HeaderProps = {}) {
           </nav>
 
           <div className="flex min-w-0 shrink items-center justify-end gap-2 sm:ml-6 sm:gap-4 lg:ml-8 lg:gap-6">
-            {usTime ? (
-              <span className={`hidden text-xs font-medium tabular-nums sm:block ${isLight ? "text-zinc-600" : "text-white/80"}`} aria-label="US Eastern Time">
-                {usTime}
+            {usDate ? (
+              <span className={`hidden text-xs font-medium sm:block ${isLight ? "text-zinc-600" : "text-white/80"}`} aria-label="US date">
+                {usDate}
               </span>
             ) : null}
             <button
