@@ -17,18 +17,22 @@ export type BlogPost = {
   publishedDate?: string;
 };
 
+/** Blog categories – used on home page (sidebar) and footer */
 export const categories = [
   "Fashion",
   "Lifestyle",
-  "Travel",
   "Food & Beverage",
-  "Automotive",
+  "Travel",
   "Home & Garden",
   "Health & Fitness",
   "Technology",
-  "Footwear",
+  "Entertainment",
+  "Clothing & Accessories",
+  "Baby & Kids",
   "Top Brand Blogs",
-  "Trending Blogs",
+  "Featured",
+  "Beauty",
+  "Automotive",
 ] as const;
 
 // Picsum Photos – reliable, no auth. Format: /id/{id}/{width}/{height}
