@@ -73,8 +73,8 @@ export default function HeroCategoryTabs() {
   const displayPosts = posts.slice(0, 4);
 
   return (
-    <aside className="flex h-full w-full shrink-0 flex-col overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm lg:max-h-[500px] lg:w-80">
-      <div className="flex shrink-0 border-b border-zinc-200 px-4 pt-4">
+    <aside className="flex h-full w-full shrink-0 flex-col overflow-hidden rounded-xl border-0 border-zinc-200 bg-white shadow-sm lg:max-h-[500px] lg:w-80 md:border">
+      <div className="flex shrink-0 border-b-0 px-4 pt-4 md:border-b md:border-zinc-200">
         <div className="flex">
           {TAB_KEYS.map((key) => (
             <button

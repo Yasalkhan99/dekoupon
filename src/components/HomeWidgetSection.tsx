@@ -24,10 +24,10 @@ function WidgetColumn({
   const mainDate = (main as { publishedDate?: string }).publishedDate ?? "";
 
   return (
-    <div className="widget-item-home-outer widget-item-home-outer-col2-sidebar flex w-full flex-col rounded-lg border border-gray-200 p-5 shadow-sm lg:w-[calc(50%-10px)]" style={{ backgroundColor: "#f2ebe2" }}>
+    <div className="widget-item-home-outer widget-item-home-outer-col2-sidebar flex w-full flex-col rounded-lg border-0 border-gray-200 p-5 shadow-sm lg:w-[calc(50%-10px)] md:border" style={{ backgroundColor: "#f2ebe2" }}>
       <div className="hunted-post-widget">
         {/* Main article – date, comments, headline */}
-        <Link href={main.slug ? `/blog/${main.slug}` : "#"} className="listing-box block border-b-2 border-[var(--hunted-navy)] pb-3">
+        <Link href={main.slug ? `/blog/${main.slug}` : "#"} className="listing-box block border-b-0 pb-3 md:border-b-2 md:border-[var(--hunted-navy)]">
           <div className="mb-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-bold text-[var(--hunted-text-gray)]">
             {mainDate && <span className="listing-date">{mainDate}</span>}
             <span className="listing-comment">0 Comments</span>
@@ -41,7 +41,7 @@ function WidgetColumn({
         {/* Small list – thumb + title (Hunted widget-listing-z style) */}
         <ul className="mt-4 space-y-0">
           {list.map((post) => (
-            <li key={post.id} className="widget-listing-z border-b border-[var(--theme-border)] py-3 last:border-b-0">
+            <li key={post.id} className="widget-listing-z border-b-0 py-3 last:border-b-0 md:border-b md:border-[var(--theme-border)]">
               <Link href={post.slug ? `/blog/${post.slug}` : "#"} className="flex gap-3">
                 <div className="relative h-[60px] w-[96px] shrink-0 overflow-hidden bg-[var(--hunted-gray)]">
                   <Image

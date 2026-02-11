@@ -6,8 +6,6 @@ import { stripHtml } from "@/lib/slugify";
 import type { BlogPost } from "@/data/blog";
 import { useState, useEffect, useCallback } from "react";
 
-const SLIDER_HEIGHT_PX = 500;
-
 function HuntedSlide({
   post,
   isActive,
@@ -24,10 +22,9 @@ function HuntedSlide({
     <li style={{ display: isActive ? "block" : "none" }}>
       <Link href={href} className="block h-full">
         <div
-          className="slide-container"
+          className="slide-container hero-slide-height"
           style={{
             backgroundImage: `url(${img})`,
-            height: `${SLIDER_HEIGHT_PX}px`,
           }}
         >
           <div className="slide-info-outer">
@@ -93,11 +90,11 @@ export default function Hero() {
   if (slides.length === 0) return null;
 
   return (
-    <div className="hunted-slider-container clearfix -mt-14 w-full pt-14">
+    <div className="hunted-slider-container clearfix mt-4 w-full md:-mt-14 md:pt-14">
       <div className="relative">
         <ul
-          className="bxslider-main"
-          style={{ overflow: "hidden", height: `${SLIDER_HEIGHT_PX}px`, margin: 0, padding: 0, listStyle: "none" }}
+          className="bxslider-main hero-slider-list"
+          style={{ overflow: "hidden", margin: 0, padding: 0, listStyle: "none" }}
         >
           {slides.map((post, i) => (
             <HuntedSlide
@@ -110,7 +107,7 @@ export default function Hero() {
 
         {slides.length > 1 && (
           <>
-            <div className="bx-controls-direction" aria-hidden>
+            <div className="bx-controls-direction hidden md:flex" aria-hidden>
               <button
                 type="button"
                 onClick={(e) => {

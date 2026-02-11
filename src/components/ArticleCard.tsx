@@ -11,7 +11,7 @@ export default function ArticleCard({ post }: ArticleCardProps) {
   const date = (post as { publishedDate?: string; date?: string }).publishedDate ?? (post as { date?: string }).date ?? "";
 
   return (
-    <article className="post clearfix mb-5 rounded-lg border border-gray-200 p-4 shadow-sm" style={{ backgroundColor: "#f2ebe2" }}>
+    <article className="post clearfix mb-5 rounded-lg border-0 border-gray-200 p-4 shadow-sm md:border" style={{ backgroundColor: "#f2ebe2" }}>
       <div className="article-outer-sidebar-cc2">
         <div className="article-inner">
           <div className="article-container clearfix">

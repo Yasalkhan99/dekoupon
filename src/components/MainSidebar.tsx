@@ -67,7 +67,7 @@ export default function MainSidebar() {
 
         {/* 3. Trending Posts */}
         <div className="rounded-lg p-4 shadow-sm" style={{ backgroundColor: "var(--sidebar-widget-3)" }}>
-          <h3 className="mb-4 border-b-2 border-[var(--footer-accent)] pb-2 text-xs font-bold uppercase tracking-wider text-[var(--hunted-navy)]">
+          <h3 className="mb-4 border-b-0 pb-2 text-xs font-bold uppercase tracking-wider text-[var(--hunted-navy)] md:border-b-2 md:border-[var(--footer-accent)]">
             Trending Posts
           </h3>
           <ul className="space-y-4">
@@ -101,7 +101,7 @@ export default function MainSidebar() {
 
         {/* 4. Categories */}
         <div className="rounded-lg p-4 shadow-sm" style={{ backgroundColor: "var(--sidebar-widget-1)" }}>
-          <h3 className="mb-4 border-b-2 border-[var(--footer-accent)] pb-2 text-xs font-bold uppercase tracking-wider text-[var(--hunted-navy)]">
+          <h3 className="mb-4 border-b-0 pb-2 text-xs font-bold uppercase tracking-wider text-[var(--hunted-navy)] md:border-b-2 md:border-[var(--footer-accent)]">
             Categories
           </h3>
           <ul className="space-y-2">

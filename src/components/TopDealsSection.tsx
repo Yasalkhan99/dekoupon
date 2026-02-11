@@ -13,8 +13,7 @@ function Card({ post }: { post: BlogPost }) {
   return (
     <Link
       href={post.slug ? `/blog/${post.slug}` : "#"}
-      className="group flex shrink-0 flex-col overflow-hidden border-2 border-white/20 bg-[var(--hunted-navy)] transition hover:border-[var(--footer-accent)] hover:shadow-xl"
-      style={{ width: "10%" }}
+      className="group flex shrink-0 flex-col overflow-hidden border-0 border-white/20 bg-[var(--hunted-navy)] transition hover:shadow-xl md:border-2 md:hover:border-[var(--footer-accent)] w-[160px] min-w-[160px] sm:w-[200px] sm:min-w-[200px] md:w-[220px] md:min-w-[220px]"
     >
       <div className="relative aspect-[4/3] w-full overflow-hidden">
         <Image
@@ -22,11 +21,11 @@ function Card({ post }: { post: BlogPost }) {
           alt={stripHtml(post.title)}
           fill
           className="object-cover transition duration-300 group-hover:scale-105"
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 20vw"
+          sizes="(max-width: 640px) 160px, (max-width: 1024px) 200px, 20vw"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[var(--hunted-navy)]/80 to-transparent" />
       </div>
-      <div className="flex flex-1 flex-col p-4">
+      <div className="flex flex-1 flex-col p-3 sm:p-4">
         <h3
           className="line-clamp-2 text-sm font-bold leading-snug text-white group-hover:text-[var(--footer-accent)] md:text-base"
           dangerouslySetInnerHTML={{ __html: post.title }}
@@ -50,8 +49,8 @@ export default function TopDealsSection({ posts }: TopDealsSectionProps) {
         </h2>
         <div className="overflow-hidden">
           <div
-            className="top-deals-track flex gap-4 sm:gap-6"
-            style={{ width: "200%" }}
+            className="top-deals-track flex gap-3 sm:gap-6"
+            style={{ width: "max-content" }}
           >
             {duplicated.map((post, i) => (
               <Card key={`${post.id}-${i}`} post={post} />

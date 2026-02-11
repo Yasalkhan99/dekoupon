@@ -38,29 +38,29 @@ export default async function Home() {
                 {/* Hunted home-widget-area: two columns – main article + list + VIEW ALL (from theme file) */}
                 <HomeWidgetSection />
 
-                {/* Banner above LATEST – compact height & width */}
-                <div className="mb-8 mx-auto h-40 max-w-6xl overflow-hidden rounded-xl shadow-md sm:h-44">
-                  <Link href="/promotions" className="block h-full w-full">
+                {/* Banner above LATEST – fixed aspect, no extra gap below */}
+                <div className="mb-8 mx-auto w-full max-w-6xl overflow-hidden rounded-xl shadow-md aspect-[3/1]">
+                  <Link href="/promotions" className="block relative h-full w-full">
                     <Image
                       src="/banner%201.jpg"
                       alt="You're just a click away from best discount offers"
                       width={1200}
                       height={400}
-                      className="h-full w-full object-cover object-center"
-                      sizes="(max-width: 1152px) 100vw, 1152px"
+                      className="h-full w-full object-contain object-center bg-[#f5f0ea]"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1152px) 90vw, 1152px"
                       priority={false}
                     />
                   </Link>
                 </div>
 
                 <section id="latest" className="mb-10">
-                  <h2 className="mb-4 border-b-[3px] border-[var(--footer-accent)] pb-2 text-lg font-bold uppercase tracking-wide text-[var(--hunted-navy)] sm:text-xl">
+                  <h2 className="mb-4 border-b-0 pb-2 text-lg font-bold uppercase tracking-wide text-[var(--hunted-navy)] sm:border-b-[3px] sm:border-[var(--footer-accent)] sm:text-xl">
                     Latest
                   </h2>
                   <PostsWithLoadMore posts={latestPosts} />
                 </section>
                 <section className="mb-10">
-                  <h2 className="mb-4 border-b-[3px] border-[var(--footer-accent)] pb-2 text-lg font-bold uppercase tracking-wide text-[var(--hunted-navy)] sm:text-xl">
+                  <h2 className="mb-4 border-b-0 pb-2 text-lg font-bold uppercase tracking-wide text-[var(--hunted-navy)] sm:border-b-[3px] sm:border-[var(--footer-accent)] sm:text-xl">
                     Most Popular Articles
                   </h2>
                   <PostsWithLoadMore posts={mostPopularPosts} />
