@@ -102,6 +102,13 @@ export async function getPostBySlug(slug: string): Promise<BlogPostWithContent |
   return posts.find((p) => p.slug === slug) ?? null;
 }
 
+export async function getPostsByCategory(category: string): Promise<BlogPostWithContent[]> {
+  const posts = await readBlogPosts();
+  return posts
+    .filter((p) => p.category === category)
+    .sort((a, b) => new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime());
+}
+
 export type BlogData = {
   heroPost: BlogPostWithContent;
   featuredPosts: BlogPostWithContent[];

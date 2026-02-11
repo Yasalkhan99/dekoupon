@@ -3,9 +3,30 @@ import Image from "next/image";
 import PromotionsFooter from "@/components/PromotionsFooter";
 import PromotionsHeader from "@/components/PromotionsHeader";
 import { getStores, slugify } from "@/lib/stores";
+import BrandsAlphabetBar from "./BrandsAlphabetBar";
 
-export default async function BrandsPage() {
-  const stores = await getStores();
+function filterStoresByLetter(stores: Awaited<ReturnType<typeof getStores>>, letter: string | null) {
+  if (!letter) return stores;
+  const upper = letter.toUpperCase();
+  if (upper === "0-9") {
+    return stores.filter((s) => /^[0-9]/.test((s.name || "").trim()));
+  }
+  return stores.filter((s) => {
+    const first = (s.name || "").trim().toUpperCase().slice(0, 1);
+    return first === upper || (upper === "0-9" && /^[0-9]/.test(first));
+  });
+}
+
+type Props = { searchParams: Promise<{ letter?: string }> };
+
+export default async function BrandsPage({ searchParams }: Props) {
+  const { letter: letterParam } = await searchParams;
+  const letter = letterParam && letterParam.length > 0 ? letterParam : null;
+  const normalizedLetter = letter === "0-9" ? "0-9" : letter?.toUpperCase().slice(0, 1) || null;
+
+  const allStores = await getStores();
+  const sorted = [...allStores].sort((a, b) => (a.name || "").localeCompare(b.name || "", undefined, { sensitivity: "base" }));
+  const stores = filterStoresByLetter(sorted, normalizedLetter);
 
   return (
     <div className="min-h-screen bg-white text-zinc-900" suppressHydrationWarning>
@@ -30,10 +51,16 @@ export default async function BrandsPage() {
         <h1 className="mb-2 text-2xl font-bold uppercase tracking-wide text-zinc-900">
           All Brands
         </h1>
-        <p className="mb-6 text-sm text-zinc-500">
+        <p className="mb-4 text-sm text-zinc-500">
           {stores.length} stores listed
+          {normalizedLetter && (
+            <span> (starting with {normalizedLetter})</span>
+          )}
         </p>
 
+        <BrandsAlphabetBar activeLetter={normalizedLetter} />
+
+        <div className="mt-6">
         {stores.length === 0 ? (
           <div className="rounded-lg border-2 border-dashed border-zinc-200 bg-zinc-50 py-16 text-center">
             <p className="mb-2 text-zinc-600">
@@ -85,6 +112,7 @@ export default async function BrandsPage() {
             ))}
           </div>
         )}
+        </div>
       </main>
 
       <PromotionsFooter />

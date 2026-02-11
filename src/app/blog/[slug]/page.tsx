@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import MainSidebar from "@/components/MainSidebar";
 import { getPostBySlug, readBlogPosts } from "@/lib/blog";
 import { stripHtml } from "@/lib/slugify";
+import { getBlogImageAspectClass, blogCategorySlug } from "@/data/blog";
 
 /** Add lazy loading to all images in HTML so the page doesn't lag when opening a blog */
 function addLazyToContentImages(html: string): string {
@@ -24,11 +25,15 @@ export default async function BlogPostPage({ params }: Props) {
   const publishedDate = post.publishedDate || "";
 
   return (
-    <div className="body-outer min-h-screen w-full text-zinc-900" style={{ backgroundColor: "#e5dfd6" }}>
+    <div
+      className="body-outer min-h-screen w-full text-zinc-900"
+      style={{ backgroundColor: "#e5dfd6" }}
+      suppressHydrationWarning
+    >
       <Header />
       <main className="w-full">
-        {/* Hero – full width */}
-        <div className="relative aspect-[21/9] min-h-[240px] w-full overflow-hidden bg-zinc-900 sm:min-h-[280px] md:aspect-[3/1] md:min-h-[320px]">
+        {/* Hero – full width; aspect from post (default 21/9 for hero) */}
+        <div className={`relative min-h-[240px] w-full overflow-hidden bg-zinc-900 sm:min-h-[280px] md:min-h-[320px] ${getBlogImageAspectClass(post.imageAspectRatio ?? "21/9")}`}>
           <Image
             src={post.image || "https://picsum.photos/id/1/1200/600"}
             alt={stripHtml(post.title)}
@@ -43,7 +48,7 @@ export default async function BlogPostPage({ params }: Props) {
               <nav className="mb-2 text-xs text-white/90" aria-label="Breadcrumb">
                 <Link href="/" className="hover:text-white">Home</Link>
                 <span className="mx-1.5">›</span>
-                <Link href="/#latest" className="hover:text-white">{category}</Link>
+                <Link href={`/blog/category/${blogCategorySlug(category)}`} className="hover:text-white">{category}</Link>
                 <span className="mx-1.5">›</span>
                 <span className="text-white/80 line-clamp-1" title={stripHtml(post.title)}>
                   {stripHtml(post.title)}

@@ -10,6 +10,7 @@ import { getStores, getCoupons, slugify, canonicalSlug, hasCouponData, slugMatch
 import { getBlogData } from "@/lib/blog";
 import { stripHtml } from "@/lib/slugify";
 import { STORE_CATEGORIES } from "@/data/categories";
+import { getBlogImageAspectClass, type ImageAspectRatio } from "@/data/blog";
 import type { Store } from "@/types/store";
 
 const PER_PAGE = 24;
@@ -489,7 +490,7 @@ export default async function PromotionsPage({
                 href={`/blog/${post.slug}`}
                 className="group flex flex-col overflow-hidden rounded-xl border border-zinc-100 bg-white shadow-md transition hover:shadow-lg"
               >
-                <div className="relative aspect-video w-full overflow-hidden bg-zinc-100">
+                <div className={`relative w-full overflow-hidden bg-zinc-100 ${getBlogImageAspectClass((post as { imageAspectRatio?: ImageAspectRatio }).imageAspectRatio)}`}>
                   <Image
                     src={post.image}
                     alt={stripHtml(post.title)}

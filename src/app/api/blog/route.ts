@@ -15,6 +15,7 @@ const allowedFields = [
   "category",
   "slug",
   "image",
+  "imageAspectRatio",
   "featured",
   "niche",
   "content",
@@ -88,6 +89,7 @@ export async function POST(request: Request) {
       category: body.category != null && categories.includes(body.category) ? body.category : categories[0],
       slug,
       image: body.image != null ? String(body.image).trim() : "",
+      imageAspectRatio: ["auto", "1/1", "4/3", "3/2", "16/9", "21/9"].includes(body.imageAspectRatio) ? body.imageAspectRatio : undefined,
       featured: body.featured === true || niche.includes("featured"),
       niche: niche.length ? niche : undefined,
       content: body.content != null ? String(body.content).trim() : "",
@@ -144,6 +146,10 @@ export async function PATCH(request: Request) {
       const filtered = arr.filter((n: unknown) => typeof n === "string" && VALID_NICHES.includes(n as typeof VALID_NICHES[number]));
       nextPost.niche = filtered.length === 0 ? undefined : filtered;
       nextPost.featured = nextPost.featured || (nextPost.niche != null && nextPost.niche.includes("featured"));
+    }
+    const validAspect = ["auto", "1/1", "4/3", "3/2", "16/9", "21/9"];
+    if (body.imageAspectRatio !== undefined) {
+      (nextPost as Record<string, unknown>).imageAspectRatio = validAspect.includes(body.imageAspectRatio) ? body.imageAspectRatio : undefined;
     }
     posts[index] = nextPost;
     try {

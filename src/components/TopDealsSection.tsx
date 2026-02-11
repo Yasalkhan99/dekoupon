@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { BlogPost } from "@/data/blog";
+import { getBlogImageAspectClass } from "@/data/blog";
 import { stripHtml } from "@/lib/slugify";
 
 type TopDealsSectionProps = {
@@ -15,7 +16,7 @@ function Card({ post }: { post: BlogPost }) {
       href={post.slug ? `/blog/${post.slug}` : "#"}
       className="group flex shrink-0 flex-col overflow-hidden border-0 border-white/20 bg-[var(--hunted-navy)] transition hover:shadow-xl md:border-2 md:hover:border-[var(--footer-accent)] w-[160px] min-w-[160px] sm:w-[200px] sm:min-w-[200px] md:w-[220px] md:min-w-[220px]"
     >
-      <div className="relative aspect-[4/3] w-full overflow-hidden">
+      <div className={`relative w-full overflow-hidden ${getBlogImageAspectClass(post.imageAspectRatio)}`}>
         <Image
           src={post.image || "https://picsum.photos/id/1/400/300"}
           alt={stripHtml(post.title)}

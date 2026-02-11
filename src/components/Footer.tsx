@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useBlogData } from "@/components/BlogDataProvider";
 import { stripHtml } from "@/lib/slugify";
-import { categories as blogCategories } from "@/data/blog";
+import { categories as blogCategories, blogCategorySlug } from "@/data/blog";
 import NewsletterSubscribe from "@/components/NewsletterSubscribe";
 import { useState, useEffect } from "react";
 
@@ -113,13 +113,13 @@ export default function Footer() {
           <FooterCategoryCard
             title="Entertainment"
             posts={entertainmentPosts}
-            viewAllHref="/#latest"
+            viewAllHref="/blog/category/entertainment"
             fallbackPosts={latestPosts}
           />
           <FooterCategoryCard
             title="Health & Fitness"
             posts={healthFitnessPosts}
-            viewAllHref="/#latest"
+            viewAllHref="/blog/category/health-fitness"
             fallbackPosts={latestPosts}
           />
           </div>
@@ -199,12 +199,12 @@ export default function Footer() {
             <h3 className="mb-4 text-sm font-bold uppercase tracking-wide text-white">Categories</h3>
             <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm text-white/80">
               {col1.map((cat) => (
-                <Link key={cat} href="/#latest" className="flex items-center gap-2 hover:text-white">
+                <Link key={cat} href={`/blog/category/${blogCategorySlug(cat)}`} className="flex items-center gap-2 hover:text-white">
                   <span className="text-[var(--footer-accent)]">•</span> {cat}
                 </Link>
               ))}
               {col2.map((cat) => (
-                <Link key={cat} href="/#latest" className="flex items-center gap-2 hover:text-white">
+                <Link key={cat} href={`/blog/category/${blogCategorySlug(cat)}`} className="flex items-center gap-2 hover:text-white">
                   <span className="text-[var(--footer-accent)]">•</span> {cat}
                 </Link>
               ))}

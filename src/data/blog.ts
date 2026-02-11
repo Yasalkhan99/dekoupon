@@ -1,6 +1,31 @@
 /** Niche for hero/home: show in Featured, Trending, or Popular sections */
 export type BlogNiche = "featured" | "trending" | "popular";
 
+/** Admin can set featured image aspect ratio for display (e.g. 16/9, 4/3, 1/1). */
+export type ImageAspectRatio = "auto" | "1/1" | "4/3" | "3/2" | "16/9" | "21/9";
+
+export const IMAGE_ASPECT_OPTIONS: { value: ImageAspectRatio; label: string }[] = [
+  { value: "auto", label: "Auto" },
+  { value: "1/1", label: "1:1 (Square)" },
+  { value: "4/3", label: "4:3" },
+  { value: "3/2", label: "3:2" },
+  { value: "16/9", label: "16:9" },
+  { value: "21/9", label: "21:9 (Ultrawide)" },
+];
+
+/** Tailwind aspect class for blog featured image container (all strings so Tailwind can scan). */
+export function getBlogImageAspectClass(ratio?: ImageAspectRatio | null): string {
+  switch (ratio) {
+    case "1/1": return "aspect-square";
+    case "4/3": return "aspect-[4/3]";
+    case "3/2": return "aspect-[3/2]";
+    case "16/9": return "aspect-video";
+    case "21/9": return "aspect-[21/9]";
+    case "auto":
+    default: return "aspect-auto min-h-[120px]";
+  }
+}
+
 export type BlogPost = {
   id: string;
   title: string;
@@ -8,6 +33,8 @@ export type BlogPost = {
   category: string;
   slug: string;
   image: string;
+  /** Featured image aspect ratio (admin). Default 16/9 if not set. */
+  imageAspectRatio?: ImageAspectRatio;
   featured?: boolean;
   /** Which hero sections to show this in (admin-editable). Backward compat: featured=true => niche includes "featured" */
   niche?: BlogNiche[];
@@ -17,7 +44,7 @@ export type BlogPost = {
   publishedDate?: string;
 };
 
-/** Blog categories – used on home page (sidebar) and footer */
+/** Blog categories – used on home page (sidebar), footer, and category pages */
 export const categories = [
   "Fashion",
   "Lifestyle",
@@ -34,6 +61,23 @@ export const categories = [
   "Beauty",
   "Automotive",
 ] as const;
+
+/** URL slug for a category name (e.g. "Food & Beverage" -> "food-beverage") */
+export function blogCategorySlug(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+/** Get category display name from URL slug, or null if not found */
+export function getBlogCategoryBySlug(slug: string): (typeof categories)[number] | null {
+  const lower = slug.toLowerCase();
+  const found = categories.find((c) => blogCategorySlug(c) === lower);
+  return found ?? null;
+}
 
 // Picsum Photos – reliable, no auth. Format: /id/{id}/{width}/{height}
 const img = (id: number, w: number, h: number) =>

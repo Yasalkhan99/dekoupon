@@ -4,13 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useBlogData } from "@/components/BlogDataProvider";
 import { stripHtml } from "@/lib/slugify";
-import { categories as blogCategories } from "@/data/blog";
+import { categories as blogCategories, blogCategorySlug } from "@/data/blog";
 import NewsletterSubscribe from "@/components/NewsletterSubscribe";
-
-const SIDEBAR_TAGS = [
-  "Tech", "Life", "Travel", "Fashion", "Health", "Lifestyle",
-  "Photography", "Design", "Nature", "Style", "Deals", "Coupons",
-];
 
 export default function MainSidebar() {
   const { trendingPosts, latestPosts } = useBlogData();
@@ -109,7 +104,7 @@ export default function MainSidebar() {
             {blogCategories.slice(0, 14).map((cat) => (
               <li key={cat}>
                 <Link
-                  href="/#latest"
+                  href={`/blog/category/${blogCategorySlug(cat)}`}
                   className="block py-1.5 text-sm text-[var(--hunted-text-gray)] hover:text-[var(--footer-accent)]"
                 >
                   {cat}
@@ -156,24 +151,6 @@ export default function MainSidebar() {
             inputClassName="w-full border border-[var(--theme-border)] px-3 py-2 text-sm focus:border-[var(--footer-accent)] focus:outline-none"
             buttonClassName="w-full bg-[var(--hunted-navy)] py-2.5 text-sm font-bold text-white hover:bg-[var(--footer-accent)]"
           />
-        </div>
-
-        {/* 8. Tag Cloud */}
-        <div className="rounded-lg p-4 shadow-sm" style={{ backgroundColor: "var(--sidebar-widget-1)" }}>
-          <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-[var(--hunted-navy)]">
-            Tag Cloud
-          </h3>
-          <div className="flex flex-wrap gap-2">
-            {SIDEBAR_TAGS.map((tag) => (
-              <Link
-                key={tag}
-                href="/promotions/categories"
-                className="rounded border border-[var(--theme-border)] bg-[var(--theme-breadcrumb-bg)] px-2.5 py-1 text-xs text-[var(--hunted-text-gray)] hover:border-[var(--footer-accent)] hover:text-[var(--footer-accent)]"
-              >
-                {tag}
-              </Link>
-            ))}
-          </div>
         </div>
       </div>
     </aside>

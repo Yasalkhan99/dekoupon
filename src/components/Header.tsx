@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useBlogData } from "@/components/BlogDataProvider";
 import type { NavDropdownPost } from "@/data/blog";
+import { getBlogImageAspectClass } from "@/data/blog";
 import { stripHtml } from "@/lib/slugify";
 
 type HeaderProps = {
@@ -36,12 +37,13 @@ const navLinks = [
 const SCROLL_THRESHOLD = 80;
 
 function DropdownCard({ post }: { post: NavDropdownPost }) {
+  const aspectClass = getBlogImageAspectClass(post.imageAspectRatio);
   return (
     <Link
       href={`/blog/${post.slug}`}
       className="group flex flex-col overflow-hidden border-2 border-[var(--theme-border)] bg-white transition hover:shadow-md"
     >
-      <div className="relative aspect-[4/3] w-full overflow-hidden bg-[var(--hunted-gray)]">
+      <div className={`relative w-full overflow-hidden bg-[var(--hunted-gray)] ${aspectClass}`}>
         <Image
           src={post.image}
           alt={stripHtml(post.title)}

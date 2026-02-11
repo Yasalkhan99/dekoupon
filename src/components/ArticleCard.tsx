@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { BlogPost } from "@/data/blog";
+import { getBlogImageAspectClass } from "@/data/blog";
 import { stripHtml } from "@/lib/slugify";
 
 type ArticleCardProps = {
@@ -17,7 +18,7 @@ export default function ArticleCard({ post }: ArticleCardProps) {
           <div className="article-container clearfix">
             <div className="fea-img-container mb-0">
               <Link href={`/blog/${post.slug}`} className="block overflow-hidden">
-                <div className="relative aspect-[4/3] w-full overflow-hidden bg-[var(--hunted-gray)]">
+                <div className={`relative w-full overflow-hidden bg-[var(--hunted-gray)] ${getBlogImageAspectClass(post.imageAspectRatio)}`}>
                   <Image
                     src={post.image}
                     alt={stripHtml(post.title)}

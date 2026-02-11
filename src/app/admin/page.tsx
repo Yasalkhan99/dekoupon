@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
 import type { Store } from "@/types/store";
 import type { BlogPost, BlogNiche } from "@/data/blog";
-import { categories as blogCategories } from "@/data/blog";
+import { categories as blogCategories, IMAGE_ASPECT_OPTIONS, type ImageAspectRatio } from "@/data/blog";
 
 const BLOG_NICHES: { value: BlogNiche; label: string }[] = [
   { value: "featured", label: "Featured" },
@@ -151,6 +151,7 @@ export default function AdminPage() {
     category: (typeof blogCategories)[number];
     excerpt: string;
     image: string;
+    imageAspectRatio: ImageAspectRatio;
     featured: boolean;
     niche: BlogNiche[];
     content: string;
@@ -161,6 +162,7 @@ export default function AdminPage() {
     category: blogCategories[0],
     excerpt: "",
     image: "",
+    imageAspectRatio: "16/9",
     featured: false,
     niche: [],
     content: "",
@@ -171,6 +173,7 @@ export default function AdminPage() {
   const excerptTextareaRef = useRef<HTMLTextAreaElement>(null);
   const imageUploadInputRef = useRef<HTMLInputElement>(null);
   const visualImageUploadInputRef = useRef<HTMLInputElement>(null);
+  const featuredImageUploadInputRef = useRef<HTMLInputElement>(null);
   const contentEditableRef = useRef<HTMLDivElement>(null);
   const [imageUploading, setImageUploading] = useState(false);
   const [contentViewMode, setContentViewMode] = useState<"html" | "preview">("preview");
@@ -273,6 +276,34 @@ export default function AdminPage() {
     execVisual("createLink", fullUrl);
   };
 
+  const execVisualFontSize = (px: number) => {
+    const el = contentEditableRef.current;
+    if (!el) return;
+    el.focus();
+    const sel = window.getSelection();
+    const range = sel?.rangeCount ? sel.getRangeAt(0) : null;
+    if (!range || range.collapsed) return;
+    try {
+      const fragment = range.extractContents();
+      const span = document.createElement("span");
+      span.style.fontSize = `${Math.min(100, Math.max(1, px))}px`;
+      span.appendChild(fragment);
+      range.insertNode(span);
+      setBlogForm((f) => ({ ...f, content: el.innerHTML }));
+    } catch {
+      // fallback: insertHTML with plain text
+      const text = range.toString();
+      if (text) {
+        range.deleteContents();
+        const span = document.createElement("span");
+        span.style.fontSize = `${Math.min(100, Math.max(1, px))}px`;
+        span.textContent = text;
+        range.insertNode(span);
+        setBlogForm((f) => ({ ...f, content: el.innerHTML }));
+      }
+    }
+  };
+
   const insertVisualImageFromUrl = (src: string, alt = "") => {
     const el = contentEditableRef.current;
     if (!el) return;
@@ -332,6 +363,7 @@ export default function AdminPage() {
             category: blogForm.category,
             excerpt: blogForm.excerpt.trim(),
             image: blogForm.image.trim(),
+            imageAspectRatio: blogForm.imageAspectRatio,
             featured: blogForm.featured,
             niche: blogForm.niche,
             content: blogForm.content.trim(),
@@ -355,6 +387,7 @@ export default function AdminPage() {
             category: blogForm.category,
             excerpt: blogForm.excerpt.trim(),
             image: blogForm.image.trim(),
+            imageAspectRatio: blogForm.imageAspectRatio,
             featured: blogForm.featured,
             niche: blogForm.niche,
             content: blogForm.content.trim(),
@@ -373,6 +406,7 @@ export default function AdminPage() {
         category: blogCategories[0],
         excerpt: "",
         image: "",
+        imageAspectRatio: "16/9",
         featured: false,
         niche: [],
         content: "",
@@ -573,6 +607,26 @@ export default function AdminPage() {
       if (!res.ok) throw new Error(data.error || "Upload failed");
       const url = data.url as string;
       if (url) insertImgAtCursor(url, file.name.replace(/\.[^.]+$/, "") || "Image");
+    } catch (err) {
+      window.alert(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setImageUploading(false);
+    }
+  };
+
+  const handleFeaturedImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || !file.type.startsWith("image/")) return;
+    setImageUploading(true);
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      const res = await fetch("/api/admin/upload-image", { method: "POST", body: form });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Upload failed");
+      const url = data.url as string;
+      if (url) setBlogForm((f) => ({ ...f, image: url }));
     } catch (err) {
       window.alert(err instanceof Error ? err.message : "Upload failed");
     } finally {
@@ -2817,6 +2871,7 @@ export default function AdminPage() {
                                     category: (blogCategories as readonly string[]).includes(p.category) ? (p.category as (typeof blogCategories)[number]) : blogCategories[0],
                                     excerpt: p.excerpt ?? "",
                                     image: p.image ?? "",
+                                    imageAspectRatio: (p as { imageAspectRatio?: ImageAspectRatio }).imageAspectRatio ?? "16/9",
                                     featured: p.featured ?? false,
                                     niche,
                                     content: (p as { content?: string }).content ?? "",
@@ -2946,13 +3001,43 @@ export default function AdminPage() {
                         </div>
                         <div>
                           <label className="mb-1 block text-sm font-medium text-stone-700">Featured image URL</label>
-                          <input
-                            type="text"
-                            value={blogForm.image ?? ""}
-                            onChange={(e) => setBlogForm((f) => ({ ...f, image: e.target.value }))}
-                            placeholder="https://..."
-                            className="w-full rounded border border-stone-300 px-3 py-2 text-stone-900 focus:border-amber-600 focus:outline-none focus:ring-1 focus:ring-amber-600"
-                          />
+                          <div className="flex flex-wrap items-center gap-2">
+                            <input
+                              type="text"
+                              value={blogForm.image ?? ""}
+                              onChange={(e) => setBlogForm((f) => ({ ...f, image: e.target.value }))}
+                              placeholder="https://... or upload below"
+                              className="min-w-0 flex-1 rounded border border-stone-300 px-3 py-2 text-stone-900 focus:border-amber-600 focus:outline-none focus:ring-1 focus:ring-amber-600"
+                            />
+                            <input
+                              ref={featuredImageUploadInputRef}
+                              type="file"
+                              accept="image/jpeg,image/png,image/gif,image/webp"
+                              className="hidden"
+                              onChange={handleFeaturedImageUpload}
+                            />
+                            <button
+                              type="button"
+                              disabled={imageUploading}
+                              onClick={() => featuredImageUploadInputRef.current?.click()}
+                              className="shrink-0 rounded border border-stone-300 bg-white px-3 py-2 text-sm font-medium text-stone-800 hover:bg-stone-100 disabled:opacity-50"
+                              title="Upload featured image"
+                            >
+                              {imageUploading ? "…" : "Upload"}
+                            </button>
+                          </div>
+                          <div className="mt-2">
+                            <label className="mb-1 block text-xs font-medium text-stone-600">Aspect ratio (display)</label>
+                            <select
+                              value={blogForm.imageAspectRatio ?? "16/9"}
+                              onChange={(e) => setBlogForm((f) => ({ ...f, imageAspectRatio: e.target.value as ImageAspectRatio }))}
+                              className="rounded border border-stone-300 bg-white px-3 py-1.5 text-sm text-stone-800 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                            >
+                              {IMAGE_ASPECT_OPTIONS.map((opt) => (
+                                <option key={opt.value} value={opt.value}>{opt.label}</option>
+                              ))}
+                            </select>
+                          </div>
                         </div>
                         <div>
                           <label className="mb-1 block text-sm font-medium text-stone-700">Published date (display)</label>
@@ -3010,6 +3095,22 @@ export default function AdminPage() {
                               <button type="button" onClick={() => insertContentHtml("<ul>\n  <li>", "</li>\n</ul>")} className="rounded border border-stone-300 bg-white px-2 py-1.5 text-xs text-stone-800 hover:bg-stone-100" title="Bullet list">• List</button>
                               <button type="button" onClick={() => insertContentHtml("<ol>\n  <li>", "</li>\n</ol>")} className="rounded border border-stone-300 bg-white px-2 py-1.5 text-xs text-stone-800 hover:bg-stone-100" title="Numbered list">1. List</button>
                               <span className="mx-1 w-px self-stretch bg-stone-300" />
+                              <span className="mr-1 text-xs text-stone-500">Size:</span>
+                              <select
+                                className="rounded border border-stone-300 bg-white px-2 py-1.5 text-xs text-stone-800 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                                title="Font size (px)"
+                                onChange={(e) => {
+                                  const n = parseInt(e.target.value, 10);
+                                  if (!Number.isNaN(n)) insertContentHtml(`<span style="font-size: ${n}px">`, "</span>");
+                                  e.target.value = "";
+                                }}
+                              >
+                                <option value="">1–100</option>
+                                {Array.from({ length: 100 }, (_, i) => i + 1).map((n) => (
+                                  <option key={n} value={n}>{n}</option>
+                                ))}
+                              </select>
+                              <span className="mx-1 w-px self-stretch bg-stone-300" />
                               <button type="button" onClick={insertLink} className="rounded border border-stone-300 bg-white px-2 py-1.5 text-xs text-stone-800 hover:bg-stone-100" title="Insert link">Link</button>
                               <button type="button" onClick={insertImageContent} className="rounded border border-stone-300 bg-white px-2 py-1.5 text-xs text-stone-800 hover:bg-stone-100" title="Insert image by URL">Img</button>
                               <input
@@ -3054,6 +3155,22 @@ export default function AdminPage() {
                                 <button type="button" onClick={() => execVisual("formatBlock", "h3")} className="rounded border border-stone-300 bg-white px-2 py-1 text-xs font-semibold text-stone-800 hover:bg-stone-100">H3</button>
                                 <button type="button" onClick={() => execVisual("insertUnorderedList")} className="rounded border border-stone-300 bg-white px-2 py-1 text-xs text-stone-800 hover:bg-stone-100">• List</button>
                                 <button type="button" onClick={() => execVisual("insertOrderedList")} className="rounded border border-stone-300 bg-white px-2 py-1 text-xs text-stone-800 hover:bg-stone-100">1. List</button>
+                                <span className="mx-1 w-px self-stretch bg-stone-300" />
+                                <span className="mr-1 text-xs text-stone-500">Size:</span>
+                                <select
+                                  className="rounded border border-stone-300 bg-white px-2 py-1 text-xs text-stone-800 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                                  title="Font size (px) – select text first"
+                                  onChange={(e) => {
+                                    const n = parseInt(e.target.value, 10);
+                                    if (!Number.isNaN(n)) execVisualFontSize(n);
+                                    e.target.value = "";
+                                  }}
+                                >
+                                  <option value="">1–100</option>
+                                  {Array.from({ length: 100 }, (_, i) => i + 1).map((n) => (
+                                    <option key={n} value={n}>{n}</option>
+                                  ))}
+                                </select>
                                 <span className="mx-1 w-px self-stretch bg-stone-300" />
                                 <button type="button" onClick={insertVisualLink} className="rounded border border-stone-300 bg-white px-2 py-1 text-xs text-stone-800 hover:bg-stone-100">Link</button>
                                 <button type="button" onClick={insertVisualImage} className="rounded border border-stone-300 bg-white px-2 py-1 text-xs text-stone-800 hover:bg-stone-100" title="Insert image by URL">Img</button>
