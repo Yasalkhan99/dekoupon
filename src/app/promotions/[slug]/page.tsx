@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import PromotionsFooter from "@/components/PromotionsFooter";
 import PromotionsHeader from "@/components/PromotionsHeader";
+import NewsletterSubscribe from "@/components/NewsletterSubscribe";
 import { getClickCounts } from "@/lib/clicks";
 import { getStorePageData } from "@/lib/stores";
 import type { Store } from "@/types/store";
@@ -71,20 +72,14 @@ export default async function StorePage({ params }: Props) {
         <div className="relative mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
           <h2 className="text-xl font-bold text-white sm:text-2xl">Join our newsletter for updates!</h2>
           <p className="mt-2 text-sm text-blue-100">Join our community with more than 300K active users</p>
-          <div className="mt-6 flex flex-col items-center gap-2 sm:flex-row sm:justify-center">
-            <input
-              type="email"
-              placeholder="Email Address"
-              className="w-full max-w-xs rounded-lg border border-zinc-200 bg-white px-4 py-3 text-zinc-900 shadow-sm placeholder:text-zinc-500 focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400 sm:max-w-sm"
-            />
-            <button
-              type="button"
-              className="flex items-center gap-2 rounded-lg bg-amber-500 px-5 py-3 font-semibold text-white transition hover:bg-amber-600"
-            >
-              <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" /></svg>
-              Subscribe
-            </button>
-          </div>
+          <NewsletterSubscribe
+            placeholder="Email Address"
+            buttonText="Subscribe"
+            layout="row"
+            className="mt-6 flex flex-col items-center gap-2 sm:flex-row sm:justify-center"
+            inputClassName="w-full max-w-xs rounded-lg border border-zinc-200 bg-white px-4 py-3 text-zinc-900 shadow-sm placeholder:text-zinc-500 focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400 sm:max-w-sm"
+            buttonClassName="flex items-center gap-2 rounded-lg bg-amber-500 px-5 py-3 font-semibold text-white transition hover:bg-amber-600"
+          />
         </div>
       </section>
 

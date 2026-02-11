@@ -5,6 +5,7 @@ import PromotionsHeader from "@/components/PromotionsHeader";
 import PromotionsHeroSearch from "@/components/PromotionsHeroSearch";
 import CategoryIcon from "@/components/CategoryIcon";
 import Pagination from "@/components/Pagination";
+import NewsletterSubscribe from "@/components/NewsletterSubscribe";
 import { getStores, getCoupons, slugify, canonicalSlug, hasCouponData, slugMatches } from "@/lib/stores";
 import { getBlogData } from "@/lib/blog";
 import { stripHtml } from "@/lib/slugify";
@@ -402,19 +403,14 @@ export default async function PromotionsPage({
                 Get the best deals and coupon codes delivered to your inbox.
               </p>
             </div>
-            <form className="flex w-full max-w-md flex-col gap-3 sm:flex-row sm:items-center">
-              <input
-                type="email"
-                placeholder="Enter your email address"
-                className="min-w-0 flex-1 rounded-lg border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 shadow-sm placeholder:text-zinc-500 focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
-              />
-              <button
-                type="submit"
-                className="rounded-lg bg-amber-500 px-6 py-3 font-semibold text-zinc-900 transition hover:bg-amber-400"
-              >
-                Subscribe
-              </button>
-            </form>
+            <NewsletterSubscribe
+              placeholder="Enter your email address"
+              buttonText="Subscribe"
+              layout="row"
+              className="flex w-full max-w-md flex-col gap-3 sm:flex-row sm:items-center"
+              inputClassName="min-w-0 flex-1 rounded-lg border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 shadow-sm placeholder:text-zinc-500 focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
+              buttonClassName="rounded-lg bg-amber-500 px-6 py-3 font-semibold text-zinc-900 transition hover:bg-amber-400"
+            />
           </div>
         </section>
 
@@ -534,22 +530,14 @@ export default async function PromotionsPage({
           <p className="mt-2 text-sm text-blue-100">
             Join our community with more than 300K active users
           </p>
-          <form className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center">
-            <input
-              type="email"
-              placeholder="Email Address"
-              className="min-w-0 flex-1 rounded-lg border border-zinc-200 bg-white px-4 py-3.5 text-sm text-zinc-900 shadow-sm placeholder:text-zinc-500 focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
-            />
-            <button
-              type="submit"
-              className="inline-flex items-center justify-center gap-2 rounded-lg bg-orange-500 px-6 py-3.5 font-semibold text-white transition hover:bg-orange-400"
-            >
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-              </svg>
-              Subscribe
-            </button>
-          </form>
+          <NewsletterSubscribe
+            placeholder="Email Address"
+            buttonText="Subscribe"
+            layout="row"
+            className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center"
+            inputClassName="min-w-0 flex-1 rounded-lg border border-zinc-200 bg-white px-4 py-3.5 text-sm text-zinc-900 shadow-sm placeholder:text-zinc-500 focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
+            buttonClassName="inline-flex items-center justify-center gap-2 rounded-lg bg-orange-500 px-6 py-3.5 font-semibold text-white transition hover:bg-orange-400"
+          />
         </div>
       </section>
 

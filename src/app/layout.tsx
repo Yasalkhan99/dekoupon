@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import Script from "next/script";
 import { Geist, Geist_Mono } from "next/font/google";
+import AnalyticsScripts from "@/components/AnalyticsScripts";
 import BlogDataProvider from "@/components/BlogDataProvider";
 import "./globals.css";
 import { getBlogData, getDefaultBlogData } from "@/lib/blog";
@@ -55,27 +55,15 @@ export default async function RootLayout({
   } catch {
     blogData = getDefaultBlogData();
   }
-  const GA_ID = "G-FLH2P5CHV8";
-  const AW_ID = "AW-17945301465"; // Google Ads
   return (
     <html lang="en">
+      <head>
+        <meta name="linkscircleverifycode" content="62dc9b67-2d00-439c-b7ae-c041349c3d42" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {/* Google tag (gtag.js) – Analytics + Ads, runs on every page */}
-        <Script
-          src={`https://www.googletagmanager.com/gtag/js?id=${AW_ID}`}
-          strategy="afterInteractive"
-        />
-        <Script id="gtag-init" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', '${AW_ID}');
-            gtag('config', '${GA_ID}');
-          `}
-        </Script>
+        <AnalyticsScripts />
         <BlogDataProvider
           initialData={{
             heroPost: blogData.heroPost,

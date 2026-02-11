@@ -377,3 +377,12 @@ body {
     transform: translateX(-50%);
   }
 }
+
+/* Admin Normal editor – links always blue (override inline styles) */
+.admin-normal-editor a {
+  color: #2563eb !important;
+  text-decoration: underline !important;
+}
+.admin-normal-editor a:hover {
+  color: #1d4ed8 !important;
+}

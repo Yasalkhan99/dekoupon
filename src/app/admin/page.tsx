@@ -169,6 +169,11 @@ export default function AdminPage() {
   const contentTextareaRef = useRef<HTMLTextAreaElement>(null);
   const titleInputRef = useRef<HTMLInputElement>(null);
   const excerptTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const imageUploadInputRef = useRef<HTMLInputElement>(null);
+  const visualImageUploadInputRef = useRef<HTMLInputElement>(null);
+  const contentEditableRef = useRef<HTMLDivElement>(null);
+  const [imageUploading, setImageUploading] = useState(false);
+  const [contentViewMode, setContentViewMode] = useState<"html" | "preview">("preview");
 
   const [analytics, setAnalytics] = useState<{
     totalClicks: number;
@@ -249,6 +254,63 @@ export default function AdminPage() {
     if (section === "blog") fetchBlogs();
   }, [section]);
 
+  // When switching to Normal (preview) tab, load HTML into the contentEditable
+  useEffect(() => {
+    if (contentViewMode === "preview" && contentEditableRef.current) {
+      contentEditableRef.current.innerHTML = blogForm.content?.trim() || "<p><br></p>";
+    }
+  }, [contentViewMode]);
+
+  const execVisual = (command: string, value?: string) => {
+    contentEditableRef.current?.focus();
+    document.execCommand(command, false, value ?? undefined);
+    if (contentEditableRef.current) setBlogForm((f) => ({ ...f, content: contentEditableRef.current!.innerHTML }));
+  };
+  const insertVisualLink = () => {
+    const url = window.prompt("Link URL:");
+    if (url == null || !url.trim()) return;
+    const fullUrl = /^https?:\/\//i.test(url.trim()) ? url.trim() : "https://" + url.trim();
+    execVisual("createLink", fullUrl);
+  };
+
+  const insertVisualImageFromUrl = (src: string, alt = "") => {
+    const el = contentEditableRef.current;
+    if (!el) return;
+    el.focus();
+    const escapeAttr = (s: string) => s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const altAttr = alt ? ` alt="${escapeAttr(alt)}"` : "";
+    const imgTag = `<img src="${escapeAttr(src)}"${altAttr} class="max-w-full h-auto rounded-lg my-4" />`;
+    document.execCommand("insertHTML", false, imgTag);
+    setBlogForm((f) => ({ ...f, content: el.innerHTML }));
+  };
+
+  const insertVisualImage = () => {
+    const url = window.prompt("Image URL (full link, e.g. https://yoursite.com/image.jpg or /image.jpg):");
+    if (url == null || url.trim() === "") return;
+    const alt = window.prompt("Alt text (for accessibility, optional):")?.trim() ?? "";
+    insertVisualImageFromUrl(url.trim(), alt);
+  };
+
+  const handleVisualImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || !file.type.startsWith("image/")) return;
+    setImageUploading(true);
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      const res = await fetch("/api/admin/upload-image", { method: "POST", body: form });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Upload failed");
+      const url = data.url as string;
+      if (url) insertVisualImageFromUrl(url, file.name.replace(/\.[^.]+$/, "") || "Image");
+    } catch (err) {
+      window.alert(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setImageUploading(false);
+    }
+  };
+
   const handleBlogSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage(null);
@@ -323,6 +385,59 @@ export default function AdminPage() {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  /** Sanitize pasted HTML so bold, lists, links etc. are kept; script/style removed */
+  const sanitizePastedHtml = (html: string): string => {
+    if (typeof document === "undefined") return html;
+    try {
+      const doc = new DOMParser().parseFromString(html, "text/html");
+      const allowed = new Set(["p", "div", "br", "strong", "b", "em", "i", "u", "h2", "h3", "h4", "ul", "ol", "li", "a", "span", "img"]);
+      const sanitizeNode = (node: Node): string => {
+        if (node.nodeType === Node.TEXT_NODE) return node.textContent ?? "";
+        if (node.nodeType !== Node.ELEMENT_NODE) return "";
+        const el = node as Element;
+        const tag = el.tagName.toLowerCase();
+        if (!allowed.has(tag)) return Array.from(el.childNodes).map(sanitizeNode).join("");
+        if (tag === "br") return "<br>";
+        if (tag === "img") {
+          const src = el.getAttribute("src");
+          if (!src) return "";
+          const alt = el.getAttribute("alt") ?? "";
+          const safe = (s: string) => String(s).replace(/"/g, "&quot;");
+          return `<img src="${safe(src)}" alt="${safe(alt)}" class="max-w-full h-auto rounded-lg my-4" />`;
+        }
+        const attrs: string[] = [];
+        if (tag === "a") {
+          const href = el.getAttribute("href");
+          if (href) attrs.push(`href="${String(href).replace(/"/g, "&quot;")}"`);
+        }
+        const inner = Array.from(el.childNodes).map(sanitizeNode).join("");
+        const attrStr = attrs.length ? " " + attrs.join(" ") : "";
+        return `<${tag}${attrStr}>${inner}</${tag}>`;
+      };
+      return Array.from(doc.body.childNodes).map(sanitizeNode).join("");
+    } catch {
+      return html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, "").replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, "");
+    }
+  };
+
+  const handleContentPaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const html = e.clipboardData?.getData("text/html");
+    if (!html || !contentTextareaRef.current) return;
+    e.preventDefault();
+    const ta = contentTextareaRef.current;
+    const start = ta.selectionStart ?? 0;
+    const end = ta.selectionEnd ?? 0;
+    const val = ta.value;
+    const pasted = sanitizePastedHtml(html);
+    const newVal = val.slice(0, start) + pasted + val.slice(end);
+    const newCursor = start + pasted.length;
+    setBlogForm((f) => ({ ...f, content: newVal }));
+    setTimeout(() => {
+      ta.focus();
+      ta.setSelectionRange(newCursor, newCursor);
+    }, 0);
   };
 
   const insertContentHtml = (openTag: string, closeTag: string) => {
@@ -417,6 +532,52 @@ export default function AdminPage() {
     const newVal = before + `<a href="${safeUrl}" target="_blank" rel="noopener noreferrer">${safeText}</a>` + after;
     setBlogForm((f) => ({ ...f, content: newVal }));
     setTimeout(() => ta.focus(), 0);
+  };
+
+  const insertImgAtCursor = (src: string, alt = "") => {
+    const ta = contentTextareaRef.current;
+    if (!ta) return;
+    const start = ta.selectionStart ?? 0;
+    const end = ta.selectionEnd ?? 0;
+    const val = ta.value;
+    const before = val.slice(0, start);
+    const after = val.slice(end);
+    const escapeAttr = (s: string) => s.replace(/&/g, "&amp;").replace(/"/g, "&quot;");
+    const altAttr = alt ? ` alt="${escapeAttr(alt)}"` : "";
+    const imgTag = `<img src="${escapeAttr(src)}"${altAttr} class="max-w-full h-auto rounded-lg my-4" />`;
+    const newVal = before + imgTag + after;
+    setBlogForm((f) => ({ ...f, content: newVal }));
+    setTimeout(() => {
+      ta.focus();
+      ta.setSelectionRange(start + imgTag.length, start + imgTag.length);
+    }, 0);
+  };
+
+  const insertImageContent = () => {
+    const url = window.prompt("Image URL (full link, e.g. https://yoursite.com/image.jpg or /image.jpg):");
+    if (url == null || url.trim() === "") return;
+    const alt = window.prompt("Alt text (for accessibility, optional):")?.trim() ?? "";
+    insertImgAtCursor(url.trim(), alt);
+  };
+
+  const handleImageUploadContent = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || !file.type.startsWith("image/")) return;
+    setImageUploading(true);
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      const res = await fetch("/api/admin/upload-image", { method: "POST", body: form });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Upload failed");
+      const url = data.url as string;
+      if (url) insertImgAtCursor(url, file.name.replace(/\.[^.]+$/, "") || "Image");
+    } catch (err) {
+      window.alert(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setImageUploading(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -2814,31 +2975,119 @@ export default function AdminPage() {
                         </label>
                       </div>
                       <div className="space-y-4 rounded-lg border border-stone-300 bg-white p-5 shadow-sm">
-                        <h3 className="border-b border-stone-200 pb-2 text-sm font-semibold uppercase tracking-wide text-stone-600">Content (HTML)</h3>
-                        <p className="text-xs text-stone-500">Full article body. Use the toolbar below or type HTML.</p>
-                        <div className="flex flex-wrap items-center gap-1 rounded border border-stone-200 bg-stone-50 p-1.5">
-                          <span className="mr-2 text-xs font-medium text-stone-500">Format:</span>
-                          <button type="button" onClick={() => insertContentHtml("<b>", "</b>")} className="rounded border border-stone-300 bg-white px-2 py-1.5 text-sm font-bold text-stone-800 hover:bg-stone-100" title="Bold">B</button>
-                          <button type="button" onClick={() => insertContentHtml("<i>", "</i>")} className="rounded border border-stone-300 bg-white px-2 py-1.5 text-sm italic text-stone-800 hover:bg-stone-100" title="Italic">I</button>
-                          <button type="button" onClick={() => insertContentHtml("<u>", "</u>")} className="rounded border border-stone-300 bg-white px-2 py-1.5 text-sm text-stone-800 underline hover:bg-stone-100" title="Underline">U</button>
-                          <span className="mx-1 w-px self-stretch bg-stone-300" />
-                          <button type="button" onClick={() => insertContentHtml("<h2>", "</h2>")} className="rounded border border-stone-300 bg-white px-2 py-1.5 text-xs font-semibold text-stone-800 hover:bg-stone-100" title="Heading 2">H2</button>
-                          <button type="button" onClick={() => insertContentHtml("<h3>", "</h3>")} className="rounded border border-stone-300 bg-white px-2 py-1.5 text-xs font-semibold text-stone-800 hover:bg-stone-100" title="Heading 3">H3</button>
-                          <button type="button" onClick={() => insertContentHtml("<p>", "</p>")} className="rounded border border-stone-300 bg-white px-2 py-1.5 text-xs text-stone-800 hover:bg-stone-100" title="Paragraph">P</button>
-                          <span className="mx-1 w-px self-stretch bg-stone-300" />
-                          <button type="button" onClick={() => insertContentHtml("<ul>\n  <li>", "</li>\n</ul>")} className="rounded border border-stone-300 bg-white px-2 py-1.5 text-xs text-stone-800 hover:bg-stone-100" title="Bullet list">• List</button>
-                          <button type="button" onClick={() => insertContentHtml("<ol>\n  <li>", "</li>\n</ol>")} className="rounded border border-stone-300 bg-white px-2 py-1.5 text-xs text-stone-800 hover:bg-stone-100" title="Numbered list">1. List</button>
-                          <span className="mx-1 w-px self-stretch bg-stone-300" />
-                          <button type="button" onClick={insertLink} className="rounded border border-stone-300 bg-white px-2 py-1.5 text-xs text-stone-800 hover:bg-stone-100" title="Insert link">Link</button>
+                        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stone-200 pb-2">
+                          <h3 className="text-sm font-semibold uppercase tracking-wide text-stone-600">Content (HTML)</h3>
+                          <div className="flex rounded border border-stone-200 bg-stone-50 p-0.5">
+                            <button
+                              type="button"
+                              onClick={() => setContentViewMode("html")}
+                              className={`rounded px-3 py-1.5 text-xs font-medium transition ${contentViewMode === "html" ? "bg-amber-500 text-white" : "text-stone-600 hover:bg-stone-200"}`}
+                            >
+                              HTML
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setContentViewMode("preview")}
+                              className={`rounded px-3 py-1.5 text-xs font-medium transition ${contentViewMode === "preview" ? "bg-amber-500 text-white" : "text-stone-600 hover:bg-stone-200"}`}
+                            >
+                              Normal
+                            </button>
+                          </div>
                         </div>
-                        <textarea
-                          ref={contentTextareaRef}
-                          value={blogForm.content ?? ""}
-                          onChange={(e) => setBlogForm((f) => ({ ...f, content: e.target.value }))}
-                          placeholder="<p>Your content here...</p>"
-                          rows={16}
-                          className="w-full rounded border border-stone-300 px-3 py-2 font-mono text-sm text-stone-900 focus:border-amber-600 focus:outline-none focus:ring-1 focus:ring-amber-600"
-                        />
+                        <p className="text-xs text-stone-500">Normal = edit as plain English (formatted). HTML = edit raw code.</p>
+                        {contentViewMode === "html" && (
+                          <>
+                            <div className="flex flex-wrap items-center gap-1 rounded border border-stone-200 bg-stone-50 p-1.5">
+                              <span className="mr-2 text-xs font-medium text-stone-500">Format:</span>
+                              <button type="button" onClick={() => insertContentHtml("<b>", "</b>")} className="rounded border border-stone-300 bg-white px-2 py-1.5 text-sm font-bold text-stone-800 hover:bg-stone-100" title="Bold">B</button>
+                              <button type="button" onClick={() => insertContentHtml("<i>", "</i>")} className="rounded border border-stone-300 bg-white px-2 py-1.5 text-sm italic text-stone-800 hover:bg-stone-100" title="Italic">I</button>
+                              <button type="button" onClick={() => insertContentHtml("<u>", "</u>")} className="rounded border border-stone-300 bg-white px-2 py-1.5 text-sm text-stone-800 underline hover:bg-stone-100" title="Underline">U</button>
+                              <span className="mx-1 w-px self-stretch bg-stone-300" />
+                              <button type="button" onClick={() => insertContentHtml("<h2>", "</h2>")} className="rounded border border-stone-300 bg-white px-2 py-1.5 text-xs font-semibold text-stone-800 hover:bg-stone-100" title="Heading 2">H2</button>
+                              <button type="button" onClick={() => insertContentHtml("<h3>", "</h3>")} className="rounded border border-stone-300 bg-white px-2 py-1.5 text-xs font-semibold text-stone-800 hover:bg-stone-100" title="Heading 3">H3</button>
+                              <button type="button" onClick={() => insertContentHtml("<p>", "</p>")} className="rounded border border-stone-300 bg-white px-2 py-1.5 text-xs text-stone-800 hover:bg-stone-100" title="Paragraph">P</button>
+                              <span className="mx-1 w-px self-stretch bg-stone-300" />
+                              <button type="button" onClick={() => insertContentHtml("<ul>\n  <li>", "</li>\n</ul>")} className="rounded border border-stone-300 bg-white px-2 py-1.5 text-xs text-stone-800 hover:bg-stone-100" title="Bullet list">• List</button>
+                              <button type="button" onClick={() => insertContentHtml("<ol>\n  <li>", "</li>\n</ol>")} className="rounded border border-stone-300 bg-white px-2 py-1.5 text-xs text-stone-800 hover:bg-stone-100" title="Numbered list">1. List</button>
+                              <span className="mx-1 w-px self-stretch bg-stone-300" />
+                              <button type="button" onClick={insertLink} className="rounded border border-stone-300 bg-white px-2 py-1.5 text-xs text-stone-800 hover:bg-stone-100" title="Insert link">Link</button>
+                              <button type="button" onClick={insertImageContent} className="rounded border border-stone-300 bg-white px-2 py-1.5 text-xs text-stone-800 hover:bg-stone-100" title="Insert image by URL">Img</button>
+                              <input
+                                ref={imageUploadInputRef}
+                                type="file"
+                                accept="image/jpeg,image/png,image/gif,image/webp"
+                                className="hidden"
+                                onChange={handleImageUploadContent}
+                              />
+                              <button
+                                type="button"
+                                disabled={imageUploading}
+                                onClick={() => imageUploadInputRef.current?.click()}
+                                className="rounded border border-stone-300 bg-white px-2 py-1.5 text-xs text-stone-800 hover:bg-stone-100 disabled:opacity-50"
+                                title="Upload image (saves to /uploads)"
+                              >
+                                {imageUploading ? "…" : "Upload"}
+                              </button>
+                            </div>
+                            <textarea
+                              ref={contentTextareaRef}
+                              value={blogForm.content ?? ""}
+                              onChange={(e) => setBlogForm((f) => ({ ...f, content: e.target.value }))}
+                              onPaste={handleContentPaste}
+                              placeholder="<p>Your content here...</p>"
+                              rows={16}
+                              className="w-full rounded border border-stone-300 px-3 py-2 font-mono text-sm text-stone-900 focus:border-amber-600 focus:outline-none focus:ring-1 focus:ring-amber-600"
+                            />
+                          </>
+                        )}
+                        {contentViewMode === "preview" && (
+                          <div className="min-h-[280px] max-h-[75vh] overflow-y-auto rounded-lg border border-stone-200 bg-white">
+                            {/* Sticky bar: label + toolbar — sticks inside this scroll container */}
+                            <div className="sticky top-0 z-30 border-b border-stone-200 bg-white px-4 pb-2 pt-4 shadow-md">
+                              <p className="mb-2 text-xs font-medium uppercase tracking-wide text-stone-500">Normal English — edit here; links show in blue</p>
+                              <div className="flex flex-wrap items-center gap-1 rounded border border-stone-200 bg-stone-100 p-1.5">
+                                <button type="button" onClick={() => execVisual("bold")} className="rounded border border-stone-300 bg-white px-2 py-1 text-sm font-bold text-stone-800 hover:bg-stone-100" title="Bold">B</button>
+                                <button type="button" onClick={() => execVisual("italic")} className="rounded border border-stone-300 bg-white px-2 py-1 text-sm italic text-stone-800 hover:bg-stone-100" title="Italic">I</button>
+                                <button type="button" onClick={() => execVisual("underline")} className="rounded border border-stone-300 bg-white px-2 py-1 text-sm text-stone-800 underline hover:bg-stone-100" title="Underline">U</button>
+                                <span className="mx-1 w-px self-stretch bg-stone-300" />
+                                <button type="button" onClick={() => execVisual("formatBlock", "h2")} className="rounded border border-stone-300 bg-white px-2 py-1 text-xs font-semibold text-stone-800 hover:bg-stone-100">H2</button>
+                                <button type="button" onClick={() => execVisual("formatBlock", "h3")} className="rounded border border-stone-300 bg-white px-2 py-1 text-xs font-semibold text-stone-800 hover:bg-stone-100">H3</button>
+                                <button type="button" onClick={() => execVisual("insertUnorderedList")} className="rounded border border-stone-300 bg-white px-2 py-1 text-xs text-stone-800 hover:bg-stone-100">• List</button>
+                                <button type="button" onClick={() => execVisual("insertOrderedList")} className="rounded border border-stone-300 bg-white px-2 py-1 text-xs text-stone-800 hover:bg-stone-100">1. List</button>
+                                <span className="mx-1 w-px self-stretch bg-stone-300" />
+                                <button type="button" onClick={insertVisualLink} className="rounded border border-stone-300 bg-white px-2 py-1 text-xs text-stone-800 hover:bg-stone-100">Link</button>
+                                <button type="button" onClick={insertVisualImage} className="rounded border border-stone-300 bg-white px-2 py-1 text-xs text-stone-800 hover:bg-stone-100" title="Insert image by URL">Img</button>
+                                <input
+                                  ref={visualImageUploadInputRef}
+                                  type="file"
+                                  accept="image/jpeg,image/png,image/gif,image/webp"
+                                  className="hidden"
+                                  onChange={handleVisualImageUpload}
+                                />
+                                <button
+                                  type="button"
+                                  disabled={imageUploading}
+                                  onClick={() => visualImageUploadInputRef.current?.click()}
+                                  className="rounded border border-stone-300 bg-white px-2 py-1 text-xs text-stone-800 hover:bg-stone-100 disabled:opacity-50"
+                                  title="Upload image (saves to /uploads)"
+                                >
+                                  {imageUploading ? "…" : "Upload"}
+                                </button>
+                              </div>
+                            </div>
+                            <div
+                              ref={contentEditableRef}
+                              contentEditable
+                              suppressContentEditableWarning
+                              onInput={(e) => {
+                                const html = (e.currentTarget as HTMLDivElement).innerHTML;
+                                setBlogForm((f) => ({ ...f, content: html }));
+                              }}
+                              className="admin-normal-editor min-h-[240px] max-w-none rounded border border-stone-200 bg-stone-50/50 p-4 text-left text-stone-700 outline-none focus:ring-2 focus:ring-amber-500 [&_h2]:mt-4 [&_h2]:text-xl [&_h2]:font-bold [&_h3]:mt-3 [&_h3]:text-lg [&_ul]:list-disc [&_ul]:pl-6 [&_li]:my-0.5 [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded [&_p]:my-2"
+                              style={{ overflowWrap: "break-word" } as React.CSSProperties}
+                            />
+                          </div>
+                        )}
                       </div>
                     </div>
                     <div className="flex gap-2">
