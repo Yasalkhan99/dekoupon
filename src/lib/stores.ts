@@ -126,13 +126,13 @@ export type StorePageData = {
   otherStores: Store[];
 };
 
-/** Normalize slug for matching: strip -coupon-code, -promo-code, -coupon, -promo so same store matches regardless of URL. */
+/** Normalize slug for matching: strip common URL suffixes so same store matches regardless of URL. */
 export function canonicalSlug(s: string): string {
   let lower = s.toLowerCase().trim();
-  if (lower.endsWith("-coupon-code")) return lower.slice(0, -"-coupon-code".length);
-  if (lower.endsWith("-promo-code")) return lower.slice(0, -"-promo-code".length);
-  if (lower.endsWith("-coupon")) return lower.slice(0, -"-coupon".length);
-  if (lower.endsWith("-promo")) return lower.slice(0, -"-promo".length);
+  const suffixes = ["-discount-code", "-coupon-code", "-promo-code", "-coupon", "-promo", "-discount"];
+  for (const suf of suffixes) {
+    if (lower.endsWith(suf)) return lower.slice(0, -suf.length);
+  }
   return lower;
 }
 
@@ -142,19 +142,30 @@ function normalizeForMatch(s: string): string {
   return canonicalSlug(s).toLowerCase().replace(/-/g, "");
 }
 
-function slugMatches(row: { slug?: string; name?: string }, wantRaw: string, wantCanonical: string): boolean {
+/** Match store/coupon row to a page slug (e.g. "magic-hour"). Used for store pages and coupon counts. */
+export function slugMatches(row: { slug?: string; name?: string }, wantRaw: string, wantCanonical: string): boolean {
   const sSlug = (row.slug || slugify(row.name ?? "")).toLowerCase().trim();
   const sCanonical = canonicalSlug(sSlug);
   const nameSlug = (row.name ?? "").toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
   const wantNorm = normalizeForMatch(wantRaw);
   const rowNorm = normalizeForMatch(sSlug || nameSlug);
-  return (
+  // Exact matches
+  if (
     sSlug === wantRaw ||
     sCanonical === wantCanonical ||
     nameSlug === wantRaw ||
     canonicalSlug(nameSlug) === wantCanonical ||
     rowNorm === wantNorm
-  );
+  ) {
+    return true;
+  }
+  // Coupon slug can be store slug + suffix (e.g. magic-hour-20-off)
+  if (wantCanonical.length >= 2 && sCanonical.startsWith(wantCanonical + "-")) return true;
+  // Page URL can be store slug + suffix (e.g. /magic-hour-tea-discount-code vs store slug magic-hour-tea)
+  if (sCanonical.length >= 2 && wantCanonical.startsWith(sCanonical + "-")) return true;
+  // Normalized slug/name starts with page slug (e.g. "Magic Hour - 10% Off" → magichour10off)
+  if (wantNorm.length >= 2 && rowNorm.startsWith(wantNorm) && (rowNorm.length === wantNorm.length || /^[-0-9]/.test(rowNorm.slice(wantNorm.length)))) return true;
+  return false;
 }
 
 export async function getStorePageData(slug: string): Promise<StorePageData> {

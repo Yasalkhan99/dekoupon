@@ -5,7 +5,7 @@ import PromotionsHeader from "@/components/PromotionsHeader";
 import PromotionsHeroSearch from "@/components/PromotionsHeroSearch";
 import CategoryIcon from "@/components/CategoryIcon";
 import Pagination from "@/components/Pagination";
-import { getStores, getCoupons, slugify, canonicalSlug, hasCouponData } from "@/lib/stores";
+import { getStores, getCoupons, slugify, canonicalSlug, hasCouponData, slugMatches } from "@/lib/stores";
 import { getBlogData } from "@/lib/blog";
 import { stripHtml } from "@/lib/slugify";
 import { STORE_CATEGORIES } from "@/data/categories";
@@ -74,13 +74,14 @@ export default async function PromotionsPage({
   const { uniqueStores, getCouponCount: getCouponCountFromStores } = buildUniqueStoresAndCouponCounts(enabled);
   const searchFilteredStores = filterStoresByQuery(uniqueStores, searchQuery ?? "");
 
-  const couponCountByKey = new Map<string, number>();
   const enabledCoupons = allCouponsFromTable.filter((c) => c.status !== "disable");
-  for (const c of enabledCoupons) {
-    const rawSlug = (c.slug || slugify(c.name)).toLowerCase().trim() || (c.name ?? "").toLowerCase().trim();
-    if (!rawSlug) continue;
-    const key = canonicalSlug(rawSlug);
-    couponCountByKey.set(key, (couponCountByKey.get(key) ?? 0) + 1);
+  const couponCountByKey = new Map<string, number>();
+  for (const store of uniqueStores) {
+    const wantRaw = (store.slug || slugify(store.name)).toLowerCase().trim() || (store.name ?? "").toLowerCase().trim();
+    if (!wantRaw) continue;
+    const key = canonicalSlug(wantRaw);
+    const count = enabledCoupons.filter((c) => slugMatches(c, wantRaw, key)).length;
+    couponCountByKey.set(key, count);
   }
   const getCouponCount = (store: Store) => {
     const fromStores = getCouponCountFromStores(store);

@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import NewsletterSubscribe from "@/components/NewsletterSubscribe";
 
 export default function CategoriesSidebar() {
   return (
@@ -53,23 +54,14 @@ export default function CategoriesSidebar() {
       {/* Newsletter */}
       <div className="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm">
         <h2 className="mb-3 text-base font-bold text-zinc-900">Subscribe To Our Weekly Newsletter!</h2>
-        <div className="space-y-3">
-          <label htmlFor="categories-newsletter-email" className="sr-only">
-            Enter your email
-          </label>
-          <input
-            id="categories-newsletter-email"
-            type="email"
-            placeholder="Enter Your Email"
-            className="w-full rounded-lg border border-zinc-200 px-3 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
-          />
-          <button
-            type="button"
-            className="w-full rounded-lg bg-teal-600 px-4 py-2.5 text-sm font-semibold uppercase tracking-wide text-white transition hover:bg-teal-700"
-          >
-            Subscribe
-          </button>
-        </div>
+        <NewsletterSubscribe
+          placeholder="Enter Your Email"
+          buttonText="Subscribe"
+          layout="stack"
+          className="space-y-3"
+          inputClassName="w-full rounded-lg border border-zinc-200 px-3 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+          buttonClassName="w-full rounded-lg bg-teal-600 px-4 py-2.5 text-sm font-semibold uppercase tracking-wide text-white transition hover:bg-teal-700"
+        />
       </div>
     </aside>
   );

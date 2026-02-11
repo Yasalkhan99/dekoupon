@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useBlogData } from "@/components/BlogDataProvider";
 import { stripHtml } from "@/lib/slugify";
 import { categories as blogCategories } from "@/data/blog";
+import NewsletterSubscribe from "@/components/NewsletterSubscribe";
 
 const SIDEBAR_TAGS = [
   "Tech", "Life", "Travel", "Fashion", "Health", "Lifestyle",
@@ -147,20 +148,14 @@ export default function MainSidebar() {
           <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-[var(--hunted-navy)]">
             Newsletter
           </h3>
-          <form action="/promotions" method="get" className="space-y-2">
-            <input
-              type="email"
-              name="email"
-              placeholder="Your email"
-              className="w-full border border-[var(--theme-border)] px-3 py-2 text-sm focus:border-[var(--footer-accent)] focus:outline-none"
-            />
-            <button
-              type="submit"
-              className="w-full bg-[var(--hunted-navy)] py-2.5 text-sm font-bold text-white hover:bg-[var(--footer-accent)]"
-            >
-              Subscribe
-            </button>
-          </form>
+          <NewsletterSubscribe
+            placeholder="Your email"
+            buttonText="Subscribe"
+            layout="stack"
+            className="space-y-2"
+            inputClassName="w-full border border-[var(--theme-border)] px-3 py-2 text-sm focus:border-[var(--footer-accent)] focus:outline-none"
+            buttonClassName="w-full bg-[var(--hunted-navy)] py-2.5 text-sm font-bold text-white hover:bg-[var(--footer-accent)]"
+          />
         </div>
 
         {/* 8. Tag Cloud */}

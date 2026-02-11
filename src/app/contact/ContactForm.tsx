@@ -16,14 +16,17 @@ export default function ContactForm() {
     const data = Object.fromEntries(formData.entries());
 
     try {
-      // Optional: POST to an API route when you add one, e.g. /api/contact
-      // const res = await fetch("/api/contact", { method: "POST", body: JSON.stringify(data) });
-      // if (!res.ok) throw new Error("Failed to send");
-      await new Promise((r) => setTimeout(r, 600));
+      const res = await fetch("/api/send-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "contact", ...data }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.error || "Failed to send");
       setSubmitted(true);
       form.reset();
-    } catch {
-      setError("Something went wrong. Please try again or email us directly.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Something went wrong. Please try again or email us directly.");
     } finally {
       setLoading(false);
     }

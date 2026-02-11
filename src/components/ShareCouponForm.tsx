@@ -20,8 +20,13 @@ export default function ShareCouponForm() {
     setMessage(null);
     setSubmitting(true);
     try {
-      // TODO: POST to API when backend is ready
-      await new Promise((r) => setTimeout(r, 500));
+      const res = await fetch("/api/send-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "share-coupon", ...form }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.error || "Failed to submit");
       setMessage({ type: "success", text: "Thank you! Your coupon has been submitted for review." });
       setForm({
         fullName: "",
@@ -32,8 +37,11 @@ export default function ShareCouponForm() {
         couponDescription: "",
         couponExpiration: "",
       });
-    } catch {
-      setMessage({ type: "error", text: "Something went wrong. Please try again." });
+    } catch (e) {
+      setMessage({
+        type: "error",
+        text: e instanceof Error ? e.message : "Something went wrong. Please try again.",
+      });
     } finally {
       setSubmitting(false);
     }

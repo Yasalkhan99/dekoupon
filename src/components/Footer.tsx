@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useBlogData } from "@/components/BlogDataProvider";
 import { stripHtml } from "@/lib/slugify";
 import { categories as blogCategories } from "@/data/blog";
+import NewsletterSubscribe from "@/components/NewsletterSubscribe";
 import { useState, useEffect } from "react";
 
 const QUICK_LINKS = [
@@ -129,21 +130,15 @@ export default function Footer() {
             Subscribe to Our Newsletter
           </h2>
           <p className="mb-5 text-sm text-white/90">No worries, we don&apos;t like spam either.</p>
-          <form action="/promotions" method="get" className="flex flex-col gap-3 sm:flex-row sm:justify-center">
-            <input
-              type="email"
-              name="email"
-              placeholder="Your e-mail address"
-              className="min-w-0 flex-1 rounded border-2 border-white bg-white px-4 py-3 text-zinc-800 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-white/50 sm:max-w-[280px]"
-            />
-            <button
-              type="submit"
-              className="rounded border-2 border-white px-8 py-3 text-sm font-bold uppercase tracking-wide text-white transition hover:bg-white hover:text-[var(--footer-accent)]"
-              style={{ backgroundColor: "#162238" }}
-            >
-              Subscribe
-            </button>
-          </form>
+          <NewsletterSubscribe
+            placeholder="Your e-mail address"
+            buttonText="Subscribe"
+            layout="row"
+            className="flex flex-col gap-3 sm:flex-row sm:justify-center"
+            inputClassName="min-w-0 flex-1 rounded border-2 border-white bg-white px-4 py-3 text-zinc-800 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-white/50 sm:max-w-[280px]"
+            buttonClassName="rounded border-2 border-white px-8 py-3 text-sm font-bold uppercase tracking-wide text-white transition hover:bg-white hover:text-[var(--footer-accent)]"
+            buttonStyle={{ backgroundColor: "#162238" }}
+          />
         </div>
       </div>
 
