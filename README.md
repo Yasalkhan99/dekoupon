@@ -1,6 +1,6 @@
 # SavingsHub4u.com
 
-Blog-based homepage for a coupon & savings website. Built with Next.js 16, TypeScript, and Tailwind CSS. 
+Blog-based homepage for a coupon & savings website. Built with Next.js 16, TypeScript, and Tailwzzzind CSS. 
 
 ## Features
 ss
