@@ -38,15 +38,15 @@ export default async function Home() {
                 {/* Hunted home-widget-area: two columns – main article + list + VIEW ALL (from theme file) */}
                 <HomeWidgetSection />
 
-                {/* Banner above LATEST – fixed aspect, no extra gap below */}
-                <div className="mb-8 mx-auto w-full max-w-6xl overflow-hidden rounded-xl shadow-md aspect-[3/1]">
+                {/* Banner above LATEST – container invisible, only banner image visible */}
+                <div className="mb-8 mx-auto w-full max-w-6xl overflow-hidden aspect-[3/1]">
                   <Link href="/promotions" className="block relative h-full w-full">
                     <Image
                       src="/banner%201.jpg"
                       alt="You're just a click away from best discount offers"
                       width={1200}
                       height={400}
-                      className="h-full w-full object-contain object-center bg-[#f5f0ea]"
+                      className="h-full w-full object-contain object-center bg-transparent"
                       sizes="(max-width: 768px) 100vw, (max-width: 1152px) 90vw, 1152px"
                       priority={false}
                     />
