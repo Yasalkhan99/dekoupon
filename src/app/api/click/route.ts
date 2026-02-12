@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { readFile, writeFile, mkdir } from "fs/promises";
 import path from "path";
+import { getSupabase, SUPABASE_CLICKS_TABLE } from "@/lib/supabase-server";
 
 const getClicksPath = () => path.join(process.cwd(), "data", "clicks.json");
 
@@ -16,6 +17,11 @@ async function readClicks(): Promise<ClickRecord[]> {
 }
 
 async function appendClick(storeId: string): Promise<void> {
+  const supabase = getSupabase();
+  if (supabase) {
+    const { error } = await supabase.from(SUPABASE_CLICKS_TABLE).insert({ store_id: storeId });
+    if (!error) return;
+  }
   const dir = path.dirname(getClicksPath());
   await mkdir(dir, { recursive: true });
   const clicks = await readClicks();
@@ -45,7 +51,7 @@ export async function GET(request: NextRequest) {
   try {
     await appendClick(storeId);
   } catch {
-    // On Vercel/serverless, data/ may be read-only; still redirect the user
+    // Still redirect the user even if logging fails
   }
   return NextResponse.redirect(decoded, 302);
 }

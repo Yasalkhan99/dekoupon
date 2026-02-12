@@ -19,3 +19,5 @@ export const SUPABASE_COUPONS_TABLE = "coupons";
 export const SUPABASE_BLOG_TABLE = "blog_posts";
 /** Storage bucket for blog image uploads (must be public so URLs work). */
 export const SUPABASE_UPLOADS_BUCKET = "uploads";
+/** Coupon/store page click tracking (GET CODE / GET DEAL). */
+export const SUPABASE_CLICKS_TABLE = "coupon_clicks";
