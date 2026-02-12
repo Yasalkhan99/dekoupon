@@ -202,8 +202,8 @@ export default function Header({ transparent }: HeaderProps = {}) {
                       >
                         <div className="w-[min(90vw,880px)] rounded-b-lg border border-t-0 border-zinc-200 bg-white px-4 py-5 shadow-xl">
                           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                            {posts.map((post) => (
-                              <DropdownCard key={post.id} post={post} />
+                            {posts.map((post, i) => (
+                              <DropdownCard key={post.slug ? `${post.slug}-${i}` : `post-${i}`} post={post} />
                             ))}
                           </div>
                           <div className="mt-3 flex justify-center gap-2">
