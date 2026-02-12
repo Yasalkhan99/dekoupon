@@ -51,13 +51,15 @@ function FooterCategoryCard({
           <li key={post.id} className="widget-listing-z border-b border-zinc-300/60 py-3 last:border-b-0">
             <Link href={post.slug ? `/blog/${post.slug}` : "#"} className="flex gap-3">
               <div className="relative h-[60px] w-[96px] shrink-0 overflow-hidden bg-zinc-200">
-                <Image
-                  src={post.image}
-                  alt={stripHtml(post.title)}
-                  fill
-                  className="object-cover"
-                  sizes="96px"
-                />
+                {post.image ? (
+                  <Image
+                    src={post.image}
+                    alt={stripHtml(post.title)}
+                    fill
+                    className="object-cover"
+                    sizes="96px"
+                  />
+                ) : null}
               </div>
               <span
                 className="widget-listing-z-title flex-1 text-base font-medium leading-snug text-[var(--hunted-navy)] hover:text-[var(--footer-accent)]"
@@ -217,13 +219,15 @@ export default function Footer() {
                 <li key={post.id}>
                   <Link href={post.slug ? `/blog/${post.slug}` : "#"} className="group flex gap-3">
                     <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded bg-white/10">
-                      <Image
-                        src={post.image}
-                        alt={stripHtml(post.title)}
-                        fill
-                        className="object-cover transition group-hover:scale-105"
-                        sizes="56px"
-                      />
+                      {post.image ? (
+                        <Image
+                          src={post.image}
+                          alt={stripHtml(post.title)}
+                          fill
+                          className="object-cover transition group-hover:scale-105"
+                          sizes="56px"
+                        />
+                      ) : null}
                       <span
                         className="absolute left-0 top-0 flex h-5 w-5 items-center justify-center bg-[var(--footer-accent)] text-[10px] font-bold text-white"
                         aria-hidden

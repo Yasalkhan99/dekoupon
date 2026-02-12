@@ -177,6 +177,10 @@ export default function AdminPage() {
   const contentEditableRef = useRef<HTMLDivElement>(null);
   const [imageUploading, setImageUploading] = useState(false);
   const [contentViewMode, setContentViewMode] = useState<"html" | "preview">("preview");
+  const [featuredImageResizeModal, setFeaturedImageResizeModal] = useState<{ file: File; objectUrl: string } | null>(null);
+  const [featuredResizeSize, setFeaturedResizeSize] = useState<{ w: number; h: number }>({ w: 1060, h: 580 });
+  const [contentImageResizeModal, setContentImageResizeModal] = useState<{ file: File; objectUrl: string; mode: "html" | "visual" } | null>(null);
+  const [contentResizeSize, setContentResizeSize] = useState<{ w: number; h: number }>({ w: 1060, h: 580 });
 
   const [analytics, setAnalytics] = useState<{
     totalClicks: number;
@@ -269,11 +273,68 @@ export default function AdminPage() {
     document.execCommand(command, false, value ?? undefined);
     if (contentEditableRef.current) setBlogForm((f) => ({ ...f, content: contentEditableRef.current!.innerHTML }));
   };
+  /** Find the image that is at or near the current selection (so we can wrap it in a link). */
+  const getImageAtSelection = (container: HTMLElement): HTMLImageElement | null => {
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return null;
+    const range = sel.getRangeAt(0);
+    const imgs = container.getElementsByTagName("img");
+    for (let i = 0; i < imgs.length; i++) {
+      if (range.intersectsNode(imgs[i])) return imgs[i];
+    }
+    // Cursor inside image or right after/before: walk up from anchor and check prev/next sibling for IMG
+    let node: Node | null = sel.anchorNode;
+    while (node && node !== container) {
+      if (node.nodeType === Node.ELEMENT_NODE && (node as Element).tagName === "IMG") return node as HTMLImageElement;
+      const parent = node.nodeType === Node.ELEMENT_NODE ? (node as Element) : node.parentElement;
+      if (parent) {
+        if (parent.previousElementSibling?.tagName === "IMG") return parent.previousElementSibling as HTMLImageElement;
+        if (parent.nextElementSibling?.tagName === "IMG") return parent.nextElementSibling as HTMLImageElement;
+      }
+      node = node.parentNode;
+    }
+    return null;
+  };
+
   const insertVisualLink = () => {
-    const url = window.prompt("Link URL:");
+    const url = window.prompt("Link URL (opens in new tab):");
     if (url == null || !url.trim()) return;
     const fullUrl = /^https?:\/\//i.test(url.trim()) ? url.trim() : "https://" + url.trim();
-    execVisual("createLink", fullUrl);
+    const el = contentEditableRef.current;
+    if (!el) return;
+    el.focus();
+
+    const img = getImageAtSelection(el);
+    if (img) {
+      // Wrap this image in <a target="_blank"> (link on image, not on dash/text)
+      if (img.parentElement?.tagName === "A") {
+        (img.parentElement as HTMLAnchorElement).setAttribute("href", fullUrl);
+        (img.parentElement as HTMLAnchorElement).setAttribute("target", "_blank");
+        (img.parentElement as HTMLAnchorElement).setAttribute("rel", "noopener noreferrer");
+      } else {
+        const a = document.createElement("a");
+        a.href = fullUrl;
+        a.setAttribute("target", "_blank");
+        a.setAttribute("rel", "noopener noreferrer");
+        img.parentNode?.insertBefore(a, img);
+        a.appendChild(img);
+      }
+      setBlogForm((f) => ({ ...f, content: el.innerHTML }));
+      return;
+    }
+
+    document.execCommand("createLink", false, fullUrl);
+    const sel = window.getSelection();
+    let node: Node | null = sel?.anchorNode ?? null;
+    while (node && node !== el) {
+      if (node.nodeType === Node.ELEMENT_NODE && (node as Element).tagName === "A") {
+        (node as HTMLAnchorElement).setAttribute("target", "_blank");
+        (node as HTMLAnchorElement).setAttribute("rel", "noopener noreferrer");
+        break;
+      }
+      node = node.parentNode;
+    }
+    setBlogForm((f) => ({ ...f, content: el.innerHTML }));
   };
 
   const execVisualFontSize = (px: number) => {
@@ -304,13 +365,14 @@ export default function AdminPage() {
     }
   };
 
-  const insertVisualImageFromUrl = (src: string, alt = "") => {
+  const insertVisualImageFromUrl = (src: string, alt = "", size?: { w: number; h: number }) => {
     const el = contentEditableRef.current;
     if (!el) return;
     el.focus();
     const escapeAttr = (s: string) => s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     const altAttr = alt ? ` alt="${escapeAttr(alt)}"` : "";
-    const imgTag = `<img src="${escapeAttr(src)}"${altAttr} class="max-w-full h-auto rounded-lg my-4" />`;
+    const sizeAttr = size && size.w > 0 && size.h > 0 ? ` width="${size.w}" height="${size.h}"` : "";
+    const imgTag = `<img src="${escapeAttr(src)}"${altAttr}${sizeAttr} class="max-w-full h-auto rounded-lg my-4" style="max-width:100%;height:auto" />`;
     document.execCommand("insertHTML", false, imgTag);
     setBlogForm((f) => ({ ...f, content: el.innerHTML }));
   };
@@ -322,24 +384,13 @@ export default function AdminPage() {
     insertVisualImageFromUrl(url.trim(), alt);
   };
 
-  const handleVisualImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleVisualImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file || !file.type.startsWith("image/")) return;
-    setImageUploading(true);
-    try {
-      const form = new FormData();
-      form.append("file", file);
-      const res = await fetch("/api/admin/upload-image", { method: "POST", credentials: "include", body: form });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || "Upload failed");
-      const url = data.url as string;
-      if (url) insertVisualImageFromUrl(url, file.name.replace(/\.[^.]+$/, "") || "Image");
-    } catch (err) {
-      window.alert(err instanceof Error ? err.message : "Upload failed");
-    } finally {
-      setImageUploading(false);
-    }
+    const objectUrl = URL.createObjectURL(file);
+    setContentImageResizeModal({ file, objectUrl, mode: "visual" });
+    setContentResizeSize({ w: 1060, h: 580 });
   };
 
   const handleBlogSubmit = async (e: React.FormEvent) => {
@@ -568,7 +619,7 @@ export default function AdminPage() {
     setTimeout(() => ta.focus(), 0);
   };
 
-  const insertImgAtCursor = (src: string, alt = "") => {
+  const insertImgAtCursor = (src: string, alt = "", size?: { w: number; h: number }) => {
     const ta = contentTextareaRef.current;
     if (!ta) return;
     const start = ta.selectionStart ?? 0;
@@ -578,7 +629,8 @@ export default function AdminPage() {
     const after = val.slice(end);
     const escapeAttr = (s: string) => s.replace(/&/g, "&amp;").replace(/"/g, "&quot;");
     const altAttr = alt ? ` alt="${escapeAttr(alt)}"` : "";
-    const imgTag = `<img src="${escapeAttr(src)}"${altAttr} class="max-w-full h-auto rounded-lg my-4" />`;
+    const sizeAttr = size && size.w > 0 && size.h > 0 ? ` width="${size.w}" height="${size.h}"` : "";
+    const imgTag = `<img src="${escapeAttr(src)}"${altAttr}${sizeAttr} class="max-w-full h-auto rounded-lg my-4" style="max-width:100%;height:auto" />`;
     const newVal = before + imgTag + after;
     setBlogForm((f) => ({ ...f, content: newVal }));
     setTimeout(() => {
@@ -594,30 +646,74 @@ export default function AdminPage() {
     insertImgAtCursor(url.trim(), alt);
   };
 
-  const handleImageUploadContent = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUploadContent = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file || !file.type.startsWith("image/")) return;
-    setImageUploading(true);
-    try {
-      const form = new FormData();
-      form.append("file", file);
-      const res = await fetch("/api/admin/upload-image", { method: "POST", credentials: "include", body: form });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || "Upload failed");
-      const url = data.url as string;
-      if (url) insertImgAtCursor(url, file.name.replace(/\.[^.]+$/, "") || "Image");
-    } catch (err) {
-      window.alert(err instanceof Error ? err.message : "Upload failed");
-    } finally {
-      setImageUploading(false);
-    }
+    const objectUrl = URL.createObjectURL(file);
+    setContentImageResizeModal({ file, objectUrl, mode: "html" });
+    setContentResizeSize({ w: 1060, h: 580 });
   };
 
-  const handleFeaturedImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const FEATURED_IMAGE_PRESETS = [
+    [1060, 580],
+    [1080, 1920],
+    [2000, 2000],
+    [1080, 1080],
+    [1024, 1024],
+    [300, 168],
+  ] as const;
+
+  const resizeImageToBlob = (file: File, targetW: number, targetH: number): Promise<Blob> => {
+    return new Promise((resolve, reject) => {
+      const img = new window.Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        const iw = img.naturalWidth || img.width || 1;
+        const ih = img.naturalHeight || img.height || 1;
+        const canvas = document.createElement("canvas");
+        canvas.width = targetW;
+        canvas.height = targetH;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          reject(new Error("Canvas not supported"));
+          return;
+        }
+        const scale = Math.max(targetW / iw, targetH / ih);
+        const sw = Math.min(iw, targetW / scale);
+        const sh = Math.min(ih, targetH / scale);
+        const sx = (iw - sw) / 2;
+        const sy = (ih - sh) / 2;
+        ctx.drawImage(img, sx, sy, sw, sh, 0, 0, targetW, targetH);
+        canvas.toBlob(
+          (blob) => (blob ? resolve(blob) : reject(new Error("toBlob failed"))),
+          "image/jpeg",
+          0.92
+        );
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error("Image load failed"));
+      };
+      img.src = url;
+    });
+  };
+
+  const handleFeaturedImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file || !file.type.startsWith("image/")) return;
+    const objectUrl = URL.createObjectURL(file);
+    setFeaturedImageResizeModal({ file, objectUrl });
+    setFeaturedResizeSize({ w: 1060, h: 580 });
+  };
+
+  const handleFeaturedImageUploadOriginal = async () => {
+    if (!featuredImageResizeModal) return;
+    const { file, objectUrl } = featuredImageResizeModal;
+    URL.revokeObjectURL(objectUrl);
+    setFeaturedImageResizeModal(null);
     setImageUploading(true);
     try {
       const form = new FormData();
@@ -627,6 +723,100 @@ export default function AdminPage() {
       if (!res.ok) throw new Error(data.error || "Upload failed");
       const url = data.url as string;
       if (url) setBlogForm((f) => ({ ...f, image: url }));
+    } catch (err) {
+      window.alert(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setImageUploading(false);
+    }
+  };
+
+  const handleFeaturedImageApplyResize = async () => {
+    if (!featuredImageResizeModal) return;
+    const { file, objectUrl } = featuredImageResizeModal;
+    const { w, h } = featuredResizeSize;
+    if (w < 1 || h < 1) {
+      window.alert("Width and height must be at least 1.");
+      return;
+    }
+    URL.revokeObjectURL(objectUrl);
+    setFeaturedImageResizeModal(null);
+    setImageUploading(true);
+    try {
+      let fileToUpload: File;
+      try {
+        const blob = await resizeImageToBlob(file, w, h);
+        fileToUpload = new File([blob], file.name.replace(/\.[^.]+$/, "") + "-resized.jpg", { type: "image/jpeg" });
+      } catch (resizeErr) {
+        fileToUpload = file;
+      }
+      const form = new FormData();
+      form.append("file", fileToUpload);
+      const res = await fetch("/api/admin/upload-image", { method: "POST", credentials: "include", body: form });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Upload failed");
+      const url = data.url as string;
+      if (url) setBlogForm((f) => ({ ...f, image: url }));
+    } catch (err) {
+      window.alert(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setImageUploading(false);
+    }
+  };
+
+  const insertContentImageUrl = (url: string, alt: string, mode: "html" | "visual", size?: { w: number; h: number }) => {
+    if (mode === "html") insertImgAtCursor(url, alt, size);
+    else insertVisualImageFromUrl(url, alt, size);
+  };
+
+  const handleContentImageUploadOriginal = async () => {
+    if (!contentImageResizeModal) return;
+    const { file, objectUrl, mode } = contentImageResizeModal;
+    URL.revokeObjectURL(objectUrl);
+    setContentImageResizeModal(null);
+    setImageUploading(true);
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      const res = await fetch("/api/admin/upload-image", { method: "POST", credentials: "include", body: form });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Upload failed");
+      const url = data.url as string;
+      const alt = file.name.replace(/\.[^.]+$/, "") || "Image";
+      if (url) insertContentImageUrl(url, alt, mode, undefined);
+    } catch (err) {
+      window.alert(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setImageUploading(false);
+    }
+  };
+
+  const handleContentImageApplyResize = async () => {
+    if (!contentImageResizeModal) return;
+    const { file, objectUrl, mode } = contentImageResizeModal;
+    const size = { w: contentResizeSize.w, h: contentResizeSize.h };
+    if (size.w < 1 || size.h < 1) {
+      window.alert("Width and height must be at least 1.");
+      return;
+    }
+    URL.revokeObjectURL(objectUrl);
+    setContentImageResizeModal(null);
+    setImageUploading(true);
+    try {
+      let fileToUpload: File;
+      try {
+        const blob = await resizeImageToBlob(file, size.w, size.h);
+        fileToUpload = new File([blob], file.name.replace(/\.[^.]+$/, "") + "-resized.jpg", { type: "image/jpeg" });
+      } catch {
+        fileToUpload = file;
+      }
+      const form = new FormData();
+      form.append("file", fileToUpload);
+      const res = await fetch("/api/admin/upload-image", { method: "POST", credentials: "include", body: form });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Upload failed");
+      const url = data.url as string;
+      const alt = file.name.replace(/\.[^.]+$/, "") || "Image";
+      if (url) insertContentImageUrl(url, alt, mode, size);
     } catch (err) {
       window.alert(err instanceof Error ? err.message : "Upload failed");
     } finally {
@@ -3021,11 +3211,161 @@ export default function AdminPage() {
                               disabled={imageUploading}
                               onClick={() => featuredImageUploadInputRef.current?.click()}
                               className="shrink-0 rounded border border-stone-300 bg-white px-3 py-2 text-sm font-medium text-stone-800 hover:bg-stone-100 disabled:opacity-50"
-                              title="Upload featured image"
+                              title="Upload featured image (choose size before upload)"
                             >
                               {imageUploading ? "…" : "Upload"}
                             </button>
                           </div>
+                          {featuredImageResizeModal && (
+                            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-label="Resize featured image">
+                              <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-stone-200 bg-white p-4 shadow-xl">
+                                <h3 className="mb-3 text-lg font-semibold text-stone-800">Featured image size (px)</h3>
+                                <p className="mb-3 text-sm text-stone-600">Choose a preset or enter custom width × height. Image will be cropped to fill.</p>
+                                <div className="mb-3 flex flex-wrap gap-2">
+                                  {FEATURED_IMAGE_PRESETS.map(([pw, ph]) => (
+                                    <button
+                                      key={`${pw}-${ph}`}
+                                      type="button"
+                                      onClick={() => setFeaturedResizeSize({ w: pw, h: ph })}
+                                      className={`rounded-lg border px-3 py-2 text-sm ${featuredResizeSize.w === pw && featuredResizeSize.h === ph ? "border-amber-500 bg-amber-50 text-amber-800" : "border-stone-300 bg-white text-stone-700 hover:bg-stone-50"}`}
+                                    >
+                                      {pw} × {ph}
+                                    </button>
+                                  ))}
+                                </div>
+                                <div className="mb-4 flex items-center gap-3">
+                                  <label className="flex items-center gap-2 text-sm text-stone-700">
+                                    Width
+                                    <input
+                                      type="number"
+                                      min={1}
+                                      max={4000}
+                                      value={featuredResizeSize.w}
+                                      onChange={(e) => setFeaturedResizeSize((s) => ({ ...s, w: Math.max(1, parseInt(e.target.value, 10) || 1) }))}
+                                      className="w-20 rounded border border-stone-300 px-2 py-1.5 text-stone-900"
+                                    />
+                                  </label>
+                                  <span className="text-stone-400">×</span>
+                                  <label className="flex items-center gap-2 text-sm text-stone-700">
+                                    Height
+                                    <input
+                                      type="number"
+                                      min={1}
+                                      max={4000}
+                                      value={featuredResizeSize.h}
+                                      onChange={(e) => setFeaturedResizeSize((s) => ({ ...s, h: Math.max(1, parseInt(e.target.value, 10) || 1) }))}
+                                      className="w-20 rounded border border-stone-300 px-2 py-1.5 text-stone-900"
+                                    />
+                                  </label>
+                                  <span className="text-sm text-stone-500">px</span>
+                                </div>
+                                <div className="mb-4 flex justify-center rounded-lg bg-stone-100 p-2">
+                                  <img src={featuredImageResizeModal.objectUrl} alt="Preview" className="max-h-40 w-auto object-contain" />
+                                </div>
+                                <div className="flex flex-wrap justify-end gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      URL.revokeObjectURL(featuredImageResizeModal.objectUrl);
+                                      setFeaturedImageResizeModal(null);
+                                    }}
+                                    className="rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50"
+                                  >
+                                    Cancel
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={handleFeaturedImageUploadOriginal}
+                                    className="rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50"
+                                  >
+                                    Upload as-is (no resize)
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={handleFeaturedImageApplyResize}
+                                    className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700"
+                                  >
+                                    Apply & Upload
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                          {contentImageResizeModal && (
+                            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-label="Resize content image">
+                              <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-stone-200 bg-white p-4 shadow-xl">
+                                <h3 className="mb-3 text-lg font-semibold text-stone-800">Content image size (px)</h3>
+                                <p className="mb-3 text-sm text-stone-600">Choose a preset or custom width × height. Same presets as featured image.</p>
+                                <div className="mb-3 flex flex-wrap gap-2">
+                                  {FEATURED_IMAGE_PRESETS.map(([pw, ph]) => (
+                                    <button
+                                      key={`c-${pw}-${ph}`}
+                                      type="button"
+                                      onClick={() => setContentResizeSize({ w: pw, h: ph })}
+                                      className={`rounded-lg border px-3 py-2 text-sm ${contentResizeSize.w === pw && contentResizeSize.h === ph ? "border-amber-500 bg-amber-50 text-amber-800" : "border-stone-300 bg-white text-stone-700 hover:bg-stone-50"}`}
+                                    >
+                                      {pw} × {ph}
+                                    </button>
+                                  ))}
+                                </div>
+                                <div className="mb-4 flex items-center gap-3">
+                                  <label className="flex items-center gap-2 text-sm text-stone-700">
+                                    Width
+                                    <input
+                                      type="number"
+                                      min={1}
+                                      max={4000}
+                                      value={contentResizeSize.w}
+                                      onChange={(e) => setContentResizeSize((s) => ({ ...s, w: Math.max(1, parseInt(e.target.value, 10) || 1) }))}
+                                      className="w-20 rounded border border-stone-300 px-2 py-1.5 text-stone-900"
+                                    />
+                                  </label>
+                                  <span className="text-stone-400">×</span>
+                                  <label className="flex items-center gap-2 text-sm text-stone-700">
+                                    Height
+                                    <input
+                                      type="number"
+                                      min={1}
+                                      max={4000}
+                                      value={contentResizeSize.h}
+                                      onChange={(e) => setContentResizeSize((s) => ({ ...s, h: Math.max(1, parseInt(e.target.value, 10) || 1) }))}
+                                      className="w-20 rounded border border-stone-300 px-2 py-1.5 text-stone-900"
+                                    />
+                                  </label>
+                                  <span className="text-sm text-stone-500">px</span>
+                                </div>
+                                <div className="mb-4 flex justify-center rounded-lg bg-stone-100 p-2">
+                                  <img src={contentImageResizeModal.objectUrl} alt="Preview" className="max-h-40 w-auto object-contain" />
+                                </div>
+                                <div className="flex flex-wrap justify-end gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      URL.revokeObjectURL(contentImageResizeModal.objectUrl);
+                                      setContentImageResizeModal(null);
+                                    }}
+                                    className="rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50"
+                                  >
+                                    Cancel
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={handleContentImageUploadOriginal}
+                                    className="rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50"
+                                  >
+                                    Upload as-is (no resize)
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={handleContentImageApplyResize}
+                                    className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700"
+                                  >
+                                    Apply & Upload
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          )}
                           <div className="mt-2">
                             <label className="mb-1 block text-xs font-medium text-stone-600">Aspect ratio (display)</label>
                             <select
@@ -3079,7 +3419,7 @@ export default function AdminPage() {
                             </button>
                           </div>
                         </div>
-                        <p className="text-xs text-stone-500">Normal = edit as plain English (formatted). HTML = edit raw code.</p>
+                        <p className="text-xs text-stone-500">Normal = edit as plain English (formatted). HTML = edit raw code. Image pe link (new tab): Normal mode — image select karke Link → URL; HTML mode — <code>&lt;img&gt;</code> select karke Link → URL.</p>
                         {contentViewMode === "html" && (
                           <>
                             <div className="flex flex-wrap items-center gap-1 rounded border border-stone-200 bg-stone-50 p-1.5">
@@ -3146,6 +3486,7 @@ export default function AdminPage() {
                             {/* Sticky bar: label + toolbar — sticks inside this scroll container */}
                             <div className="sticky top-0 z-30 border-b border-stone-200 bg-white px-4 pb-2 pt-4 shadow-md">
                               <p className="mb-2 text-xs font-medium uppercase tracking-wide text-stone-500">Normal English — edit here; links show in blue</p>
+                              <p className="mb-2 text-xs text-stone-500">Image pe link: image pe click karein (select karein), phir <strong>Link</strong> dabayein aur URL daalein → naya tab mein khulega.</p>
                               <div className="flex flex-wrap items-center gap-1 rounded border border-stone-200 bg-stone-100 p-1.5">
                                 <button type="button" onClick={() => execVisual("bold")} className="rounded border border-stone-300 bg-white px-2 py-1 text-sm font-bold text-stone-800 hover:bg-stone-100" title="Bold">B</button>
                                 <button type="button" onClick={() => execVisual("italic")} className="rounded border border-stone-300 bg-white px-2 py-1 text-sm italic text-stone-800 hover:bg-stone-100" title="Italic">I</button>

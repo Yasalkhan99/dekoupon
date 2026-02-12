@@ -73,13 +73,15 @@ export default function MainSidebar() {
                 <li key={post.id}>
                   <Link href={`/blog/${post.slug}`} className="group flex gap-3">
                     <div className="relative h-14 w-16 shrink-0 overflow-hidden rounded bg-[var(--hunted-gray)]">
-                      <Image
-                        src={post.image}
-                        alt={stripHtml(post.title)}
-                        fill
-                        className="object-cover transition group-hover:scale-105"
-                        sizes="64px"
-                      />
+                      {post.image ? (
+                        <Image
+                          src={post.image}
+                          alt={stripHtml(post.title)}
+                          fill
+                          className="object-cover transition group-hover:scale-105"
+                          sizes="64px"
+                        />
+                      ) : null}
                     </div>
                     <div className="min-w-0 flex-1">
                       <span
