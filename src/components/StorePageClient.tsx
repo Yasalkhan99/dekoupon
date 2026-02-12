@@ -290,6 +290,7 @@ export default function StorePageClient({
                 const percent = badge.type === "percent" ? badge.percent : 10;
                 const expiryDate = formatExpiry(c.expiry);
                 const handleCouponClick = () => {
+                  setExtraClicks((prev) => ({ ...prev, [c.id]: (prev[c.id] ?? 0) + 1 }));
                   const param = isCode ? "copy" : "shopnow";
                   const samePageUrl = typeof window !== "undefined" ? window.location.pathname + "?" + param + "=" + encodeURIComponent(c.id) : "";
                   window.open(samePageUrl || "?", "_blank", "noopener,noreferrer");
