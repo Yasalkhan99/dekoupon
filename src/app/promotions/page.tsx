@@ -151,69 +151,7 @@ export default async function PromotionsPage({
       </section>
 
       <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
-        {/* When search is active: show results right below hero so stores are visible immediately */}
-        {searchQuery?.trim() && (
-          <section id="search-results" className="mb-14 scroll-mt-6">
-            <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-              <h2 className="text-2xl font-bold tracking-tight text-zinc-900">
-                Search results for &quot;{searchQuery.trim()}&quot;
-              </h2>
-            </div>
-            {searchFilteredStores.length === 0 ? (
-              <div className="rounded-xl border-2 border-dashed border-zinc-200 bg-amber-50/80 py-16 text-center">
-                <p className="mb-2 text-zinc-700">No stores found for &quot;{searchQuery.trim()}&quot;.</p>
-                <p className="mb-4 text-sm text-zinc-600">Try a different search or clear the search to see all stores.</p>
-                <Link href="/promotions" className="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">Show all stores</Link>
-              </div>
-            ) : (
-              <>
-                <p className="mb-4 text-sm text-zinc-500">
-                  Showing {(currentPage - 1) * PER_PAGE + 1}–{Math.min(currentPage * PER_PAGE, searchFilteredStores.length)} of {searchFilteredStores.length} stores
-                </p>
-                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                  {pageStores.map((store) => (
-                    <article
-                      key={store.id}
-                      className="flex flex-col overflow-hidden rounded-xl border border-zinc-100 bg-white p-5 shadow-md transition hover:shadow-lg"
-                    >
-                      {store.logoUrl ? (
-                        <div className="relative mb-4 h-16 w-full">
-                          <Image
-                            src={store.logoUrl}
-                            alt={store.name}
-                            fill
-                            className="object-contain object-left"
-                            sizes="200px"
-                            unoptimized
-                          />
-                        </div>
-                      ) : (
-                        <h3 className="mb-4 text-lg font-bold text-zinc-900">{store.name}</h3>
-                      )}
-                      <p className="mb-4 flex-1 text-sm text-zinc-600 line-clamp-2">{store.description}</p>
-                      <div className="mb-3 text-xs text-zinc-500">Expiry: {store.expiry}</div>
-                      <Link
-                        href={`/promotions/${store.slug || slugify(store.name)}`}
-                        className="text-sm font-medium text-blue-600 hover:underline"
-                      >
-                        View coupons →
-                      </Link>
-                    </article>
-                  ))}
-                </div>
-                <Pagination
-                  basePath="/promotions"
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  searchParams={{
-                    ...(pageStr ? { page: pageStr } : {}),
-                    ...(searchQuery?.trim() ? { q: searchQuery.trim() } : {}),
-                  }}
-                />
-              </>
-            )}
-          </section>
-        )}
+        {/* Search only shows store suggestions in dropdown; below we always show promotions page content. */}
 
         {/* Popular Coupons */}
         <section className="mb-14">
@@ -491,13 +429,15 @@ export default async function PromotionsPage({
                 className="group flex flex-col overflow-hidden rounded-xl border border-zinc-100 bg-white shadow-md transition hover:shadow-lg"
               >
                 <div className={`relative w-full overflow-hidden bg-zinc-100 ${getBlogImageAspectClass((post as { imageAspectRatio?: ImageAspectRatio }).imageAspectRatio)}`}>
-                  <Image
-                    src={post.image}
-                    alt={stripHtml(post.title)}
-                    fill
-                    className="object-cover transition group-hover:scale-105"
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                  />
+                  {post.image ? (
+                    <Image
+                      src={post.image}
+                      alt={stripHtml(post.title)}
+                      fill
+                      className="object-cover transition group-hover:scale-105"
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                    />
+                  ) : null}
                 </div>
                 <div className="flex flex-1 flex-col p-4">
                   <span className="mb-2 text-xs font-semibold uppercase tracking-wide text-red-600">{post.category}</span>

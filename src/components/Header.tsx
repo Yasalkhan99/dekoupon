@@ -44,13 +44,15 @@ function DropdownCard({ post }: { post: NavDropdownPost }) {
       className="group flex flex-col overflow-hidden border-2 border-[var(--theme-border)] bg-white transition hover:shadow-md"
     >
       <div className={`relative w-full overflow-hidden bg-[var(--hunted-gray)] ${aspectClass}`}>
-        <Image
-          src={post.image}
-          alt={stripHtml(post.title)}
-          fill
-          className="object-cover transition group-hover:scale-105"
-          sizes="240px"
-        />
+        {post.image ? (
+          <Image
+            src={post.image}
+            alt={stripHtml(post.title)}
+            fill
+            className="object-cover transition group-hover:scale-105"
+            sizes="240px"
+          />
+        ) : null}
       </div>
       <div className="flex flex-1 flex-col p-3">
         <span className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-[var(--footer-accent)]">
