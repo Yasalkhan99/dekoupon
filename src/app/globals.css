@@ -88,10 +88,26 @@ body {
 .blog-content a:hover {
   opacity: 0.9;
 }
+/* Links that wrap images: ensure full image is clickable and link works on live */
+.blog-content a:has(> img) {
+  display: inline-block;
+  cursor: pointer;
+  text-decoration: none;
+}
+.blog-content a:has(> img):hover {
+  opacity: 0.9;
+}
+.blog-content a:has(> img) img {
+  vertical-align: middle;
+  pointer-events: auto;
+}
 /* In-article images: responsive, no layout shift, lazy-loaded for performance */
 .blog-content img {
   max-width: 100%;
   height: auto;
+  display: block;
+}
+.blog-content a:has(> img) img {
   display: block;
 }
 
