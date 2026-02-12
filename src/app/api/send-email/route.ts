@@ -17,9 +17,9 @@ const getTransporter = () => {
   });
 };
 
-/** Recipient for contact/newsletter/coupon emails. Use SMTP_RECIPIENT or else leads@savingshub4u.com */
+/** Recipient for contact/newsletter/coupon emails. Use SMTP_RECIPIENT or default leads@savingshub4u.com (do not use SMTP_USER as recipient). */
 const getToEmail = () =>
-  process.env.SMTP_RECIPIENT?.trim() || process.env.SMTP_USER?.trim() || "leads@savingshub4u.com";
+  process.env.SMTP_RECIPIENT?.trim() || "leads@savingshub4u.com";
 
 export async function POST(request: NextRequest) {
   try {
