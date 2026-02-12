@@ -286,12 +286,43 @@ export default function AdminPage() {
     let node: Node | null = sel.anchorNode;
     while (node && node !== container) {
       if (node.nodeType === Node.ELEMENT_NODE && (node as Element).tagName === "IMG") return node as HTMLImageElement;
-      const parent = node.nodeType === Node.ELEMENT_NODE ? (node as Element) : node.parentElement;
-      if (parent) {
-        if (parent.previousElementSibling?.tagName === "IMG") return parent.previousElementSibling as HTMLImageElement;
-        if (parent.nextElementSibling?.tagName === "IMG") return parent.nextElementSibling as HTMLImageElement;
+      const el = node.nodeType === Node.ELEMENT_NODE ? (node as Element) : node.parentElement;
+      if (el) {
+        if (el.previousElementSibling?.tagName === "IMG") return el.previousElementSibling as HTMLImageElement;
+        if (el.nextElementSibling?.tagName === "IMG") return el.nextElementSibling as HTMLImageElement;
+        // Image inside same block (e.g. <p>text<img></p>): check previous/next sibling of current node
+        const prev = node.previousSibling;
+        const next = node.nextSibling;
+        if (prev?.nodeType === Node.ELEMENT_NODE && (prev as Element).tagName === "IMG") return prev as HTMLImageElement;
+        if (next?.nodeType === Node.ELEMENT_NODE && (next as Element).tagName === "IMG") return next as HTMLImageElement;
       }
       node = node.parentNode;
+    }
+    // Last resort: selection inside an element that contains exactly one img (e.g. click in same paragraph as image)
+    let ancestor: Node | null = sel.anchorNode;
+    while (ancestor && ancestor !== container) {
+      const block = ancestor.nodeType === Node.ELEMENT_NODE ? (ancestor as Element) : ancestor.parentElement;
+      if (block && block !== container) {
+        const blockImgs = block.getElementsByTagName("img");
+        if (blockImgs.length === 1) return blockImgs[0];
+        if (blockImgs.length > 1) {
+          const rect = range.getBoundingClientRect();
+          let best: HTMLImageElement | null = null;
+          let bestDist = Infinity;
+          for (let i = 0; i < blockImgs.length; i++) {
+            const r = blockImgs[i].getBoundingClientRect();
+            const dx = (r.left + r.width / 2) - (rect.left + rect.width / 2);
+            const dy = (r.top + r.height / 2) - (rect.top + rect.height / 2);
+            const d = dx * dx + dy * dy;
+            if (d < bestDist) {
+              bestDist = d;
+              best = blockImgs[i];
+            }
+          }
+          if (best) return best;
+        }
+      }
+      ancestor = ancestor.parentNode;
     }
     return null;
   };
@@ -320,6 +351,7 @@ export default function AdminPage() {
         a.appendChild(img);
       }
       setBlogForm((f) => ({ ...f, content: el.innerHTML }));
+      window.alert("Link added to image. Click \"Update Post\" below to see it on the live site.");
       return;
     }
 
