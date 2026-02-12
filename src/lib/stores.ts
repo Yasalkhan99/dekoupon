@@ -198,9 +198,10 @@ export async function getStorePageData(slug: string): Promise<StorePageData> {
   // similar names (e.g. US vs UK variants) don't collapse into one.
   const matchingStores = enabledStores.filter((s) => storeSlugMatches(s, wantRaw, wantCanonical));
   const allCouponsFromTable = await getCoupons();
-  // Use same strict matching for coupons so UK page doesn't show US coupons/store (and vice versa).
+  // Store row: strict match (so UK vs US stay separate). Coupons: use slugMatches so coupons
+  // whose slug is store slug + suffix (e.g. magic-hour-tea-15-off) still show on store page (magic-hour-tea).
   const coupons = allCouponsFromTable.filter(
-    (c) => c.status !== "disable" && storeSlugMatches(c, wantRaw, wantCanonical)
+    (c) => c.status !== "disable" && slugMatches(c, wantRaw, wantCanonical)
   );
   // Prefer the store whose slug exactly matches the URL (e.g. UK slug "true-classic-tees-discount-code"
   // must show UK store, not US store which has canonical "true-classic-tees" same as UK).
