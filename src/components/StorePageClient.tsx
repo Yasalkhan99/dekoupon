@@ -227,75 +227,8 @@ export default function StorePageClient({
         />
       ) : null}
       <div className="flex flex-col gap-8 lg:grid lg:grid-cols-[18rem_1fr] lg:items-start lg:gap-x-10 lg:gap-y-0">
-        {/* Sidebar column: store card + about/store/FAQ – single column, gap-6, no extra row gap */}
-        <div className="order-1 flex flex-col gap-6 lg:col-start-1 lg:row-start-1">
-          {/* Store card: mobile par sabse upar (coupons se pehle), lg par sidebar ke andar */}
-          <div className="shrink-0">
-            <div className="sticky top-4 rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
-              <div className="flex flex-col items-center text-center">
-                <div className="flex h-28 w-full max-w-[200px] shrink-0 items-center justify-center overflow-hidden rounded-xl border border-zinc-100 bg-white p-4 shadow-md ring-1 ring-zinc-200/60 sm:h-32 sm:max-w-[240px] sm:p-5">
-                  {storeInfo.logoUrl ? (
-                    <div className="relative h-full w-full min-h-[80px] bg-white">
-                      <Image src={storeInfo.logoUrl} alt={storeInfo.logoAltText || storeInfo.name} fill className="object-contain" sizes="(max-width: 640px) 200px, 240px" unoptimized />
-                    </div>
-                  ) : (
-                    <span className="text-2xl font-bold text-zinc-700">{sidebarCardName.slice(0, 4).toUpperCase()}</span>
-                  )}
-                </div>
-                <p className="mt-3 text-sm font-semibold text-zinc-900">{sidebarCardName}</p>
-                <p className="mt-2 flex items-center gap-1.5 text-xs text-zinc-500">
-                  <svg className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                  {locationLabel}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* About Store, Codes and Coupons, FAQ – desktop par sidebar mein store card ke neeche */}
-          <aside className="hidden shrink-0 space-y-6 lg:block lg:w-full">
-            <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
-              <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-zinc-800">About Store</h2>
-              <p className="text-sm leading-relaxed text-zinc-600">
-                {storeInfo.description || `${displayName} offers verified coupon codes and deals. Save with hand-tested offers.`}
-              </p>
-            </div>
-            <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
-              <h3 className="text-base font-semibold text-zinc-900">
-                {displayName} Codes and Coupons
-              </h3>
-              {storeInfo.codesAndCouponsContent?.trim() ? (
-                <div
-                  className="mt-3 text-sm leading-relaxed text-zinc-600 prose prose-sm max-w-none prose-p:my-1.5 prose-ul:my-1.5 prose-li:my-0"
-                  dangerouslySetInnerHTML={{ __html: storeInfo.codesAndCouponsContent.trim() }}
-                />
-              ) : null}
-            </div>
-            <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
-              <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-zinc-800">
-                {displayName} coupon and promo codes FAQ
-              </h3>
-              <div className="space-y-2">
-                {faqsToShow.map((faq, i) => (
-                  <details
-                    key={i}
-                    className="group rounded-lg border border-zinc-100 bg-zinc-50/50"
-                  >
-                    <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-3 py-2.5 text-left text-sm font-medium text-zinc-900 [&::-webkit-details-marker]:hidden">
-                      {faq.q}
-                      <span className="shrink-0 text-zinc-400 transition group-open:rotate-180">
-                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                      </span>
-                    </summary>
-                    <p className="border-t border-zinc-100 px-3 py-2 text-xs text-zinc-600">{faq.a}</p>
-                  </details>
-                ))}
-              </div>
-            </div>
-          </aside>
-        </div>
-
-        {/* Main Content - coupons list; mobile par store card ke neeche */}
-        <div className="order-2 min-w-0 flex-1 lg:col-start-2 lg:row-start-1">
+        {/* Part A: Coupons only – mobile par sabse upar; desktop par right column row 1 */}
+        <div className="order-1 min-w-0 flex-1 lg:col-start-2 lg:row-start-1">
           {/* Store name + Discount Code heading, grid/list + sort */}
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-xl font-bold text-zinc-900 sm:text-2xl">
@@ -429,7 +362,76 @@ export default function StorePageClient({
               </ul>
             )}
           </div>
+          </div>
+          {/* End Part A: coupons */}
 
+        {/* Sidebar column: mobile par coupons ke baad, More About se pehle; desktop par left column */}
+        <div className="order-2 flex flex-col gap-6 lg:order-1 lg:col-start-1 lg:row-span-2 lg:row-start-1">
+          <div className="shrink-0">
+            <div className="sticky top-4 rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
+              <div className="flex flex-col items-center text-center">
+                <div className="flex h-28 w-full max-w-[200px] shrink-0 items-center justify-center overflow-hidden rounded-xl border border-zinc-100 bg-white p-4 shadow-md ring-1 ring-zinc-200/60 sm:h-32 sm:max-w-[240px] sm:p-5">
+                  {storeInfo.logoUrl ? (
+                    <div className="relative h-full w-full min-h-[80px] bg-white">
+                      <Image src={storeInfo.logoUrl} alt={storeInfo.logoAltText || storeInfo.name} fill className="object-contain" sizes="(max-width: 640px) 200px, 240px" unoptimized />
+                    </div>
+                  ) : (
+                    <span className="text-2xl font-bold text-zinc-700">{sidebarCardName.slice(0, 4).toUpperCase()}</span>
+                  )}
+                </div>
+                <p className="mt-3 text-sm font-semibold text-zinc-900">{sidebarCardName}</p>
+                <p className="mt-2 flex items-center gap-1.5 text-xs text-zinc-500">
+                  <svg className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                  {locationLabel}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <aside className="hidden shrink-0 space-y-6 lg:block lg:w-full">
+            <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
+              <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-zinc-800">About Store</h2>
+              <p className="text-sm leading-relaxed text-zinc-600">
+                {storeInfo.description || `${displayName} offers verified coupon codes and deals. Save with hand-tested offers.`}
+              </p>
+            </div>
+            <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
+              <h3 className="text-base font-semibold text-zinc-900">
+                {displayName} Codes and Coupons
+              </h3>
+              {storeInfo.codesAndCouponsContent?.trim() ? (
+                <div
+                  className="mt-3 text-sm leading-relaxed text-zinc-600 prose prose-sm max-w-none prose-p:my-1.5 prose-ul:my-1.5 prose-li:my-0"
+                  dangerouslySetInnerHTML={{ __html: storeInfo.codesAndCouponsContent.trim() }}
+                />
+              ) : null}
+            </div>
+            <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
+              <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-zinc-800">
+                {displayName} coupon and promo codes FAQ
+              </h3>
+              <div className="space-y-2">
+                {faqsToShow.map((faq, i) => (
+                  <details
+                    key={i}
+                    className="group rounded-lg border border-zinc-100 bg-zinc-50/50"
+                  >
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-3 py-2.5 text-left text-sm font-medium text-zinc-900 [&::-webkit-details-marker]:hidden">
+                      {faq.q}
+                      <span className="shrink-0 text-zinc-400 transition group-open:rotate-180">
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                      </span>
+                    </summary>
+                    <p className="border-t border-zinc-100 px-3 py-2 text-xs text-zinc-600">{faq.a}</p>
+                  </details>
+                ))}
+              </div>
+            </div>
+          </aside>
+        </div>
+
+        {/* Part B: More About + Shopping Tips + Terms – mobile par logo ke baad; desktop par right column row 2 */}
+        <div className="order-3 min-w-0 lg:col-start-2 lg:row-start-2">
           {/* More About [store name] – below coupons, admin-editable */}
           <section className="mt-10 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
             <h2 className="mb-4 text-lg font-bold text-zinc-900">
@@ -471,8 +473,8 @@ export default function StorePageClient({
           )}
         </div>
 
-        {/* Mobile only: About Store, Codes and Coupons, FAQ – main content ke neeche */}
-        <aside className="order-3 shrink-0 space-y-6 lg:hidden lg:w-72">
+        {/* Mobile only: About Store, Codes and Coupons, FAQ – Part B ke baad */}
+        <aside className="order-4 shrink-0 space-y-6 lg:hidden lg:w-72">
             <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
               <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-zinc-800">About Store</h2>
               <p className="text-sm leading-relaxed text-zinc-600">

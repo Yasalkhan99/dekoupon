@@ -59,13 +59,28 @@ export async function POST(request: Request) {
         .from(SUPABASE_UPLOADS_BUCKET)
         .upload(name, file, { contentType: file.type, upsert: false });
       if (error) {
+        const hint = error.message?.toLowerCase().includes("bucket") || error.message?.toLowerCase().includes("not found")
+          ? ` Create a public bucket named "${SUPABASE_UPLOADS_BUCKET}" in Supabase Dashboard → Storage → New bucket, then set it to Public.`
+          : "";
         return NextResponse.json(
-          { error: `Upload failed. ${error.message} Create a public bucket named "${SUPABASE_UPLOADS_BUCKET}" in Supabase Storage if needed.` },
+          { error: `Supabase Storage: ${error.message}.${hint}` },
           { status: 500 }
         );
       }
       const { data: urlData } = supabase.storage.from(SUPABASE_UPLOADS_BUCKET).getPublicUrl(data.path);
       return NextResponse.json({ url: urlData.publicUrl, name });
+    }
+
+    // Live (e.g. Vercel) has read-only filesystem – require Supabase
+    const isVercel = process.env.VERCEL === "1";
+    if (isVercel) {
+      return NextResponse.json(
+        {
+          error:
+            "Featured image upload on live needs Supabase. In Vercel: set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY. In Supabase Dashboard: Storage → New bucket → name 'uploads' → Public.",
+        },
+        { status: 503 }
+      );
     }
 
     const dir = path.join(process.cwd(), UPLOAD_DIR);

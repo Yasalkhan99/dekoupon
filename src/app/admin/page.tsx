@@ -330,7 +330,7 @@ export default function AdminPage() {
     try {
       const form = new FormData();
       form.append("file", file);
-      const res = await fetch("/api/admin/upload-image", { method: "POST", body: form });
+      const res = await fetch("/api/admin/upload-image", { method: "POST", credentials: "include", body: form });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Upload failed");
       const url = data.url as string;
@@ -602,7 +602,7 @@ export default function AdminPage() {
     try {
       const form = new FormData();
       form.append("file", file);
-      const res = await fetch("/api/admin/upload-image", { method: "POST", body: form });
+      const res = await fetch("/api/admin/upload-image", { method: "POST", credentials: "include", body: form });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Upload failed");
       const url = data.url as string;
@@ -622,7 +622,7 @@ export default function AdminPage() {
     try {
       const form = new FormData();
       form.append("file", file);
-      const res = await fetch("/api/admin/upload-image", { method: "POST", body: form });
+      const res = await fetch("/api/admin/upload-image", { method: "POST", credentials: "include", body: form });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Upload failed");
       const url = data.url as string;
