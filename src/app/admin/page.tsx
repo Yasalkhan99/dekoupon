@@ -425,6 +425,30 @@ export default function AdminPage() {
     setContentResizeSize({ w: 1060, h: 580 });
   };
 
+  /** Paste in Normal editor: if clipboard has image, upload it and insert real URL so it shows on live. */
+  const handleContentEditablePaste = async (e: React.ClipboardEvent<HTMLDivElement>) => {
+    const files = e.clipboardData?.files;
+    const imageFile = files && Array.from(files).find((f) => f.type.startsWith("image/"));
+    if (!imageFile) return;
+    e.preventDefault();
+    setImageUploading(true);
+    try {
+      const form = new FormData();
+      form.append("file", imageFile);
+      const res = await fetch("/api/admin/upload-image", { method: "POST", credentials: "include", body: form });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Upload failed");
+      let url = data.url as string;
+      if (url && url.startsWith("/")) url = window.location.origin + url;
+      const alt = imageFile.name.replace(/\.[^.]+$/, "") || "Image";
+      if (url) insertVisualImageFromUrl(url, alt);
+    } catch (err) {
+      window.alert(err instanceof Error ? err.message : "Upload failed. On live site, set up Supabase Storage (bucket 'uploads').");
+    } finally {
+      setImageUploading(false);
+    }
+  };
+
   const handleBlogSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage(null);
@@ -812,7 +836,8 @@ export default function AdminPage() {
       const res = await fetch("/api/admin/upload-image", { method: "POST", credentials: "include", body: form });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Upload failed");
-      const url = data.url as string;
+      let url = data.url as string;
+      if (url && url.startsWith("/")) url = window.location.origin + url;
       const alt = file.name.replace(/\.[^.]+$/, "") || "Image";
       if (url) insertContentImageUrl(url, alt, mode, undefined);
     } catch (err) {
@@ -846,7 +871,8 @@ export default function AdminPage() {
       const res = await fetch("/api/admin/upload-image", { method: "POST", credentials: "include", body: form });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Upload failed");
-      const url = data.url as string;
+      let url = data.url as string;
+      if (url && url.startsWith("/")) url = window.location.origin + url;
       const alt = file.name.replace(/\.[^.]+$/, "") || "Image";
       if (url) insertContentImageUrl(url, alt, mode, size);
     } catch (err) {
@@ -3569,8 +3595,13 @@ export default function AdminPage() {
                               ref={contentEditableRef}
                               contentEditable
                               suppressContentEditableWarning
+                              onPaste={handleContentEditablePaste}
                               onInput={(e) => {
-                                const html = (e.currentTarget as HTMLDivElement).innerHTML;
+                                let html = (e.currentTarget as HTMLDivElement).innerHTML;
+                                if (html.includes("blob:")) {
+                                  html = html.replace(/<img\s[^>]*src="blob:[^"]*"[^>]*\/?>/gi, "<p class=\"text-amber-600 text-sm my-2\">[Pasted image removed — use Upload button so it shows on live]</p>");
+                                  (e.currentTarget as HTMLDivElement).innerHTML = html;
+                                }
                                 setBlogForm((f) => ({ ...f, content: html }));
                               }}
                               className="admin-normal-editor min-h-[240px] max-w-none rounded border border-stone-200 bg-stone-50/50 p-4 text-left text-stone-700 outline-none focus:ring-2 focus:ring-amber-500 [&_h2]:mt-4 [&_h2]:text-xl [&_h2]:font-bold [&_h3]:mt-3 [&_h3]:text-lg [&_ul]:list-disc [&_ul]:pl-6 [&_li]:my-0.5 [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded [&_p]:my-2"

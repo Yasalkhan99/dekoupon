@@ -88,7 +88,13 @@ export async function POST(request: Request) {
     const filePath = path.join(dir, name);
     const bytes = await file.arrayBuffer();
     await writeFile(filePath, Buffer.from(bytes));
-    return NextResponse.json({ url: `/uploads/${name}`, name });
+    const relativeUrl = `/uploads/${name}`;
+    try {
+      const origin = new URL(request.url).origin;
+      return NextResponse.json({ url: `${origin}${relativeUrl}`, name });
+    } catch {
+      return NextResponse.json({ url: relativeUrl, name });
+    }
   } catch (err) {
     const e = err as NodeJS.ErrnoException;
     if (e?.code === "EROFS" || e?.code === "EACCES") {
