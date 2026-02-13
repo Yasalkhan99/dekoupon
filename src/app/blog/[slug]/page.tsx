@@ -4,7 +4,7 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import MainSidebar from "@/components/MainSidebar";
-import { getPostBySlug, readBlogPosts } from "@/lib/blog";
+import { getPostBySlug, readBlogPosts, getBlogFeaturedImageUrl, resolveContentImageUrls } from "@/lib/blog";
 import { stripHtml } from "@/lib/slugify";
 import { getBlogImageAspectClass, blogCategorySlug } from "@/data/blog";
 
@@ -20,9 +20,12 @@ export default async function BlogPostPage({ params }: Props) {
   const post = await getPostBySlug(slug);
   if (!post) notFound();
 
-  const safeContent = post.content ? addLazyToContentImages(post.content) : "";
+  const safeContent = post.content
+    ? addLazyToContentImages(resolveContentImageUrls(post.content))
+    : "";
   const category = post.category || "Blog";
   const publishedDate = post.publishedDate || "";
+  const featuredImageUrl = getBlogFeaturedImageUrl(post.image);
 
   return (
     <div
@@ -32,10 +35,10 @@ export default async function BlogPostPage({ params }: Props) {
     >
       <Header />
       <main className="w-full">
-        {/* Hero – full width; aspect from post (default 21/9 for hero) */}
+        {/* Hero – full width; aspect from post (default 21/9 for hero). URL resolved so localhost/relative work on live via Supabase. */}
         <div className={`relative min-h-[240px] w-full overflow-hidden bg-zinc-900 sm:min-h-[280px] md:min-h-[320px] ${getBlogImageAspectClass(post.imageAspectRatio ?? "21/9")}`}>
           <Image
-            src={post.image || "https://picsum.photos/id/1/1200/600"}
+            src={featuredImageUrl}
             alt={stripHtml(post.title)}
             fill
             className="object-cover opacity-90"

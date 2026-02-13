@@ -14,7 +14,7 @@ export type StoreCategory = {
   slug: string;
 };
 
-const NAMES: string[] = [
+const NAMES_RAW: string[] = [
   "Beauty and Personal Care",
   "Food And Beverage",
   "Automotive",
@@ -47,6 +47,11 @@ const NAMES: string[] = [
   "Travel",
   "Women's Fashion",
 ];
+
+/** Categories sorted A–Z for display (categories page, etc.) */
+const NAMES: string[] = [...NAMES_RAW].sort((a, b) =>
+  a.localeCompare(b, undefined, { sensitivity: "base" })
+);
 
 export const STORE_CATEGORIES: StoreCategory[] = NAMES.map((name) => ({
   name,

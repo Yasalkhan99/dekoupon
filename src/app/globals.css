@@ -93,6 +93,7 @@ body {
   display: inline-block;
   cursor: pointer;
   text-decoration: none;
+  pointer-events: auto;
 }
 .blog-content a:has(> img):hover {
   opacity: 0.9;

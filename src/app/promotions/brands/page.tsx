@@ -103,17 +103,17 @@ export default async function BrandsPage({ searchParams }: Props) {
                     {store.name}
                   </h3>
                 )}
-                <p className="mb-4 flex-1 text-sm text-zinc-600 line-clamp-2">
-                  {store.description}
+                <p className="mb-4 flex-1 text-sm font-medium text-zinc-900 line-clamp-2">
+                  {store.name}
                 </p>
                 <div className="mb-3 text-xs text-zinc-500">
                   Expiry: {store.expiry}
                 </div>
                 <Link
                   href={`/promotions/${store.slug || slugify(store.name)}`}
-                  className="text-sm font-medium text-blue-600 hover:underline"
+                  className="inline-flex w-full items-center justify-center rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
                 >
-                  Read More
+                  Get Coupon
                 </Link>
               </article>
             ))}

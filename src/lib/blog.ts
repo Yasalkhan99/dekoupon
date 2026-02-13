@@ -10,7 +10,60 @@ import {
   latestPosts as staticLatest,
 } from "@/data/blog";
 import type { NavDropdownPost } from "@/data/blog";
-import { getSupabase, SUPABASE_BLOG_TABLE } from "@/lib/supabase-server";
+import { getSupabase, SUPABASE_BLOG_TABLE, SUPABASE_UPLOADS_BUCKET } from "@/lib/supabase-server";
+
+const DEFAULT_FEATURED_IMAGE = "https://picsum.photos/id/1/1200/600";
+const SITE_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://savingshub4u.com";
+
+/**
+ * Resolve featured image URL so it works on both local and live.
+ * - Localhost or relative /uploads/ URLs are resolved to Supabase public URL when available (so live can load the same image).
+ * - Relative paths are prefixed with site base URL.
+ */
+export function getBlogFeaturedImageUrl(imageUrl: string | undefined): string {
+  const raw = (imageUrl || "").trim();
+  if (!raw) return DEFAULT_FEATURED_IMAGE;
+
+  const isLocalhost = /^https?:\/\/localhost(\d*)(\/|$)/i.test(raw) || /^https?:\/\/127\.0\.0\.1(\d*)(\/|$)/i.test(raw);
+  const isRelativeUpload = raw.startsWith("/uploads/");
+
+  if (isLocalhost || isRelativeUpload) {
+    const supabase = getSupabase();
+    if (supabase) {
+      const filename = raw.replace(/^.*\/uploads\//i, "").replace(/\?.*$/, "").trim();
+      if (filename) {
+        const { data } = supabase.storage.from(SUPABASE_UPLOADS_BUCKET).getPublicUrl(filename);
+        return data.publicUrl;
+      }
+    }
+    if (isRelativeUpload) return `${SITE_BASE_URL.replace(/\/$/, "")}${raw}`;
+  }
+
+  if (raw.startsWith("/")) return `${SITE_BASE_URL.replace(/\/$/, "")}${raw}`;
+  return raw;
+}
+
+/**
+ * Resolve image URLs inside blog content HTML so images (and links wrapping them) work on live.
+ * Replaces localhost and /uploads/ in img src with Supabase public URL when available.
+ */
+export function resolveContentImageUrls(html: string): string {
+  const supabase = getSupabase();
+  if (!supabase) return html;
+
+  return html.replace(/<img([^>]*)\ssrc=["']([^"']+)["']/gi, (_, attrs, src) => {
+    const trimmed = (src || "").trim();
+    const isLocalhost = /^https?:\/\/localhost(\d*)(\/|$)/i.test(trimmed) || /^https?:\/\/127\.0\.0\.1(\d*)(\/|$)/i.test(trimmed);
+    const isRelativeUpload = trimmed.startsWith("/uploads/");
+    if (!isLocalhost && !isRelativeUpload) return `<img${attrs} src="${src}"`;
+
+    const filename = trimmed.replace(/^.*\/uploads\//i, "").replace(/\?.*$/, "").trim();
+    if (!filename) return `<img${attrs} src="${src}"`;
+
+    const { data } = supabase.storage.from(SUPABASE_UPLOADS_BUCKET).getPublicUrl(filename);
+    return `<img${attrs} src="${data.publicUrl}"`;
+  });
+}
 
 export type BlogPostWithContent = BlogPost & {
   content?: string;
