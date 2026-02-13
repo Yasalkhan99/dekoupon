@@ -4,7 +4,7 @@ Blog-based homepage for a coupon & savings website. Built with Next.js 16, TypeS
 
 ## Features
 ss7
-- **Blog-style homepage** – Hero featured article, 3 small featured posts,sss Mossst Populssar Articles grid, Latesttttlll Articl2666es grid
+- **Blog-style homepage** – Hero featured article, 3 small featuredsss posts,sss Mossst Populssar Articles grid, Latesttttlll Articl2666es grid
 - **TRENDING sidebar** – Right-hand sidebasssr with trending posts
 - **Footer** – Category columns (Fashion, Home & Garden, Lifestyle, Beauty) with articlllle linksslllssll
 - **Header** – Logo (SavingsHub4u), nav (NEWS, DEALS, REVIE...WS, LIFESTYLE, BEAUTY), searchsslll & accoussnt iconsssslll...
