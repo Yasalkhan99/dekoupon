@@ -35,17 +35,28 @@ export default async function BlogPostPage({ params }: Props) {
     >
       <Header />
       <main className="w-full">
-        {/* Hero – full width; aspect from post (default 21/9 for hero). URL resolved so localhost/relative work on live via Supabase. */}
-        <div className={`relative min-h-[240px] w-full overflow-hidden bg-zinc-900 sm:min-h-[280px] md:min-h-[320px] ${getBlogImageAspectClass(post.imageAspectRatio ?? "21/9")}`}>
+        {/* Hero – full image visible; blurred duplicate fills letterbox areas instead of black */}
+        <div className={`relative flex min-h-[320px] w-full items-center justify-center overflow-hidden bg-zinc-800 sm:min-h-[400px] md:min-h-[480px] ${getBlogImageAspectClass(post.imageAspectRatio ?? "16/9")}`}>
+          {/* Blurred background – same image fills empty areas (no harsh black) */}
+          <Image
+            src={featuredImageUrl}
+            alt=""
+            aria-hidden
+            fill
+            className="object-cover scale-110 blur-2xl opacity-60"
+            sizes="100vw"
+            priority
+          />
+          {/* Sharp foreground – full image visible */}
           <Image
             src={featuredImageUrl}
             alt={stripHtml(post.title)}
             fill
-            className="object-cover opacity-90"
+            className="object-contain opacity-95"
             sizes="100vw"
             priority
           />
-          <div className="absolute inset-0 bg-black/50" aria-hidden />
+          <div className="absolute inset-0 bg-black/40" aria-hidden />
           <div className="absolute inset-0 flex flex-col justify-end px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
             <div className="mx-auto w-full max-w-3xl">
               <nav className="mb-2 text-xs text-white/90" aria-label="Breadcrumb">
