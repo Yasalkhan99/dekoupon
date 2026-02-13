@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import CategoriesSidebar from "@/components/CategoriesSidebar";
 import CategoryIcon from "@/components/CategoryIcon";
@@ -5,6 +6,12 @@ import PromotionsFooter from "@/components/PromotionsFooter";
 import PromotionsHeader from "@/components/PromotionsHeader";
 import { STORE_CATEGORIES } from "@/data/categories";
 import { getStores } from "@/lib/stores";
+
+export const metadata: Metadata = {
+  title: { absolute: "Best Coupons, Promo Codes & Online Deals | SavingsHub4U" },
+  description:
+    "Save more with SavingsHub4U! Discover verified coupons, promo codes, and exclusive deals on hotels, flights, clothing, food delivery, tech, and more.",
+};
 
 export default async function CategoriesPage() {
   const stores = await getStores();

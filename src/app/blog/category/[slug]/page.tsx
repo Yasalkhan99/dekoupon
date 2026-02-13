@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Header from "@/components/Header";
@@ -6,8 +7,19 @@ import MainSidebar from "@/components/MainSidebar";
 import PostsWithLoadMore from "@/components/PostsWithLoadMore";
 import { getPostsByCategory } from "@/lib/blog";
 import { getBlogCategoryBySlug } from "@/data/blog";
+import { BLOG_CATEGORY_META } from "@/data/blog-category-meta";
 
 type Props = { params: Promise<{ slug: string }> };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const slugLower = slug.toLowerCase();
+  const meta = BLOG_CATEGORY_META[slugLower];
+  if (meta) {
+    return { title: { absolute: meta.title }, description: meta.description };
+  }
+  return {};
+}
 
 export default async function BlogCategoryPage({ params }: Props) {
   const { slug } = await params;

@@ -1,8 +1,15 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import PromotionsFooter from "@/components/PromotionsFooter";
 import PromotionsHeader from "@/components/PromotionsHeader";
 import ShareCouponForm from "@/components/ShareCouponForm";
 import { getStores } from "@/lib/stores";
+
+export const metadata: Metadata = {
+  title: { absolute: "Share a Coupon & Submit Promo Codes | SavingsHub4U" },
+  description:
+    "Submit and share the latest coupons, promo codes, and deals on SavingsHub4U. Help others save money by adding verified discounts and exclusive offers today.",
+};
 
 function slug(str: string) {
   return str.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");

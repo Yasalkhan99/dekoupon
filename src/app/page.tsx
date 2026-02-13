@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import Header from "@/components/Header";
@@ -9,6 +10,12 @@ import HomeWidgetSection from "@/components/HomeWidgetSection";
 import TopDealsSection from "@/components/TopDealsSection";
 import Footer from "@/components/Footer";
 import { getBlogData } from "@/lib/blog";
+
+export const metadata: Metadata = {
+  title: { absolute: "Savings Tips, Deals & Coupon Guides Blog | SavingsHub4U" },
+  description:
+    "Explore the SavingsHub4U blog for expert savings tips, coupon guides, deal updates, and smart shopping strategies. Learn how to maximize discounts and find the best online offers every day.",
+};
 
 export default async function Home() {
   const { mostPopularPosts, latestPosts } = await getBlogData();

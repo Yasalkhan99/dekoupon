@@ -1,9 +1,16 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import PromotionsFooter from "@/components/PromotionsFooter";
 import PromotionsHeader from "@/components/PromotionsHeader";
 import { getStores, getCoupons } from "@/lib/stores";
 import { getBlogData } from "@/lib/blog";
+
+export const metadata: Metadata = {
+  title: { absolute: "About SavingsHub4U | Your Trusted Coupons & Deals Platform" },
+  description:
+    "Learn more about SavingsHub4U, your go-to destination for verified coupons, promo codes, and exclusive online deals. Discover our mission to help shoppers save more every day with trusted, updated discounts.",
+};
 
 const VALUES = [
   {

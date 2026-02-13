@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import PromotionsFooter from "@/components/PromotionsFooter";
@@ -9,6 +10,17 @@ import { getEventBySlug } from "@/data/events";
 import EventDealsClient from "@/components/EventDealsClient";
 
 type Props = { params: Promise<{ slug: string }> };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const event = getEventBySlug(slug);
+  if (!event) return {};
+  const title = event.metaTitle ?? event.name;
+  return {
+    title: { absolute: title },
+    description: event.metaDescription ?? event.description ?? undefined,
+  };
+}
 
 export default async function EventDealsPage({ params }: Props) {
   const { slug } = await params;

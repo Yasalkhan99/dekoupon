@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
@@ -6,9 +7,24 @@ import Pagination from "@/components/Pagination";
 import PromotionsFooter from "@/components/PromotionsFooter";
 import PromotionsHeader from "@/components/PromotionsHeader";
 import { getCategoryBySlug } from "@/data/categories";
+import { CATEGORY_META } from "@/data/category-meta";
 import { getStores, slugify } from "@/lib/stores";
 
 const PER_PAGE = 24;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug: categorySlug } = await params;
+  const slugLower = categorySlug.toLowerCase();
+  const meta = CATEGORY_META[slugLower];
+  if (meta) {
+    return { title: { absolute: meta.title }, description: meta.description };
+  }
+  return {};
+}
 
 function categoryToSlug(str: string) {
   return str.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
