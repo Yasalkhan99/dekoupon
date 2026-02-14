@@ -5,7 +5,7 @@ import CategoryIcon from "@/components/CategoryIcon";
 import PromotionsFooter from "@/components/PromotionsFooter";
 import PromotionsHeader from "@/components/PromotionsHeader";
 import { STORE_CATEGORIES } from "@/data/categories";
-import { getStores } from "@/lib/stores";
+import { getStores, getStoreCategories } from "@/lib/stores";
 
 export const metadata: Metadata = {
   title: { absolute: "Best Coupons, Promo Codes & Online Deals | SavingsHub4U" },
@@ -17,8 +17,9 @@ export default async function CategoriesPage() {
   const stores = await getStores();
   const enabled = stores.filter((s) => s.status !== "disable");
   const categoryCounts = enabled.reduce<Record<string, number>>((acc, s) => {
-    const cat = s.category?.trim();
-    if (cat) acc[cat] = (acc[cat] ?? 0) + 1;
+    for (const cat of getStoreCategories(s)) {
+      if (cat) acc[cat] = (acc[cat] ?? 0) + 1;
+    }
     return acc;
   }, {});
 

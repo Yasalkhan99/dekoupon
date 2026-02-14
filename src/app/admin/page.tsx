@@ -14,7 +14,7 @@ const BLOG_NICHES: { value: BlogNiche; label: string }[] = [
 import { STORE_CATEGORY_NAMES } from "@/data/categories";
 import { SPECIAL_EVENTS } from "@/data/events";
 import { stripHtml, slugify } from "@/lib/slugify";
-import { hasCouponData } from "@/lib/store-utils";
+import { hasCouponData, getStoreCategories } from "@/lib/store-utils";
 import RichTextEditor from "@/components/RichTextEditor";
 
 type Section = "dashboard" | "coupons" | "stores" | "blog" | "analytics" | "tracking";
@@ -110,7 +110,7 @@ export default function AdminPage() {
     trackingUrl: "",
     countryCodes: "",
     websiteUrl: "",
-    category: "",
+    categories: [] as string[],
     whyTrustUs: "",
     moreInfo: "",
     codesAndCouponsContent: "",
@@ -1151,7 +1151,7 @@ export default function AdminPage() {
             link: storeForm.trackingUrl.trim() || undefined,
             countryCodes: storeForm.countryCodes.trim() || undefined,
             websiteUrl: storeForm.websiteUrl.trim() || undefined,
-            category: storeForm.category.trim() || undefined,
+            categories: storeForm.categories.length > 0 ? storeForm.categories : undefined,
             whyTrustUs: storeForm.whyTrustUs.trim() || undefined,
             moreInfo: storeForm.moreInfo.trim() || undefined,
             codesAndCouponsContent: storeForm.codesAndCouponsContent?.trim() || undefined,
@@ -1189,7 +1189,7 @@ export default function AdminPage() {
             link: storeForm.trackingUrl.trim() || undefined,
             countryCodes: storeForm.countryCodes.trim() || undefined,
             websiteUrl: storeForm.websiteUrl.trim() || undefined,
-            category: storeForm.category.trim() || undefined,
+            categories: storeForm.categories.length > 0 ? storeForm.categories : undefined,
             whyTrustUs: storeForm.whyTrustUs.trim() || undefined,
             moreInfo: storeForm.moreInfo.trim() || undefined,
             codesAndCouponsContent: storeForm.codesAndCouponsContent?.trim() || undefined,
@@ -1222,7 +1222,7 @@ export default function AdminPage() {
         trackingUrl: "",
         countryCodes: "",
         websiteUrl: "",
-        category: "",
+        categories: [] as string[],
         whyTrustUs: "",
         moreInfo: "",
         codesAndCouponsContent: "",
@@ -2210,7 +2210,7 @@ export default function AdminPage() {
                               <td className="px-3 py-2 font-medium text-stone-900">{s.name}</td>
                               <td className="px-3 py-2 text-stone-600">{s.slug ?? "—"}</td>
                               <td className="px-3 py-2 text-stone-600">{s.countryCodes ?? "—"}</td>
-                              <td className="px-3 py-2 text-stone-600">{s.category ?? "—"}</td>
+                              <td className="max-w-[140px] truncate px-3 py-2 text-stone-600" title={getStoreCategories(s).join(", ")}>{getStoreCategories(s).join(", ") || "—"}</td>
                               <td className="max-w-[140px] truncate px-3 py-2 text-stone-600" title={s.trackingUrl ?? ""}>
                                 {s.trackingUrl ? <a href={s.trackingUrl} target="_blank" rel="noopener noreferrer" className="text-sky-600 hover:underline">{String(s.trackingUrl).slice(0, 24)}…</a> : "—"}
                               </td>
@@ -2236,7 +2236,7 @@ export default function AdminPage() {
                                       trackingUrl: s.trackingUrl ?? "",
                                       countryCodes: s.countryCodes ?? "",
                                       websiteUrl: s.websiteUrl ?? "",
-                                      category: s.category ?? "",
+                                      categories: getStoreCategories(s),
                                       whyTrustUs: s.whyTrustUs ?? "",
                                       moreInfo: s.moreInfo ?? "",
                                       codesAndCouponsContent: s.codesAndCouponsContent ?? "",
@@ -2564,18 +2564,31 @@ export default function AdminPage() {
                     Category &amp; Content
                   </h3>
                   <div className="mb-4">
-                    <label className="mb-1 block text-sm font-medium text-stone-700">Category</label>
-                    <select
-                      value={storeForm.category ?? ""}
-                      onChange={(e) => setStoreForm((f) => ({ ...f, category: e.target.value }))}
-                      className="w-full max-w-xs rounded border border-stone-300 px-3 py-2 text-stone-900 focus:border-amber-600 focus:outline-none focus:ring-1 focus:ring-amber-600"
-                    >
-                      <option value="">No Category</option>
-                      {STORE_CATEGORY_NAMES.map((cat) => (
-                        <option key={cat} value={cat}>{cat}</option>
-                      ))}
-                    </select>
-                    <p className="mt-1 text-xs text-stone-500">Assign this store to a category.</p>
+                    <label className="mb-2 block text-sm font-medium text-stone-700">Categories (multiple allowed)</label>
+                    <div className="flex flex-wrap gap-3">
+                      {STORE_CATEGORY_NAMES.map((cat) => {
+                        const checked = storeForm.categories.includes(cat);
+                        return (
+                          <label key={cat} className="flex cursor-pointer items-center gap-2">
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={(e) => {
+                                setStoreForm((f) => ({
+                                  ...f,
+                                  categories: e.target.checked
+                                    ? [...f.categories, cat]
+                                    : f.categories.filter((c) => c !== cat),
+                                }));
+                              }}
+                              className="rounded border-stone-300 text-amber-600 focus:ring-amber-600"
+                            />
+                            <span className="text-sm text-stone-700">{cat}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                    <p className="mt-1 text-xs text-stone-500">Assign this store to one or more categories.</p>
                   </div>
                   <div className="mb-4">
                     <label className="mb-1 block text-sm font-medium text-stone-700">Why Trust Us Section (Optional)</label>

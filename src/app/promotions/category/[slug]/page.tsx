@@ -8,7 +8,7 @@ import PromotionsFooter from "@/components/PromotionsFooter";
 import PromotionsHeader from "@/components/PromotionsHeader";
 import { getCategoryBySlug } from "@/data/categories";
 import { CATEGORY_META } from "@/data/category-meta";
-import { getStores, slugify } from "@/lib/stores";
+import { getStores, getStoreCategories, slugify } from "@/lib/stores";
 
 const PER_PAGE = 24;
 
@@ -52,13 +52,12 @@ export default async function CategoryPage({
 
   if (fixedCategory) {
     categoryName = fixedCategory.name;
-    inCategory = enabled.filter((s) => {
-      const cat = s.category?.trim();
-      return cat ? categoryToSlug(cat) === slugLower : false;
-    });
+    inCategory = enabled.filter((s) =>
+      getStoreCategories(s).some((cat) => categoryToSlug(cat) === slugLower)
+    );
   } else if (isOther) {
     categoryName = "Other";
-    inCategory = enabled.filter((s) => !s.category?.trim());
+    inCategory = enabled.filter((s) => getStoreCategories(s).length === 0);
   } else {
     notFound();
   }

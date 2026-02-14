@@ -4,6 +4,7 @@ import AnalyticsScripts from "@/components/AnalyticsScripts";
 import BlogDataProvider from "@/components/BlogDataProvider";
 import "./globals.css";
 import { getBlogData, getDefaultBlogData } from "@/lib/blog";
+import { getNavStores } from "@/lib/stores";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -50,10 +51,16 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   let blogData;
+  let navStores = { fashion: [] as Awaited<ReturnType<typeof getNavStores>>["fashion"], lifestyle: [] as Awaited<ReturnType<typeof getNavStores>>["lifestyle"] };
   try {
     blogData = await getBlogData();
   } catch {
     blogData = getDefaultBlogData();
+  }
+  try {
+    navStores = await getNavStores();
+  } catch {
+    // Nav stores optional
   }
   return (
     <html lang="en">
@@ -75,6 +82,7 @@ export default async function RootLayout({
             heroFlowPosts: blogData.heroFlowPosts,
             footerCategories: blogData.footerCategories,
             navDropdownPosts: blogData.navDropdownPosts,
+            navDropdownStores: navStores,
             allPosts: blogData.allPosts,
           }}
         >

@@ -19,7 +19,10 @@ export type Store = {
   merchantId?: string;
   countryCodes?: string;
   websiteUrl?: string;
+  /** Single category (legacy). Prefer categories for multiple. */
   category?: string;
+  /** Multiple categories. When set, store appears in each category page. */
+  categories?: string[];
   whyTrustUs?: string;
   moreInfo?: string;
   /** Sidebar box below "About Store": content for "{Store name} Codes and Coupons" (admin-editable). */

@@ -3,12 +3,12 @@ import { readFile, writeFile, mkdir } from "fs/promises";
 import type { Store } from "@/types/store";
 import { slugify } from "./slugify";
 import { getSupabase, SUPABASE_STORES_TABLE, SUPABASE_COUPONS_TABLE } from "./supabase-server";
-import { hasCouponData } from "./store-utils";
+import { hasCouponData, getStoreCategories } from "./store-utils";
 
 const getStoresPath = () => path.join(process.cwd(), "data", "stores.json");
 const getCouponsPath = () => path.join(process.cwd(), "data", "coupons.json");
 
-export { slugify };
+export { slugify, getStoreCategories };
 
 async function getStoresFromFile(): Promise<Store[]> {
   try {
@@ -18,6 +18,25 @@ async function getStoresFromFile(): Promise<Store[]> {
   } catch {
     return [];
   }
+}
+
+/** Store categories that map to nav "Fashion" dropdown */
+const FASHION_STORE_CATS = ["Clothing & Accessories", "Women's Fashion", "Footwear", "Beauty and Personal Care"];
+/** Store categories that map to nav "Lifestyle" dropdown */
+const LIFESTYLE_STORE_CATS = ["Home & Garden", "Gifts & Flowers", "Health & Fitness"];
+
+/** Top stores for nav dropdowns (Fashion, Lifestyle) – used in Header. */
+export async function getNavStores(): Promise<{ fashion: Store[]; lifestyle: Store[] }> {
+  const all = await getStores();
+  const enabled = all.filter((s) => s.status !== "disable");
+  const byCat = (cats: string[]) =>
+    enabled
+      .filter((s) => getStoreCategories(s).some((c) => cats.includes(c)))
+      .slice(0, 8);
+  return {
+    fashion: byCat(FASHION_STORE_CATS),
+    lifestyle: byCat(LIFESTYLE_STORE_CATS),
+  };
 }
 
 export async function getStores(): Promise<Store[]> {

@@ -7,7 +7,8 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useBlogData } from "@/components/BlogDataProvider";
 import type { NavDropdownPost } from "@/data/blog";
 import { getBlogImageAspectClass } from "@/data/blog";
-import { stripHtml } from "@/lib/slugify";
+import { stripHtml, slugify } from "@/lib/slugify";
+import type { Store } from "@/types/store";
 
 type HeaderProps = {
   transparent?: boolean;
@@ -27,8 +28,8 @@ const ChevronDown = ({ className = "h-4 w-4" }: { className?: string }) => (
 
 const navLinks = [
   { label: "Home", href: "/", activeRed: true, noDropdown: true },
-  { label: "Fashion", href: "/promotions/categories", dropdownKey: "fashion" as const },
-  { label: "Lifestyle", href: "/promotions/categories", dropdownKey: "lifestyle" as const },
+  { label: "Fashion", href: "/blog/category/fashion", dropdownKey: "fashion" as const },
+  { label: "Lifestyle", href: "/blog/category/lifestyle", dropdownKey: "lifestyle" as const },
   { label: "Featured", href: "/#latest", dropdownKey: "featured" as const },
   { label: "Promotions", href: "/promotions" },
   { label: "Contact Us", href: "/contact" },
@@ -65,8 +66,41 @@ function DropdownCard({ post }: { post: NavDropdownPost }) {
   );
 }
 
+function StoreDropdownCard({ store }: { store: Store }) {
+  const href = `/promotions/${store.slug || slugify(store.name)}`;
+  return (
+    <Link
+      href={href}
+      className="group flex flex-col overflow-hidden border-2 border-[var(--theme-border)] bg-white transition hover:shadow-md"
+    >
+      <div className="relative h-24 w-full overflow-hidden bg-[var(--hunted-gray)] p-3">
+        {store.logoUrl ? (
+          <Image
+            src={store.logoUrl}
+            alt={store.name}
+            fill
+            className="object-contain p-2 transition group-hover:scale-105"
+            sizes="200px"
+            unoptimized
+          />
+        ) : (
+          <span className="text-lg font-bold text-zinc-400">{store.name?.[0] ?? "?"}</span>
+        )}
+      </div>
+      <div className="flex flex-1 flex-col p-3">
+        <span className="mb-2 line-clamp-2 text-sm font-bold leading-snug text-[var(--hunted-navy)] group-hover:text-[var(--footer-accent)]">
+          {store.name}
+        </span>
+        <span className="mt-auto inline-flex w-full items-center justify-center rounded bg-blue-600 px-3 py-2 text-xs font-semibold text-white transition group-hover:bg-blue-700">
+          Get Coupon
+        </span>
+      </div>
+    </Link>
+  );
+}
+
 export default function Header({ transparent }: HeaderProps = {}) {
-  const { navDropdownPosts } = useBlogData();
+  const { navDropdownPosts, navDropdownStores } = useBlogData();
   const pathname = usePathname();
   const isHome = pathname === "/";
   const [scrolled, setScrolled] = useState(false);
@@ -176,7 +210,10 @@ export default function Header({ transparent }: HeaderProps = {}) {
 
               if (hasDropdown && link.dropdownKey) {
                 const key = link.dropdownKey;
+                const stores = key === "fashion" ? navDropdownStores.fashion : key === "lifestyle" ? navDropdownStores.lifestyle : [];
                 const posts = navDropdownPosts[key] ?? [];
+                const showStores = stores.length > 0 && (key === "fashion" || key === "lifestyle");
+                const items = showStores ? stores.length : posts.length;
                 return (
                   <div
                     key={link.label}
@@ -193,7 +230,7 @@ export default function Header({ transparent }: HeaderProps = {}) {
                       {link.label}
                       <ChevronDown className={`h-4 w-4 shrink-0 transition-transform duration-150 ${isOpen ? "rotate-180" : ""}`} />
                     </Link>
-                    {posts.length > 0 && (
+                    {items > 0 && (
                       <div
                         className={`absolute left-1/2 top-full -translate-x-1/2 pt-0 transition-opacity duration-150 ${
                           isOpen ? "visible opacity-100" : "invisible opacity-0"
@@ -202,9 +239,13 @@ export default function Header({ transparent }: HeaderProps = {}) {
                       >
                         <div className="w-[min(90vw,880px)] rounded-b-lg border border-t-0 border-zinc-200 bg-white px-4 py-5 shadow-xl">
                           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                            {posts.map((post, i) => (
-                              <DropdownCard key={post.slug ? `${post.slug}-${i}` : `post-${i}`} post={post} />
-                            ))}
+                            {showStores
+                              ? stores.map((store) => (
+                                  <StoreDropdownCard key={store.id} store={store} />
+                                ))
+                              : posts.map((post, i) => (
+                                  <DropdownCard key={post.slug ? `${post.slug}-${i}` : `post-${i}`} post={post} />
+                                ))}
                           </div>
                           <div className="mt-3 flex justify-center gap-2">
                             <button
@@ -323,10 +364,13 @@ export default function Header({ transparent }: HeaderProps = {}) {
               {navLinks.map((link) => {
                 const hasDropdown = !("noDropdown" in link && link.noDropdown) && "dropdownKey" in link && link.dropdownKey;
                 const key = hasDropdown ? link.dropdownKey : null;
+                const stores = key === "fashion" ? navDropdownStores.fashion : key === "lifestyle" ? navDropdownStores.lifestyle : [];
                 const posts = key ? (navDropdownPosts[key] ?? []) : [];
+                const showStores = stores.length > 0 && (key === "fashion" || key === "lifestyle");
+                const hasItems = showStores ? stores.length > 0 : posts.length > 0;
                 const isExpanded = key && sidebarExpand === key;
 
-                if (hasDropdown && key && posts.length > 0) {
+                if (hasDropdown && key && hasItems) {
                   return (
                     <div key={link.label} className="border-b border-white/10">
                       <div className="flex items-center justify-between">
@@ -348,16 +392,27 @@ export default function Header({ transparent }: HeaderProps = {}) {
                       </div>
                       {isExpanded && (
                         <div className="border-t border-white/10 bg-black/20 pb-2 pl-5 pr-2">
-                          {posts.map((post) => (
-                            <Link
-                              key={post.id}
-                              href={`/blog/${post.slug}`}
-                              onClick={() => setSidebarOpen(false)}
-                              className="mt-2 block text-sm text-white/85 hover:text-[var(--footer-accent)]"
-                            >
-                              {stripHtml(post.title)}
-                            </Link>
-                          ))}
+                          {showStores
+                            ? stores.map((store) => (
+                                <Link
+                                  key={store.id}
+                                  href={`/promotions/${store.slug || slugify(store.name)}`}
+                                  onClick={() => setSidebarOpen(false)}
+                                  className="mt-2 block text-sm text-white/85 hover:text-[var(--footer-accent)]"
+                                >
+                                  {store.name}
+                                </Link>
+                              ))
+                            : posts.map((post) => (
+                                <Link
+                                  key={post.id}
+                                  href={`/blog/${post.slug}`}
+                                  onClick={() => setSidebarOpen(false)}
+                                  className="mt-2 block text-sm text-white/85 hover:text-[var(--footer-accent)]"
+                                >
+                                  {stripHtml(post.title)}
+                                </Link>
+                              ))}
                         </div>
                       )}
                     </div>

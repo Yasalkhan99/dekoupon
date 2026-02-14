@@ -3,7 +3,7 @@ import Link from "next/link";
 import PromotionsFooter from "@/components/PromotionsFooter";
 import PromotionsHeader from "@/components/PromotionsHeader";
 import ShareCouponForm from "@/components/ShareCouponForm";
-import { getStores } from "@/lib/stores";
+import { getStores, getStoreCategories } from "@/lib/stores";
 
 export const metadata: Metadata = {
   title: { absolute: "Share a Coupon & Submit Promo Codes | SavingsHub4U" },
@@ -17,7 +17,7 @@ function slug(str: string) {
 
 export default async function ShareACouponPage() {
   const stores = await getStores();
-  const categoriesFromBackend = [...new Set(stores.map((s) => s.category).filter((c): c is string => Boolean(c?.trim())))].sort(
+  const categoriesFromBackend = [...new Set(stores.flatMap((s) => getStoreCategories(s)))].sort(
     (a, b) => a.localeCompare(b, undefined, { sensitivity: "base" })
   );
 

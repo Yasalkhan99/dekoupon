@@ -107,6 +107,7 @@ function buildStoreFromBody(body: Record<string, unknown>, slugFromName: string)
     countryCodes,
     websiteUrl,
     category,
+    categories,
     whyTrustUs,
     moreInfo,
     codesAndCouponsContent,
@@ -135,7 +136,11 @@ function buildStoreFromBody(body: Record<string, unknown>, slugFromName: string)
     ...(trackingUrl != null && String(trackingUrl).trim() !== "" && { trackingUrl: String(trackingUrl).trim() }),
     ...(countryCodes != null && String(countryCodes).trim() !== "" && { countryCodes: String(countryCodes).trim() }),
     ...(websiteUrl != null && String(websiteUrl).trim() !== "" && { websiteUrl: String(websiteUrl).trim() }),
-    ...(category != null && String(category).trim() !== "" && { category: String(category).trim() }),
+    ...(Array.isArray(categories) && categories.length > 0
+      ? { categories: categories.filter((c: unknown) => typeof c === "string" && String(c).trim() !== "").map((c: string) => String(c).trim()) }
+      : category != null && String(category).trim() !== ""
+        ? { categories: [String(category).trim()] }
+        : {}),
     ...(whyTrustUs != null && String(whyTrustUs).trim() !== "" && { whyTrustUs: String(whyTrustUs).trim() }),
     ...(moreInfo != null && String(moreInfo).trim() !== "" && { moreInfo: String(moreInfo).trim() }),
     ...(codesAndCouponsContent != null && String(codesAndCouponsContent).trim() !== "" && { codesAndCouponsContent: String(codesAndCouponsContent).trim() }),
@@ -176,7 +181,14 @@ export async function POST(request: Request) {
           (row["Logo URL"] != null && String(row["Logo URL"]).trim() !== "" ? String(row["Logo URL"]).trim() : null) ??
           (row.logo_url != null && String(row.logo_url).trim() !== "" ? String(row.logo_url).trim() : null) ??
           "";
-        const normalizedRow = { ...row, name, description, logoUrl };
+        let categories: string[] | undefined;
+        if (row.categories != null) {
+          const val = String(row.categories).trim();
+          categories = val ? val.split(",").map((c) => c.trim()).filter(Boolean) : undefined;
+        } else if (row.category != null && String(row.category).trim() !== "") {
+          categories = [String(row.category).trim()];
+        }
+        const normalizedRow = { ...row, name, description, logoUrl, ...(categories?.length && { categories }) };
         const newStore = buildStoreFromBody(normalizedRow, slugFromName);
         if (row.couponCode != null && String(row.couponCode).trim() !== "") (newStore as Store).couponCode = String(row.couponCode).trim();
         if (row.couponTitle != null && String(row.couponTitle).trim() !== "") (newStore as Store).couponTitle = String(row.couponTitle).trim();
@@ -210,6 +222,7 @@ export async function POST(request: Request) {
       countryCodes,
       websiteUrl,
       category,
+      categories,
       whyTrustUs,
       moreInfo,
       codesAndCouponsContent,
@@ -269,6 +282,7 @@ export async function POST(request: Request) {
         countryCodes,
         websiteUrl,
         category,
+        categories,
         whyTrustUs,
         moreInfo,
         codesAndCouponsContent,
@@ -391,7 +405,7 @@ export async function PATCH(request: Request) {
     const allowed = [
       "name", "logoUrl", "description", "expiry", "link", "subStoreName", "storePageHeading", "slug",
       "logoAltText", "logoMethod", "trackingUrl", "countryCodes",
-      "websiteUrl", "category", "whyTrustUs", "moreInfo", "codesAndCouponsContent", "moreAboutContent", "shoppingTipsTitle", "shoppingTips", "seoTitle", "seoMetaDesc",
+      "websiteUrl", "category", "categories", "whyTrustUs", "moreInfo", "codesAndCouponsContent", "moreAboutContent", "shoppingTipsTitle", "shoppingTips", "seoTitle", "seoMetaDesc",
       "trending", "status", "faqs", "couponType", "couponCode", "couponTitle", "badgeLabel", "badgeShipping", "badgeOffer", "priority", "active", "imageAlt",
     ];
     const nextStore = { ...current };
@@ -399,6 +413,7 @@ export async function PATCH(request: Request) {
       if (key in updates && updates[key] !== undefined) {
         if (key === "faqs") (nextStore as Record<string, unknown>)[key] = updates[key];
         else if (key === "shoppingTips") (nextStore as Record<string, unknown>)[key] = Array.isArray(updates[key]) ? (updates[key] as unknown[]).filter((t): t is string => typeof t === "string" && t.trim() !== "").map((t) => t.trim()) : undefined;
+        else if (key === "categories") (nextStore as Record<string, unknown>)[key] = Array.isArray(updates[key]) ? (updates[key] as unknown[]).filter((c): c is string => typeof c === "string" && c.trim() !== "").map((c) => c.trim()) : undefined;
         else (nextStore as Record<string, unknown>)[key] = typeof updates[key] === "string" ? (updates[key] as string).trim() : updates[key];
       }
     }

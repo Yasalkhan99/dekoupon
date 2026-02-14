@@ -36,23 +36,29 @@ export default async function BlogCategoryPage({ params }: Props) {
     >
       <Header />
       <main className="w-full">
+        {/* Hero – category header */}
+        <div className="border-b-2 border-[var(--footer-accent)] bg-gradient-to-b from-[var(--hunted-navy)] to-[var(--hunted-navy)]/95 px-5 py-10 text-white md:px-6">
+          <div className="mx-auto max-w-7xl">
+            <nav className="mb-3 text-xs text-white/80" aria-label="Breadcrumb">
+              <Link href="/" className="hover:text-white">Home</Link>
+              <span className="mx-1.5">›</span>
+              <span>{category}</span>
+            </nav>
+            <h1 className="text-2xl font-bold uppercase tracking-wide sm:text-3xl md:text-4xl">
+              {category}
+            </h1>
+            <p className="mt-2 text-sm text-white/90">
+              {posts.length} {posts.length === 1 ? "article" : "articles"}
+            </p>
+          </div>
+        </div>
+
         {/* Content + Sidebar – same layout as homepage and blog post */}
         <div className="site-mid w-full px-5 pb-10 pt-6 md:px-6">
           <div className="main-container-sidebar main-container-sidebar-cc2 clearfix mx-auto max-w-7xl">
             <div className="site-content-sidebar site-content-sidebar-cc2">
               <div className="wrapper clearfix">
-                <nav className="mb-6 text-sm text-[var(--hunted-text-gray)]" aria-label="Breadcrumb">
-                  <Link href="/" className="hover:text-[var(--footer-accent)]">
-                    Home
-                  </Link>
-                  <span className="mx-1.5">›</span>
-                  <span className="text-[var(--hunted-navy)]">{category}</span>
-                </nav>
-
                 <section className="mb-10">
-                  <h1 className="mb-4 border-b-0 pb-2 text-lg font-bold uppercase tracking-wide text-[var(--hunted-navy)] sm:border-b-[3px] sm:border-[var(--footer-accent)] sm:text-xl">
-                    {category}
-                  </h1>
                   <PostsWithLoadMore posts={posts} />
                 </section>
               </div>

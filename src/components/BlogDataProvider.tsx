@@ -4,6 +4,7 @@ import { createContext, useContext } from "react";
 import type { ReactNode } from "react";
 import type { BlogPost } from "@/data/blog";
 import type { NavDropdownPost } from "@/data/blog";
+import type { Store } from "@/types/store";
 
 export type BlogDataContextValue = {
   heroPost: BlogPost;
@@ -14,6 +15,7 @@ export type BlogDataContextValue = {
   heroFlowPosts: BlogPost[];
   footerCategories: { name: string; posts: BlogPost[] }[];
   navDropdownPosts: Record<string, NavDropdownPost[]>;
+  navDropdownStores: { fashion: Store[]; lifestyle: Store[] };
   allPosts: BlogPost[];
 };
 

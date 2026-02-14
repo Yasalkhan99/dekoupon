@@ -1,14 +1,51 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import PromotionsFooter from "@/components/PromotionsFooter";
 import PromotionsHeader from "@/components/PromotionsHeader";
 import NewsletterSubscribe from "@/components/NewsletterSubscribe";
 import { getClickCounts } from "@/lib/clicks";
-import { getStorePageData } from "@/lib/stores";
+import { getStorePageData, getStoreCategories } from "@/lib/stores";
 import type { Store } from "@/types/store";
 import StorePageClient from "@/components/StorePageClient";
 
+function replaceSeoPlaceholders(
+  text: string,
+  store: Store,
+  couponsCount: number,
+  highestOffer?: string
+): string {
+  const monthYear = new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" });
+  return text
+    .replace(/\{store_name\}/gi, (store.name ?? "").trim() || "Store")
+    .replace(/\{month_year\}/gi, monthYear)
+    .replace(/\{active_coupons\}/gi, String(couponsCount))
+    .replace(/\{highest_offer\}/gi, highestOffer ?? "");
+}
+
 type Props = { params: Promise<{ slug: string }> };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const { storeInfo, coupons } = await getStorePageData(slug);
+  if (!storeInfo) return {};
+  const couponsCount = coupons.filter((c) => c.status !== "disable").length;
+  const highestOffer = coupons
+    .map((c) => c.badgeOffer ?? c.badgeLabel ?? "")
+    .filter(Boolean)[0];
+  const titleRaw = (storeInfo.seoTitle ?? "").trim();
+  const descRaw = (storeInfo.seoMetaDesc ?? "").trim();
+  const title = titleRaw
+    ? replaceSeoPlaceholders(titleRaw, storeInfo, couponsCount, highestOffer)
+    : `${storeInfo.name ?? "Store"} Coupons & Promo Codes | SavingsHub4U`;
+  const description = descRaw
+    ? replaceSeoPlaceholders(descRaw, storeInfo, couponsCount, highestOffer)
+    : `Save with ${storeInfo.name ?? "Store"} coupons and promo codes. Verified discounts updated regularly.`;
+  return {
+    title: { absolute: title.slice(0, 100) },
+    description: description.slice(0, 160),
+  };
+}
 
 export default async function StorePage({ params }: Props) {
   const { slug } = await params;
@@ -22,7 +59,8 @@ export default async function StorePage({ params }: Props) {
   const dealsCount = coupons.filter((c) => c.couponType !== "code").length;
   const visitUrl = storeInfo.trackingUrl || storeInfo.link || storeInfo.websiteUrl || "#";
   const displayName = (storeInfo.name ?? "").trim() || "Store";
-  const categoryLabel = (storeInfo.category ?? "").trim() || "Category";
+  const cats = getStoreCategories(storeInfo);
+  const categoryLabel = cats[0] ?? "Category";
 
   const siteName = "SavingsHub4u";
 
