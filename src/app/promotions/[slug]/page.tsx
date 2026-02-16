@@ -65,7 +65,7 @@ export default async function StorePage({ params }: Props) {
   const siteName = "SavingsHub4u";
 
   return (
-    <div className="min-h-screen bg-white text-zinc-900">
+    <div className="min-h-screen bg-white text-zinc-900" suppressHydrationWarning>
       <PromotionsHeader />
       {/* Breadcrumb strip - light peach/orange, centered Store title, current in blue */}
       <div className="border-b border-amber-200/60 bg-[#fff8f0]">

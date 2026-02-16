@@ -161,25 +161,12 @@ function normalizeForMatch(s: string): string {
   return canonicalSlug(s).toLowerCase().replace(/-/g, "");
 }
 
-/** Stricter match for selecting the main store row for a page. */
+/** Stricter match for selecting the main store row for a page.
+ * Only uses store's actual slug (no name-derived slug) so old slugs stop working after slug change. */
 function storeSlugMatches(row: { slug?: string; name?: string }, wantRaw: string, wantCanonical: string): boolean {
   const sSlug = (row.slug || slugify(row.name ?? "")).toLowerCase().trim();
   const sCanonical = canonicalSlug(sSlug);
-  const nameSlug = (row.name ?? "").toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
-
-  // Only allow exact slug / canonical matches for stores so that
-  // similar stores like "True Classic Tees" and "True Classic Tees UK"
-  // stay separate and don't both match the same URL.
-  if (
-    sSlug === wantRaw ||
-    sCanonical === wantCanonical ||
-    nameSlug === wantRaw ||
-    canonicalSlug(nameSlug) === wantCanonical
-  ) {
-    return true;
-  }
-
-  return false;
+  return sSlug === wantRaw || sCanonical === wantCanonical;
 }
 
 /** Match store/coupon row to a page slug (e.g. "magic-hour"). Used for store pages and coupon counts. */
@@ -216,12 +203,12 @@ export async function getStorePageData(slug: string): Promise<StorePageData> {
   // Use stricter matching for the main store row so that stores with
   // similar names (e.g. US vs UK variants) don't collapse into one.
   const matchingStores = enabledStores.filter((s) => storeSlugMatches(s, wantRaw, wantCanonical));
+  // No store matches URL slug → 404 (old slug after slug change should not work)
+  if (matchingStores.length === 0) {
+    return { storeInfo: null, coupons: [], otherStores: [] };
+  }
   const allCouponsFromTable = await getCoupons();
-  // Store row: strict match (so UK vs US stay separate). Coupons: use slugMatches so coupons
-  // whose slug is store slug + suffix (e.g. magic-hour-tea-15-off) still show on store page (magic-hour-tea).
-  const coupons = allCouponsFromTable.filter(
-    (c) => c.status !== "disable" && slugMatches(c, wantRaw, wantCanonical)
-  );
+  const enabledCoupons = allCouponsFromTable.filter((c) => c.status !== "disable");
   // Prefer the store whose slug exactly matches the URL (e.g. UK slug "true-classic-tees-discount-code"
   // must show UK store, not US store which has canonical "true-classic-tees" same as UK).
   const exactSlugMatch = (r: Store) =>
@@ -230,6 +217,15 @@ export async function getStorePageData(slug: string): Promise<StorePageData> {
   const rowWithLogo = matchingStores.find((r) => (r.logoUrl ?? "").trim() !== "");
   let storeInfo: Store | null =
     matchingStores.find(exactSlugMatch) ?? storeRow ?? rowWithLogo ?? matchingStores[0] ?? null;
+  // Coupons: match by page slug OR by store name (so when store slug was changed, coupons with old slug still show)
+  const coupons =
+    storeInfo != null
+      ? enabledCoupons.filter(
+          (c) =>
+            slugMatches(c, wantRaw, wantCanonical) ||
+            (c.name ?? "").toLowerCase().trim() === (storeInfo!.name ?? "").toLowerCase().trim()
+        )
+      : enabledCoupons.filter((c) => slugMatches(c, wantRaw, wantCanonical));
   if (!storeInfo && coupons.length > 0) {
     const first = coupons[0];
     storeInfo = {
