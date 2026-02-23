@@ -66,6 +66,7 @@ export default async function RootLayout({
     <html lang="en">
       <head>
         <meta name="linkscircleverifycode" content="62dc9b67-2d00-439c-b7ae-c041349c3d42" />
+        <meta name="commission-factory-verification" content="e2943d7405c54258a7f58e3f0f8390a4" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
