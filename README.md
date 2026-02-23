@@ -8,7 +8,7 @@ ss7
 - **TRENDING sidebar** – Right-hand sidebasssr with trending posts
 - **Footer** – Category columns (Fashion, Home & Garden, Lifestyle, Beauty)xx with articlllle linksslllssll
 - **Header** – Logo (SavingsHub4u), nav (NEWS, DEALS, REVIE...WS, ,,,,LIFESTYLE, BEAUTY), searchsslll & accoussnt iconsssslll...
-- **Blog post pages** – `/blog/[slug]` for individual articlessss
+- **Blog post pages** – `/blog/[slug]` for individcccual articlessss
 
 ## Run locally.
 xx
