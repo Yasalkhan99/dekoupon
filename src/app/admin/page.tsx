@@ -1034,7 +1034,9 @@ export default function AdminPage() {
           const err = await res.json().catch(() => ({}));
           throw new Error(err.error ?? "Failed to create coupon");
         }
-        setMessage({ type: "success", text: "Coupon created successfully." });
+        const created = await res.json().catch(() => ({}));
+        const createdName = created?.name ?? nameToUse;
+        setMessage({ type: "success", text: `Coupon created: ${createdName}. Refreshing list…` });
         setShowCouponsCreateForm(false);
         setShowAddCouponForStore(false);
       }
