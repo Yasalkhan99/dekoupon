@@ -203,8 +203,13 @@ export default function AdminPage() {
       ]);
       const storesData = await storesRes.json();
       const couponsData = await couponsRes.json();
-      setStores(Array.isArray(storesData) ? storesData : []);
-      setCouponsFromTable(Array.isArray(couponsData) ? couponsData : []);
+      const storesArr = Array.isArray(storesData) ? storesData : [];
+      const couponsArr = Array.isArray(couponsData) ? couponsData : [];
+      if (process.env.NODE_ENV === "development") {
+        console.log("[Admin fetchStores] stores:", storesArr.length, "coupons from API:", couponsArr.length, "ids:", couponsArr.slice(0, 5).map((c: Store) => c.id));
+      }
+      setStores(storesArr);
+      setCouponsFromTable(couponsArr);
     } catch {
       setStores([]);
       setCouponsFromTable([]);
@@ -914,9 +919,10 @@ export default function AdminPage() {
 
   const filteredStores =
     storeFilter === "all" ? stores : stores.filter((s) => s.name === storeFilter);
+  // Stores table: only rows that have coupon fields. Coupons table: every row is a coupon (no filter).
   const couponRowsOnly = [
     ...stores.filter(hasCouponData),
-    ...couponsFromTable.filter(hasCouponData),
+    ...couponsFromTable,
   ];
   const totalCoupons = couponRowsOnly.length;
   const activeCoupons = couponRowsOnly.filter((s) => s.status !== "disable").length;
@@ -1036,9 +1042,22 @@ export default function AdminPage() {
         }
         const created = await res.json().catch(() => ({}));
         const createdName = created?.name ?? nameToUse;
+        if (process.env.NODE_ENV === "development") {
+          console.log("[Admin create coupon] created:", { id: created?.id, name: created?.name, description: created?.description?.slice(0, 30), couponCode: created?.couponCode, couponTitle: created?.couponTitle });
+        }
         setMessage({ type: "success", text: `Coupon created: ${createdName}. Refreshing list…` });
         setShowCouponsCreateForm(false);
         setShowAddCouponForStore(false);
+        // Optimistic update: add new coupon to list immediately so it shows before fetchStores()
+        if (created?.id) {
+          setCouponsFromTable((prev) => {
+            const next = [...prev, created as Store];
+            if (process.env.NODE_ENV === "development") {
+              console.log("[Admin create coupon] couponsFromTable after optimistic add:", next.length, "ids:", next.map((c) => c.id).slice(-3));
+            }
+            return next;
+          });
+        }
       }
       setCouponForm({
         selectedStoreId: "",
