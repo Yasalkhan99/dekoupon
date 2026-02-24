@@ -75,9 +75,18 @@ function sortCouponsByPriority(coupons: Store[]): void {
 }
 
 /** All coupons: file (data/coupons.json) is primary; merged with Supabase so new coupons always show. */
+/** Vercel/serverless has read-only fs – use Supabase only. */
+function isReadOnlyFs(): boolean {
+  return process.env.VERCEL === "1";
+}
+
 export async function getCoupons(): Promise<Store[]> {
-  const fileCoupons = await getCouponsFromFile();
-  const byId = new Map<string, Store>(fileCoupons.map((c) => [c.id, c]));
+  const byId = new Map<string, Store>();
+
+  if (!isReadOnlyFs()) {
+    const fileCoupons = await getCouponsFromFile();
+    fileCoupons.forEach((c) => byId.set(c.id, c));
+  }
 
   const supabase = getSupabase();
   if (supabase) {
@@ -86,11 +95,11 @@ export async function getCoupons(): Promise<Store[]> {
       if (!error && rows?.length) {
         for (const r of rows as { data: Store }[]) {
           const c = r?.data;
-          if (c?.id && !byId.has(c.id)) byId.set(c.id, c);
+          if (c?.id) byId.set(c.id, c);
         }
       }
     } catch {
-      // Supabase error – file is already in byId
+      // Supabase error – byId may already have file data
     }
   }
 
@@ -106,18 +115,29 @@ async function writeCouponsToFile(coupons: Store[]) {
 }
 
 export async function insertCoupon(coupon: Store): Promise<void> {
+  const supabase = getSupabase();
+
+  if (isReadOnlyFs()) {
+    if (!supabase) {
+      throw new Error(
+        "Coupon create on Vercel requires Supabase. Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in Vercel → Project → Settings → Environment Variables, then redeploy."
+      );
+    }
+    const { error } = await supabase.from(SUPABASE_COUPONS_TABLE).insert({ id: coupon.id, data: coupon });
+    if (error) throw new Error(error.message);
+    return;
+  }
+
   const filePath = getCouponsPath();
   const list = await getCouponsFromFile();
   list.push(coupon);
   await writeCouponsToFile(list);
 
-  // Verify write: read back and ensure coupon is in file (catches wrong cwd / permission issues)
   const after = await getCouponsFromFile();
   if (!after.some((c) => c.id === coupon.id)) {
     throw new Error(`Coupon not persisted to file. Path: ${filePath}. Check server cwd and write permissions.`);
   }
 
-  const supabase = getSupabase();
   if (supabase) {
     try {
       const { error } = await supabase.from(SUPABASE_COUPONS_TABLE).insert({ id: coupon.id, data: coupon });
@@ -129,13 +149,18 @@ export async function insertCoupon(coupon: Store): Promise<void> {
 }
 
 export async function updateCoupon(id: string, coupon: Store): Promise<void> {
+  const supabase = getSupabase();
+  if (isReadOnlyFs()) {
+    if (!supabase) throw new Error("Coupon update on Vercel requires Supabase. Set env vars and redeploy.");
+    const { error } = await supabase.from(SUPABASE_COUPONS_TABLE).update({ data: coupon }).eq("id", id);
+    if (error) throw new Error(error.message);
+    return;
+  }
   const list = await getCouponsFromFile();
   const i = list.findIndex((c) => c.id === id);
   if (i === -1) throw new Error("Coupon not found");
   list[i] = coupon;
   await writeCouponsToFile(list);
-
-  const supabase = getSupabase();
   if (supabase) {
     try {
       const { error } = await supabase.from(SUPABASE_COUPONS_TABLE).update({ data: coupon }).eq("id", id);
@@ -147,12 +172,17 @@ export async function updateCoupon(id: string, coupon: Store): Promise<void> {
 }
 
 export async function deleteCouponById(id: string): Promise<void> {
+  const supabase = getSupabase();
+  if (isReadOnlyFs()) {
+    if (!supabase) throw new Error("Coupon delete on Vercel requires Supabase. Set env vars and redeploy.");
+    const { error } = await supabase.from(SUPABASE_COUPONS_TABLE).delete().eq("id", id);
+    if (error) throw new Error(error.message);
+    return;
+  }
   const list = await getCouponsFromFile();
   const next = list.filter((c) => c.id !== id);
   if (next.length === list.length) throw new Error("Coupon not found");
   await writeCouponsToFile(next);
-
-  const supabase = getSupabase();
   if (supabase) {
     try {
       await supabase.from(SUPABASE_COUPONS_TABLE).delete().eq("id", id);
