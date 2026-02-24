@@ -91,16 +91,28 @@ export async function getCoupons(): Promise<Store[]> {
   const supabase = getSupabase();
   if (supabase) {
     try {
-      // Select row id + data so we never drop rows: key by row id to avoid collapsing when data.id repeats
-      const { data: rows, error } = await supabase.from(SUPABASE_COUPONS_TABLE).select("id, data");
-      if (!error && rows?.length) {
-        for (const r of rows as { id: string; data: Store | null }[]) {
+      // Paginate so we get ALL rows (project API may limit e.g. 3–1000 per request)
+      const pageSize = 1000;
+      let from = 0;
+      let hasMore = true;
+      while (hasMore) {
+        const to = from + pageSize - 1;
+        const { data: rows, error } = await supabase
+          .from(SUPABASE_COUPONS_TABLE)
+          .select("id, data")
+          .order("id", { ascending: true })
+          .range(from, to);
+        if (error) break;
+        const list = (rows ?? []) as { id: string; data: Store | null }[];
+        for (const r of list) {
           const data = r?.data;
           const rowId = r?.id;
           if (!rowId) continue;
           const c = data && typeof data === "object" ? { ...data, id: data.id ?? rowId } : { id: rowId } as Store;
           byId.set(rowId, c);
         }
+        hasMore = list.length === pageSize;
+        from += pageSize;
       }
     } catch {
       // Supabase error – byId may already have file data
