@@ -307,7 +307,11 @@ export async function POST(request: Request) {
     if (active === true) (newStore as Store).active = true;
     if (imageAlt != null && String(imageAlt).trim() !== "") (newStore as Store).imageAlt = String(imageAlt).trim();
     if (Array.isArray(events) && events.length > 0) (newStore as Store).events = events.filter((e: unknown) => typeof e === "string" && e.trim() !== "").map((e: string) => e.trim().toLowerCase());
-    const isCoupon = hasCouponData(newStore);
+    // Treat as coupon when it has code/title OR when type is code/deal (so "Add coupon for store" always goes to coupons table)
+    const isCoupon =
+      hasCouponData(newStore) ||
+      (newStore as Store).couponType === "code" ||
+      (newStore as Store).couponType === "deal";
     if (isCoupon) {
       await insertCoupon(newStore);
     } else if (getSupabase()) {

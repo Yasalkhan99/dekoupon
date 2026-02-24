@@ -1006,7 +1006,7 @@ export default function AdminPage() {
             : undefined;
         const nameToUse =
           selectedStore != null ? selectedStore.name : couponForm.name.trim();
-        const res = await fetch("/api/stores", {
+        const res = await fetch("/api/coupons", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

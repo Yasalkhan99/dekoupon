@@ -8,7 +8,7 @@ import { hasCouponData, getStoreCategories } from "./store-utils";
 const getStoresPath = () => path.join(process.cwd(), "data", "stores.json");
 const getCouponsPath = () => path.join(process.cwd(), "data", "coupons.json");
 
-export { slugify, getStoreCategories };
+export { slugify, getStoreCategories, getCouponsPath };
 
 async function getStoresFromFile(): Promise<Store[]> {
   try {
@@ -74,24 +74,29 @@ function sortCouponsByPriority(coupons: Store[]): void {
   });
 }
 
-/** All coupons (from Supabase coupons table or data/coupons.json). */
+/** All coupons: file (data/coupons.json) is primary; merged with Supabase so new coupons always show. */
 export async function getCoupons(): Promise<Store[]> {
-  try {
-    const supabase = getSupabase();
-    if (supabase) {
+  const fileCoupons = await getCouponsFromFile();
+  const byId = new Map<string, Store>(fileCoupons.map((c) => [c.id, c]));
+
+  const supabase = getSupabase();
+  if (supabase) {
+    try {
       const { data: rows, error } = await supabase.from(SUPABASE_COUPONS_TABLE).select("data");
       if (!error && rows?.length) {
-        const coupons = rows.map((r: { data: Store }) => r.data).filter(Boolean);
-        sortCouponsByPriority(coupons);
-        return coupons;
+        for (const r of rows as { data: Store }[]) {
+          const c = r?.data;
+          if (c?.id && !byId.has(c.id)) byId.set(c.id, c);
+        }
       }
+    } catch {
+      // Supabase error – file is already in byId
     }
-  } catch {
-    // Connection closed / network error – fall back to file
   }
-  const fileCoupons = await getCouponsFromFile();
-  sortCouponsByPriority(fileCoupons);
-  return fileCoupons;
+
+  const merged = Array.from(byId.values());
+  sortCouponsByPriority(merged);
+  return merged;
 }
 
 async function writeCouponsToFile(coupons: Store[]) {
@@ -101,42 +106,60 @@ async function writeCouponsToFile(coupons: Store[]) {
 }
 
 export async function insertCoupon(coupon: Store): Promise<void> {
-  const supabase = getSupabase();
-  if (supabase) {
-    const { error } = await supabase.from(SUPABASE_COUPONS_TABLE).insert({ id: coupon.id, data: coupon });
-    if (error) throw new Error(error.message);
-    return;
-  }
+  const filePath = getCouponsPath();
   const list = await getCouponsFromFile();
   list.push(coupon);
   await writeCouponsToFile(list);
+
+  // Verify write: read back and ensure coupon is in file (catches wrong cwd / permission issues)
+  const after = await getCouponsFromFile();
+  if (!after.some((c) => c.id === coupon.id)) {
+    throw new Error(`Coupon not persisted to file. Path: ${filePath}. Check server cwd and write permissions.`);
+  }
+
+  const supabase = getSupabase();
+  if (supabase) {
+    try {
+      const { error } = await supabase.from(SUPABASE_COUPONS_TABLE).insert({ id: coupon.id, data: coupon });
+      if (error) console.warn("[coupons] Supabase insert failed (coupon saved to file):", error.message);
+    } catch (e) {
+      console.warn("[coupons] Supabase insert error (coupon saved to file):", e);
+    }
+  }
 }
 
 export async function updateCoupon(id: string, coupon: Store): Promise<void> {
-  const supabase = getSupabase();
-  if (supabase) {
-    const { error } = await supabase.from(SUPABASE_COUPONS_TABLE).update({ data: coupon }).eq("id", id);
-    if (error) throw new Error(error.message);
-    return;
-  }
   const list = await getCouponsFromFile();
   const i = list.findIndex((c) => c.id === id);
   if (i === -1) throw new Error("Coupon not found");
   list[i] = coupon;
   await writeCouponsToFile(list);
+
+  const supabase = getSupabase();
+  if (supabase) {
+    try {
+      const { error } = await supabase.from(SUPABASE_COUPONS_TABLE).update({ data: coupon }).eq("id", id);
+      if (error) console.warn("[coupons] Supabase update failed:", error.message);
+    } catch (e) {
+      console.warn("[coupons] Supabase update error:", e);
+    }
+  }
 }
 
 export async function deleteCouponById(id: string): Promise<void> {
-  const supabase = getSupabase();
-  if (supabase) {
-    const { error } = await supabase.from(SUPABASE_COUPONS_TABLE).delete().eq("id", id);
-    if (error) throw new Error(error.message);
-    return;
-  }
   const list = await getCouponsFromFile();
   const next = list.filter((c) => c.id !== id);
   if (next.length === list.length) throw new Error("Coupon not found");
   await writeCouponsToFile(next);
+
+  const supabase = getSupabase();
+  if (supabase) {
+    try {
+      await supabase.from(SUPABASE_COUPONS_TABLE).delete().eq("id", id);
+    } catch (e) {
+      console.warn("[coupons] Supabase delete error:", e);
+    }
+  }
 }
 
 export type StorePageData = {
