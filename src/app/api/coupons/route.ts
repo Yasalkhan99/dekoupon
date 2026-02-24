@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { getCoupons, insertCoupon, getCouponsPath } from "@/lib/stores";
 import type { Store } from "@/types/store";
 
+/** Prevent Vercel/edge from caching so live always gets fresh coupons from Supabase. */
+export const dynamic = "force-dynamic";
+
 function slugFromName(name: string): string {
   return String(name)
     .trim()
@@ -12,7 +15,12 @@ function slugFromName(name: string): string {
 
 export async function GET() {
   const coupons = await getCoupons();
-  return NextResponse.json(coupons);
+  return NextResponse.json(coupons, {
+    headers: {
+      "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+      Pragma: "no-cache",
+    },
+  });
 }
 
 /** Create a new coupon (saved to Supabase coupons table or data/coupons.json). */

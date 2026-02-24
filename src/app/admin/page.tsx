@@ -175,6 +175,7 @@ export default function AdminPage() {
   const visualImageUploadInputRef = useRef<HTMLInputElement>(null);
   const featuredImageUploadInputRef = useRef<HTMLInputElement>(null);
   const contentEditableRef = useRef<HTMLDivElement>(null);
+  const lastCreatedCouponRef = useRef<Store | null>(null);
   const [imageUploading, setImageUploading] = useState(false);
   const [contentViewMode, setContentViewMode] = useState<"html" | "preview">("preview");
   const [featuredImageResizeModal, setFeaturedImageResizeModal] = useState<{ file: File; objectUrl: string } | null>(null);
@@ -209,7 +210,15 @@ export default function AdminPage() {
         console.log("[Admin fetchStores] stores:", storesArr.length, "coupons from API:", couponsArr.length, "ids:", couponsArr.slice(0, 5).map((c: Store) => c.id));
       }
       setStores(storesArr);
-      setCouponsFromTable(couponsArr);
+      // If we just created a coupon and GET returned stale list (e.g. cached on live), keep it in the list
+      const pending = lastCreatedCouponRef.current;
+      if (pending?.id && !couponsArr.some((c: Store) => c.id === pending.id)) {
+        setCouponsFromTable([pending, ...couponsArr]);
+        lastCreatedCouponRef.current = null;
+      } else {
+        if (pending) lastCreatedCouponRef.current = null;
+        setCouponsFromTable(couponsArr);
+      }
     } catch {
       setStores([]);
       setCouponsFromTable([]);
@@ -1050,6 +1059,7 @@ export default function AdminPage() {
         setShowAddCouponForStore(false);
         // Optimistic update: add new coupon to list immediately so it shows before fetchStores()
         if (created?.id) {
+          lastCreatedCouponRef.current = created as Store;
           setCouponsFromTable((prev) => {
             const next = [...prev, created as Store];
             if (process.env.NODE_ENV === "development") {
