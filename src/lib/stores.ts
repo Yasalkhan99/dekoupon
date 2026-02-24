@@ -91,11 +91,15 @@ export async function getCoupons(): Promise<Store[]> {
   const supabase = getSupabase();
   if (supabase) {
     try {
-      const { data: rows, error } = await supabase.from(SUPABASE_COUPONS_TABLE).select("data");
+      // Select row id + data so we never drop rows: key by row id to avoid collapsing when data.id repeats
+      const { data: rows, error } = await supabase.from(SUPABASE_COUPONS_TABLE).select("id, data");
       if (!error && rows?.length) {
-        for (const r of rows as { data: Store }[]) {
-          const c = r?.data;
-          if (c?.id) byId.set(c.id, c);
+        for (const r of rows as { id: string; data: Store | null }[]) {
+          const data = r?.data;
+          const rowId = r?.id;
+          if (!rowId) continue;
+          const c = data && typeof data === "object" ? { ...data, id: data.id ?? rowId } : { id: rowId } as Store;
+          byId.set(rowId, c);
         }
       }
     } catch {
