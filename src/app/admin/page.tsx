@@ -156,6 +156,8 @@ export default function AdminPage() {
     niche: BlogNiche[];
     content: string;
     publishedDate: string;
+    metaTitle: string;
+    metaDescription: string;
   }>({
     title: "",
     slug: "",
@@ -167,6 +169,8 @@ export default function AdminPage() {
     niche: [],
     content: "",
     publishedDate: "",
+    metaTitle: "",
+    metaDescription: "",
   });
   const contentTextareaRef = useRef<HTMLTextAreaElement>(null);
   const titleInputRef = useRef<HTMLInputElement>(null);
@@ -282,10 +286,41 @@ export default function AdminPage() {
     }
   }, [contentViewMode]);
 
+  /** Expand selection to current block (so formatBlock h1/h2/h3 applies to whole line). */
+  const expandSelectionToBlock = (container: HTMLElement) => {
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return;
+    let node: Node | null = sel.anchorNode;
+    while (node && node !== container) {
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        const tag = (node as Element).tagName.toLowerCase();
+        if (["p", "div", "h1", "h2", "h3", "h4", "h5", "h6", "li", "blockquote"].includes(tag)) {
+          const range = document.createRange();
+          range.selectNodeContents(node);
+          sel.removeAllRanges();
+          sel.addRange(range);
+          return;
+        }
+      }
+      node = node.parentNode;
+    }
+    if (sel.anchorNode) {
+      const range = sel.getRangeAt(0);
+      range.selectNodeContents(sel.anchorNode);
+      sel.removeAllRanges();
+      sel.addRange(range);
+    }
+  };
+
   const execVisual = (command: string, value?: string) => {
-    contentEditableRef.current?.focus();
+    const el = contentEditableRef.current;
+    if (!el) return;
+    el.focus();
+    if (command === "formatBlock" && value && ["h1", "h2", "h3", "h4", "h5", "h6"].includes(value.toLowerCase())) {
+      expandSelectionToBlock(el);
+    }
     document.execCommand(command, false, value ?? undefined);
-    if (contentEditableRef.current) setBlogForm((f) => ({ ...f, content: contentEditableRef.current!.innerHTML }));
+    if (el) setBlogForm((f) => ({ ...f, content: el.innerHTML }));
   };
   /** Find the image that is at or near the current selection (so we can wrap it in a link). */
   const getImageAtSelection = (container: HTMLElement): HTMLImageElement | null => {
@@ -489,6 +524,8 @@ export default function AdminPage() {
             niche: blogForm.niche,
             content: blogForm.content.trim(),
             publishedDate: blogForm.publishedDate.trim() || undefined,
+            meta_title: blogForm.metaTitle.trim() || undefined,
+            meta_description: blogForm.metaDescription.trim() || undefined,
           }),
         });
         if (!res.ok) {
@@ -513,6 +550,8 @@ export default function AdminPage() {
             niche: blogForm.niche,
             content: blogForm.content.trim(),
             publishedDate: blogForm.publishedDate.trim() || undefined,
+            meta_title: blogForm.metaTitle.trim() || undefined,
+            meta_description: blogForm.metaDescription.trim() || undefined,
           }),
         });
         if (!res.ok) {
@@ -532,6 +571,8 @@ export default function AdminPage() {
         niche: [],
         content: "",
         publishedDate: "",
+        metaTitle: "",
+        metaDescription: "",
       });
       setShowBlogForm(false);
       await fetchBlogs();
@@ -785,16 +826,24 @@ export default function AdminPage() {
     URL.revokeObjectURL(objectUrl);
     setFeaturedImageResizeModal(null);
     setImageUploading(true);
+    setMessage(null);
     try {
       const form = new FormData();
       form.append("file", file);
       const res = await fetch("/api/admin/upload-image", { method: "POST", credentials: "include", body: form });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Upload failed");
-      const url = data.url as string;
-      if (url) setBlogForm((f) => ({ ...f, image: url }));
+      const url = typeof data?.url === "string" ? data.url.trim() : "";
+      if (url) {
+        setBlogForm((f) => ({ ...f, image: url }));
+        setMessage({ type: "success", text: "Image uploaded. Click **Update Post** below to save the post." });
+      } else {
+        setMessage({ type: "error", text: "Upload succeeded but no URL returned." });
+      }
     } catch (err) {
-      window.alert(err instanceof Error ? err.message : "Upload failed");
+      const msg = err instanceof Error ? err.message : "Upload failed";
+      setMessage({ type: "error", text: msg });
+      window.alert(msg);
     } finally {
       setImageUploading(false);
     }
@@ -811,6 +860,7 @@ export default function AdminPage() {
     URL.revokeObjectURL(objectUrl);
     setFeaturedImageResizeModal(null);
     setImageUploading(true);
+    setMessage(null);
     try {
       let fileToUpload: File;
       try {
@@ -824,10 +874,17 @@ export default function AdminPage() {
       const res = await fetch("/api/admin/upload-image", { method: "POST", credentials: "include", body: form });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Upload failed");
-      const url = data.url as string;
-      if (url) setBlogForm((f) => ({ ...f, image: url }));
+      const url = typeof data?.url === "string" ? data.url.trim() : "";
+      if (url) {
+        setBlogForm((f) => ({ ...f, image: url }));
+        setMessage({ type: "success", text: "Image uploaded. Click **Update Post** below to save the post." });
+      } else {
+        setMessage({ type: "error", text: "Upload succeeded but no URL returned." });
+      }
     } catch (err) {
-      window.alert(err instanceof Error ? err.message : "Upload failed");
+      const msg = err instanceof Error ? err.message : "Upload failed";
+      setMessage({ type: "error", text: msg });
+      window.alert(msg);
     } finally {
       setImageUploading(false);
     }
@@ -844,18 +901,26 @@ export default function AdminPage() {
     URL.revokeObjectURL(objectUrl);
     setContentImageResizeModal(null);
     setImageUploading(true);
+    setMessage(null);
     try {
       const form = new FormData();
       form.append("file", file);
       const res = await fetch("/api/admin/upload-image", { method: "POST", credentials: "include", body: form });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Upload failed");
-      let url = data.url as string;
+      let url = typeof data?.url === "string" ? data.url.trim() : "";
       if (url && url.startsWith("/")) url = window.location.origin + url;
       const alt = file.name.replace(/\.[^.]+$/, "") || "Image";
-      if (url) insertContentImageUrl(url, alt, mode, undefined);
+      if (url) {
+        insertContentImageUrl(url, alt, mode, undefined);
+        setMessage({ type: "success", text: "Image inserted. Click **Update Post** below to save." });
+      } else {
+        setMessage({ type: "error", text: "Upload succeeded but no URL returned." });
+      }
     } catch (err) {
-      window.alert(err instanceof Error ? err.message : "Upload failed");
+      const msg = err instanceof Error ? err.message : "Upload failed";
+      setMessage({ type: "error", text: msg });
+      window.alert(msg);
     } finally {
       setImageUploading(false);
     }
@@ -872,6 +937,7 @@ export default function AdminPage() {
     URL.revokeObjectURL(objectUrl);
     setContentImageResizeModal(null);
     setImageUploading(true);
+    setMessage(null);
     try {
       let fileToUpload: File;
       try {
@@ -885,12 +951,19 @@ export default function AdminPage() {
       const res = await fetch("/api/admin/upload-image", { method: "POST", credentials: "include", body: form });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Upload failed");
-      let url = data.url as string;
+      let url = typeof data?.url === "string" ? data.url.trim() : "";
       if (url && url.startsWith("/")) url = window.location.origin + url;
       const alt = file.name.replace(/\.[^.]+$/, "") || "Image";
-      if (url) insertContentImageUrl(url, alt, mode, size);
+      if (url) {
+        insertContentImageUrl(url, alt, mode, size);
+        setMessage({ type: "success", text: "Image inserted. Click Update Post below to save." });
+      } else {
+        setMessage({ type: "error", text: "Upload succeeded but no URL returned." });
+      }
     } catch (err) {
-      window.alert(err instanceof Error ? err.message : "Upload failed");
+      const msg = err instanceof Error ? err.message : "Upload failed";
+      setMessage({ type: "error", text: msg });
+      window.alert(msg);
     } finally {
       setImageUploading(false);
     }
@@ -3168,6 +3241,8 @@ export default function AdminPage() {
                                     niche,
                                     content: (p as { content?: string }).content ?? "",
                                     publishedDate: (p as { publishedDate?: string }).publishedDate ?? "",
+                                    metaTitle: (p as { meta_title?: string }).meta_title ?? "",
+                                    metaDescription: (p as { meta_description?: string }).meta_description ?? "",
                                   });
                                   setShowBlogForm(true);
                                 }}
@@ -3318,6 +3393,7 @@ export default function AdminPage() {
                               {imageUploading ? "…" : "Upload"}
                             </button>
                           </div>
+                          <p className="mt-1 text-xs text-stone-500">After upload, click <strong>Update Post</strong> below to save. On live site, Supabase Storage (bucket &quot;uploads&quot;, public) is required.</p>
                           {featuredImageResizeModal && (
                             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-label="Resize featured image">
                               <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-stone-200 bg-white p-4 shadow-xl">
@@ -3491,6 +3567,26 @@ export default function AdminPage() {
                             className="w-full rounded border border-stone-300 px-3 py-2 text-stone-900 focus:border-amber-600 focus:outline-none focus:ring-1 focus:ring-amber-600"
                           />
                         </div>
+                        <div>
+                          <label className="mb-1 block text-sm font-medium text-stone-700">Meta title (SEO)</label>
+                          <input
+                            type="text"
+                            value={blogForm.metaTitle ?? ""}
+                            onChange={(e) => setBlogForm((f) => ({ ...f, metaTitle: e.target.value }))}
+                            placeholder="Optional – used for &lt;title&gt; and search results; default is post title"
+                            className="w-full rounded border border-stone-300 px-3 py-2 text-stone-900 focus:border-amber-600 focus:outline-none focus:ring-1 focus:ring-amber-600"
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-sm font-medium text-stone-700">Meta description (SEO)</label>
+                          <textarea
+                            value={blogForm.metaDescription ?? ""}
+                            onChange={(e) => setBlogForm((f) => ({ ...f, metaDescription: e.target.value }))}
+                            placeholder="Optional – used for search snippet; default is excerpt"
+                            rows={2}
+                            className="w-full rounded border border-stone-300 px-3 py-2 text-stone-900 focus:border-amber-600 focus:outline-none focus:ring-1 focus:ring-amber-600"
+                          />
+                        </div>
                         <label className="flex cursor-pointer items-center gap-2">
                           <input
                             type="checkbox"
@@ -3530,6 +3626,7 @@ export default function AdminPage() {
                               <button type="button" onClick={() => insertContentHtml("<i>", "</i>")} className="rounded border border-stone-300 bg-white px-2 py-1.5 text-sm italic text-stone-800 hover:bg-stone-100" title="Italic">I</button>
                               <button type="button" onClick={() => insertContentHtml("<u>", "</u>")} className="rounded border border-stone-300 bg-white px-2 py-1.5 text-sm text-stone-800 underline hover:bg-stone-100" title="Underline">U</button>
                               <span className="mx-1 w-px self-stretch bg-stone-300" />
+                              <button type="button" onClick={() => insertContentHtml("<h1>", "</h1>")} className="rounded border border-stone-300 bg-white px-2 py-1.5 text-xs font-bold text-stone-800 hover:bg-stone-100" title="Heading 1">H1</button>
                               <button type="button" onClick={() => insertContentHtml("<h2>", "</h2>")} className="rounded border border-stone-300 bg-white px-2 py-1.5 text-xs font-semibold text-stone-800 hover:bg-stone-100" title="Heading 2">H2</button>
                               <button type="button" onClick={() => insertContentHtml("<h3>", "</h3>")} className="rounded border border-stone-300 bg-white px-2 py-1.5 text-xs font-semibold text-stone-800 hover:bg-stone-100" title="Heading 3">H3</button>
                               <button type="button" onClick={() => insertContentHtml("<p>", "</p>")} className="rounded border border-stone-300 bg-white px-2 py-1.5 text-xs text-stone-800 hover:bg-stone-100" title="Paragraph">P</button>
@@ -3594,8 +3691,9 @@ export default function AdminPage() {
                                 <button type="button" onClick={() => execVisual("italic")} className="rounded border border-stone-300 bg-white px-2 py-1 text-sm italic text-stone-800 hover:bg-stone-100" title="Italic">I</button>
                                 <button type="button" onClick={() => execVisual("underline")} className="rounded border border-stone-300 bg-white px-2 py-1 text-sm text-stone-800 underline hover:bg-stone-100" title="Underline">U</button>
                                 <span className="mx-1 w-px self-stretch bg-stone-300" />
-                                <button type="button" onClick={() => execVisual("formatBlock", "h2")} className="rounded border border-stone-300 bg-white px-2 py-1 text-xs font-semibold text-stone-800 hover:bg-stone-100">H2</button>
-                                <button type="button" onClick={() => execVisual("formatBlock", "h3")} className="rounded border border-stone-300 bg-white px-2 py-1 text-xs font-semibold text-stone-800 hover:bg-stone-100">H3</button>
+                                <button type="button" onClick={() => execVisual("formatBlock", "h1")} className="rounded border border-stone-300 bg-white px-2 py-1 text-xs font-bold text-stone-800 hover:bg-stone-100" title="Heading 1">H1</button>
+                                <button type="button" onClick={() => execVisual("formatBlock", "h2")} className="rounded border border-stone-300 bg-white px-2 py-1 text-xs font-semibold text-stone-800 hover:bg-stone-100" title="Heading 2">H2</button>
+                                <button type="button" onClick={() => execVisual("formatBlock", "h3")} className="rounded border border-stone-300 bg-white px-2 py-1 text-xs font-semibold text-stone-800 hover:bg-stone-100" title="Heading 3">H3</button>
                                 <button type="button" onClick={() => execVisual("insertUnorderedList")} className="rounded border border-stone-300 bg-white px-2 py-1 text-xs text-stone-800 hover:bg-stone-100">• List</button>
                                 <button type="button" onClick={() => execVisual("insertOrderedList")} className="rounded border border-stone-300 bg-white px-2 py-1 text-xs text-stone-800 hover:bg-stone-100">1. List</button>
                                 <span className="mx-1 w-px self-stretch bg-stone-300" />

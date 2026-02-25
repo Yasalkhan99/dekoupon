@@ -42,6 +42,10 @@ export type BlogPost = {
   content?: string;
   createdAt?: string;
   publishedDate?: string;
+  /** SEO: meta title (optional; falls back to post title) */
+  meta_title?: string;
+  /** SEO: meta description (optional; falls back to excerpt) */
+  meta_description?: string;
 };
 
 /** Blog categories – used on home page (sidebar), footer, and category pages */

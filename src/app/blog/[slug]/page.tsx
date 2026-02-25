@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -14,6 +15,20 @@ function addLazyToContentImages(html: string): string {
 }
 
 type Props = { params: Promise<{ slug: string }> };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const post = await getPostBySlug(slug);
+  if (!post) return {};
+  const metaTitle = (post as { meta_title?: string }).meta_title?.trim();
+  const metaDesc = (post as { meta_description?: string }).meta_description?.trim();
+  const title = metaTitle || stripHtml(post.title);
+  const description = metaDesc || stripHtml(post.excerpt || "").slice(0, 160);
+  return {
+    title: title.slice(0, 100),
+    description: description.slice(0, 160),
+  };
+}
 
 export default async function BlogPostPage({ params }: Props) {
   const { slug } = await params;

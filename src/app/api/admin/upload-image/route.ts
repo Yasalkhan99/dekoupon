@@ -67,8 +67,16 @@ export async function POST(request: Request) {
           { status: 500 }
         );
       }
-      const { data: urlData } = supabase.storage.from(SUPABASE_UPLOADS_BUCKET).getPublicUrl(data.path);
-      return NextResponse.json({ url: urlData.publicUrl, name });
+      const pathInBucket = typeof data?.path === "string" ? data.path : name;
+      const { data: urlData } = supabase.storage.from(SUPABASE_UPLOADS_BUCKET).getPublicUrl(pathInBucket);
+      const publicUrl = urlData?.publicUrl ?? "";
+      if (!publicUrl) {
+        return NextResponse.json(
+          { error: "Supabase returned no public URL. Ensure the bucket is set to Public in Storage settings." },
+          { status: 500 }
+        );
+      }
+      return NextResponse.json({ url: publicUrl, name });
     }
 
     // Live (e.g. Vercel) has read-only filesystem – require Supabase
@@ -77,7 +85,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           error:
-            "Featured image upload on live needs Supabase. In Vercel: set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY. In Supabase Dashboard: Storage → New bucket → name 'uploads' → Public.",
+            "Image upload on live requires Supabase. Add in Vercel: NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY. In Supabase: Storage → New bucket → name 'uploads' → set to Public.",
         },
         { status: 503 }
       );
@@ -89,12 +97,20 @@ export async function POST(request: Request) {
     const bytes = await file.arrayBuffer();
     await writeFile(filePath, Buffer.from(bytes));
     const relativeUrl = `/uploads/${name}`;
+    const proto = request.headers.get("x-forwarded-proto") ?? request.headers.get("x-forwarded-ssl");
+    const host = request.headers.get("x-forwarded-host") ?? request.headers.get("host");
+    let origin: string;
     try {
-      const origin = new URL(request.url).origin;
-      return NextResponse.json({ url: `${origin}${relativeUrl}`, name });
+      if (host && (proto === "https" || proto === "http")) {
+        origin = `${proto}://${host}`;
+      } else {
+        origin = new URL(request.url).origin;
+      }
     } catch {
-      return NextResponse.json({ url: relativeUrl, name });
+      origin = "";
     }
+    const absoluteUrl = origin ? `${origin.replace(/\/$/, "")}${relativeUrl}` : relativeUrl;
+    return NextResponse.json({ url: absoluteUrl, name });
   } catch (err) {
     const e = err as NodeJS.ErrnoException;
     if (e?.code === "EROFS" || e?.code === "EACCES") {

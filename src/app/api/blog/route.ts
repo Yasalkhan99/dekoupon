@@ -21,6 +21,8 @@ const allowedFields = [
   "content",
   "createdAt",
   "publishedDate",
+  "meta_title",
+  "meta_description",
 ] as const;
 
 const VALID_NICHES = ["featured", "trending", "popular"] as const;
@@ -95,6 +97,8 @@ export async function POST(request: Request) {
       content: body.content != null ? String(body.content).trim() : "",
       createdAt: now,
       publishedDate,
+      ...(body.meta_title != null && String(body.meta_title).trim() !== "" && { meta_title: String(body.meta_title).trim() }),
+      ...(body.meta_description != null && String(body.meta_description).trim() !== "" && { meta_description: String(body.meta_description).trim() }),
     };
     posts.push(newPost);
     try {
