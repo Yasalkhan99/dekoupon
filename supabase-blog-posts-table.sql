@@ -1,15 +1,12 @@
 -- Run this in Supabase Dashboard → SQL Editor (for the project you use in Vercel)
--- Creates the blog_posts table so live blog save works.
+-- Creates the blog_posts table so blog, meta title, meta description, featured sab Supabase mein save hon.
 
 CREATE TABLE IF NOT EXISTS public.blog_posts (
   id text PRIMARY KEY,
   data jsonb NOT NULL
 );
 
-COMMENT ON TABLE public.blog_posts IS 'Blog posts for SavingsHub4u; data = full post object (title, slug, content, etc.)';
+COMMENT ON TABLE public.blog_posts IS 'Blog posts; data = full post object (title, slug, content, excerpt, image, imageAspectRatio, featured, niche, meta_title, meta_description, publishedDate, createdAt, etc.)';
 
--- Also create a Storage bucket for blog image uploads (live/Vercel):
--- 1. Go to Supabase Dashboard → Storage → New bucket
--- 2. Name: uploads
--- 3. Enable "Public bucket" so image URLs work
--- 4. Create bucket
+-- Image uploads ke liye Storage bucket (Dashboard se banao agar nahi hai):
+-- Storage → New bucket → name: uploads → Public bucket ✓
