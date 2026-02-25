@@ -11,6 +11,9 @@ import TopDealsSection from "@/components/TopDealsSection";
 import Footer from "@/components/Footer";
 import { getBlogData } from "@/lib/blog";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export const metadata: Metadata = {
   title: { absolute: "Savings Tips, Deals & Coupon Guides Blog | SavingsHub4U" },
   description:

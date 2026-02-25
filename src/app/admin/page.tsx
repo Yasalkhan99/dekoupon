@@ -502,6 +502,12 @@ export default function AdminPage() {
     e.preventDefault();
     setMessage(null);
     setSubmitting(true);
+    // Normal mode: contentEditable se latest content (links, H2, etc.) le lo taake save ho
+    let contentToSend = blogForm.content.trim();
+    if (contentViewMode === "preview" && contentEditableRef.current) {
+      const html = contentEditableRef.current.innerHTML;
+      contentToSend = (html === "<br>" || html === "<p><br></p>" ? "" : html).trim();
+    }
     try {
     const slug =
       blogForm.slug.trim() !== ""
@@ -522,7 +528,7 @@ export default function AdminPage() {
             imageAspectRatio: blogForm.imageAspectRatio,
             featured: blogForm.featured,
             niche: blogForm.niche,
-            content: blogForm.content.trim(),
+            content: contentToSend,
             publishedDate: blogForm.publishedDate.trim() || undefined,
             meta_title: blogForm.metaTitle.trim() || undefined,
             meta_description: blogForm.metaDescription.trim() || undefined,
@@ -548,7 +554,7 @@ export default function AdminPage() {
             imageAspectRatio: blogForm.imageAspectRatio,
             featured: blogForm.featured,
             niche: blogForm.niche,
-            content: blogForm.content.trim(),
+            content: contentToSend,
             publishedDate: blogForm.publishedDate.trim() || undefined,
             meta_title: blogForm.metaTitle.trim() || undefined,
             meta_description: blogForm.metaDescription.trim() || undefined,

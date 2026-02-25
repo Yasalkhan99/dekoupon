@@ -6,6 +6,9 @@ import PromotionsHeader from "@/components/PromotionsHeader";
 import { getStores, getCoupons } from "@/lib/stores";
 import { getBlogData } from "@/lib/blog";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export const metadata: Metadata = {
   title: { absolute: "About SavingsHub4U | Your Trusted Coupons & Deals Platform" },
   description:

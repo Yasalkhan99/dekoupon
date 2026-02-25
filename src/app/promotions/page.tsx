@@ -14,6 +14,9 @@ import { STORE_CATEGORIES } from "@/data/categories";
 import { getBlogImageAspectClass, type ImageAspectRatio } from "@/data/blog";
 import type { Store } from "@/types/store";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export const metadata: Metadata = {
   title: { absolute: "Latest Promotions & Exclusive Deals | SavingsHub4U" },
   description:

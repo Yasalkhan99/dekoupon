@@ -16,6 +16,10 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+/** Fresh blog data (hero, nav images) – upload ke baad pics turant dikhen */
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export const metadata: Metadata = {
   title: {
     default: "SavingsHub4u – Your Gateway to Smart Savings & Best Coupons",
