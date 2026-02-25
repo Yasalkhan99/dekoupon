@@ -9,6 +9,10 @@ import { getPostBySlug, readBlogPosts, getBlogFeaturedImageUrl, resolveContentIm
 import { stripHtml } from "@/lib/slugify";
 import { getBlogImageAspectClass, blogCategorySlug } from "@/data/blog";
 
+/** Har request pe fresh data (Supabase se) – taake admin update ke baad changes turant dikhen */
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 /** Add lazy loading to all images in HTML so the page doesn't lag when opening a blog */
 function addLazyToContentImages(html: string): string {
   return html.replace(/<img /gi, '<img loading="lazy" decoding="async" ');

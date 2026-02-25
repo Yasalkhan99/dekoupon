@@ -9,6 +9,9 @@ import { getPostsByCategory } from "@/lib/blog";
 import { getBlogCategoryBySlug } from "@/data/blog";
 import { BLOG_CATEGORY_META } from "@/data/blog-category-meta";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
