@@ -116,7 +116,7 @@ export default async function BlogPostPage({ params }: Props) {
                   <div className="blog-content text-lg text-zinc-600" dangerouslySetInnerHTML={{ __html: post.excerpt }} />
                   {post.content ? (
                     <div
-                      className="blog-content mt-4 text-zinc-700 [&_h1]:mt-8 [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:after:content-['_H1'] [&_h1]:after:ml-1.5 [&_h1]:after:text-xs [&_h1]:after:font-normal [&_h1]:after:text-zinc-500 [&_h2]:mt-8 [&_h2]:text-xl [&_h2]:font-bold [&_h2]:after:content-['_H2'] [&_h2]:after:ml-1.5 [&_h2]:after:text-xs [&_h2]:after:font-normal [&_h2]:after:text-zinc-500 [&_h3]:mt-6 [&_h3]:text-lg [&_h3]:font-bold [&_h3]:after:content-['_H3'] [&_h3]:after:ml-1.5 [&_h3]:after:text-xs [&_h3]:after:font-normal [&_h3]:after:text-zinc-500 [&_ul]:list-disc [&_ul]:pl-6 [&_img]:rounded-lg [&_img]:my-4 [&_img]:w-full [&_img]:h-auto [&_a]:text-blue-600 [&_a]:underline [&_a]:hover:text-blue-800"
+                      className="blog-content mt-4 text-zinc-700 [&_h1]:mt-8 [&_h1]:text-2xl [&_h1]:font-bold [&_h2]:mt-8 [&_h2]:text-xl [&_h2]:font-bold [&_h3]:mt-6 [&_h3]:text-lg [&_h3]:font-bold [&_ul]:list-disc [&_ul]:pl-6 [&_img]:rounded-lg [&_img]:my-4 [&_img]:w-full [&_img]:h-auto [&_a]:text-blue-600 [&_a]:underline [&_a]:hover:text-blue-800"
                       dangerouslySetInnerHTML={{ __html: safeContent }}
                     />
                   ) : (

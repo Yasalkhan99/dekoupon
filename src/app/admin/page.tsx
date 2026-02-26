@@ -3752,7 +3752,7 @@ export default function AdminPage() {
                                 }
                                 setBlogForm((f) => ({ ...f, content: html }));
                               }}
-                              className="admin-normal-editor min-h-[240px] max-w-none rounded border border-stone-200 bg-stone-50/50 p-4 text-left text-stone-700 outline-none focus:ring-2 focus:ring-amber-500 [&_h2]:mt-4 [&_h2]:text-xl [&_h2]:font-bold [&_h3]:mt-3 [&_h3]:text-lg [&_ul]:list-disc [&_ul]:pl-6 [&_li]:my-0.5 [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded [&_p]:my-2"
+                              className="admin-normal-editor min-h-[240px] max-w-none rounded border border-stone-200 bg-stone-50/50 p-4 text-left text-stone-700 outline-none focus:ring-2 focus:ring-amber-500 [&_h1]:mt-4 [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:after:content-['_H1'] [&_h1]:after:ml-1.5 [&_h1]:after:text-xs [&_h1]:after:font-normal [&_h1]:after:text-amber-600 [&_h2]:mt-4 [&_h2]:text-xl [&_h2]:font-bold [&_h2]:after:content-['_H2'] [&_h2]:after:ml-1.5 [&_h2]:after:text-xs [&_h2]:after:font-normal [&_h2]:after:text-amber-600 [&_h3]:mt-3 [&_h3]:text-lg [&_h3]:font-bold [&_h3]:after:content-['_H3'] [&_h3]:after:ml-1.5 [&_h3]:after:text-xs [&_h3]:after:font-normal [&_h3]:after:text-amber-600 [&_ul]:list-disc [&_ul]:pl-6 [&_li]:my-0.5 [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded [&_p]:my-2"
                               style={{ overflowWrap: "break-word" } as React.CSSProperties}
                             />
                           </div>
