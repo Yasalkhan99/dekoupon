@@ -4,6 +4,7 @@ import { verifySession, getCookieName } from "@/lib/admin-auth";
 import {
   readBlogPosts,
   writeBlogPosts,
+  updateSingleBlogPost,
   getPostBySlug,
   type BlogPostWithContent,
 } from "@/lib/blog";
@@ -155,9 +156,8 @@ export async function PATCH(request: Request) {
     if (body.imageAspectRatio !== undefined) {
       (nextPost as Record<string, unknown>).imageAspectRatio = validAspect.includes(body.imageAspectRatio) ? body.imageAspectRatio : undefined;
     }
-    posts[index] = nextPost;
     try {
-      await writeBlogPosts(posts);
+      await updateSingleBlogPost(id, nextPost);
     } catch (writeErr) {
       const err = writeErr as NodeJS.ErrnoException;
       const isReadOnly =

@@ -150,6 +150,33 @@ export async function writeBlogPosts(posts: BlogPostWithContent[]) {
   await writeFile(filePath, JSON.stringify(posts, null, 2), "utf-8");
 }
 
+/** Update a single post by id (fast path for PATCH – no delete-all/insert-all). */
+export async function updateSingleBlogPost(id: string, post: BlogPostWithContent) {
+  const supabase = getSupabase();
+  if (supabase) {
+    const { error } = await supabase
+      .from(SUPABASE_BLOG_TABLE)
+      .update({ data: post })
+      .eq("id", id);
+    if (error) throw new Error(`Supabase update: ${error.message}`);
+    return;
+  }
+  const filePath = getBlogPath();
+  let posts: BlogPostWithContent[];
+  try {
+    const data = await readFile(filePath, "utf-8");
+    posts = JSON.parse(data);
+  } catch {
+    posts = await readBlogPosts();
+  }
+  const idx = posts.findIndex((p) => p.id === id);
+  if (idx === -1) throw new Error("Post not found");
+  posts[idx] = post;
+  const dir = path.dirname(filePath);
+  await mkdir(dir, { recursive: true });
+  await writeFile(filePath, JSON.stringify(posts, null, 2), "utf-8");
+}
+
 export async function getPostBySlug(slug: string): Promise<BlogPostWithContent | null> {
   const posts = await readBlogPosts();
   return posts.find((p) => p.slug === slug) ?? null;
