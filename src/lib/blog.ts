@@ -39,7 +39,8 @@ export function getBlogFeaturedImageUrl(imageUrl: string | undefined): string {
     if (isRelativeUpload) return `${SITE_BASE_URL.replace(/\/$/, "")}${raw}`;
   }
 
-  if (raw.startsWith("/")) return `${SITE_BASE_URL.replace(/\/$/, "")}${raw}`;
+  // Public folder paths (/undefined.png, /banner.jpg etc.) – same origin pe rahen taake featured image dikhe
+  if (raw.startsWith("/")) return raw;
   return raw;
 }
 
@@ -93,42 +94,50 @@ function getStaticBlogPosts(): BlogPostWithContent[] {
   return Array.from(byId.values());
 }
 
-export async function readBlogPosts(): Promise<BlogPostWithContent[]> {
-  const supabase = getSupabase();
-  let posts: BlogPostWithContent[] = [];
+/** Load posts from data/blog.json (file). Used so file-based posts always show on frontend. */
+async function readFileBlogPosts(): Promise<BlogPostWithContent[]> {
+  try {
+    const data = await readFile(getBlogPath(), "utf-8");
+    return JSON.parse(data);
+  } catch {
+    return [];
+  }
+}
 
+export async function readBlogPosts(): Promise<BlogPostWithContent[]> {
+  // 1) File se pehle load karo – frontend pe blog.json posts hamesha dikhain (meta + content)
+  const filePosts = await readFileBlogPosts();
+  const existingIds = new Set<string>(filePosts.map((p) => p.id));
+  const existingSlugs = new Set<string>(filePosts.map((p) => p.slug));
+  let merged: BlogPostWithContent[] = [...filePosts];
+
+  // 2) Supabase optional – agar chaho to Supabase posts bhi merge kar sakte ho (abhi skip, sirf file)
+  const supabase = getSupabase();
   if (supabase) {
     const { data: rows, error } = await supabase
       .from(SUPABASE_BLOG_TABLE)
       .select("id, data")
       .order("id");
     if (!error && rows?.length) {
-      posts = rows.map((r) => r.data as BlogPostWithContent);
+      for (const r of rows) {
+        const p = r.data as BlogPostWithContent;
+        if (existingIds.has(p.id) || existingSlugs.has(p.slug)) continue;
+        existingIds.add(p.id);
+        existingSlugs.add(p.slug);
+        merged.push(p);
+      }
     }
   }
 
-  if (posts.length === 0) {
-    try {
-      const data = await readFile(getBlogPath(), "utf-8");
-      posts = JSON.parse(data);
-    } catch {
-      posts = [];
-    }
-  }
-
+  // 3) Static posts from blog.ts (fallback when file empty)
   const staticPosts = getStaticBlogPosts();
-  const existingIds = new Set(posts.map((p) => p.id));
-  const existingSlugs = new Set(posts.map((p) => p.slug));
-  let merged = posts;
   for (const s of staticPosts) {
     if (existingIds.has(s.id) || existingSlugs.has(s.slug)) continue;
     existingIds.add(s.id);
     existingSlugs.add(s.slug);
-    merged = [...merged, { ...s, createdAt: s.createdAt ?? new Date().toISOString(), publishedDate: s.publishedDate ?? "" }];
+    merged.push({ ...s, createdAt: s.createdAt ?? new Date().toISOString(), publishedDate: s.publishedDate ?? "" });
   }
-  if (merged.length > posts.length) {
-    await writeBlogPosts(merged);
-  }
+
   return merged;
 }
 

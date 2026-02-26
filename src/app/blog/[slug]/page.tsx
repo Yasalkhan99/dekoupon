@@ -55,7 +55,7 @@ export default async function BlogPostPage({ params }: Props) {
       <Header />
       <main className="w-full">
         {/* Hero – full image visible; blurred duplicate fills letterbox areas instead of black */}
-        <div className={`relative flex min-h-[320px] w-full items-center justify-center overflow-hidden bg-zinc-800 sm:min-h-[400px] md:min-h-[480px] ${getBlogImageAspectClass(post.imageAspectRatio ?? "16/9")}`}>
+        <div className={`relative flex min-h-[80px] w-full items-center justify-center overflow-hidden bg-zinc-800 sm:min-h-[100px] md:min-h-[120px] ${getBlogImageAspectClass(post.imageAspectRatio ?? "16/9")}`}>
           {/* Blurred background – same image fills empty areas (no harsh black) */}
           <Image
             src={featuredImageUrl}
