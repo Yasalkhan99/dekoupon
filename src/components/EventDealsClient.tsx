@@ -89,15 +89,13 @@ export default function EventDealsClient({ eventName, eventDescription, coupons,
     if (!c) return;
     const href = c.link || c.trackingUrl || "#";
     const isCode = c.couponType === "code";
-    const sep = href.includes("?") ? "&" : "?";
-    const redirectWithParam = href.startsWith("http") ? `${href}${sep}${isCode ? "copy" : "shopnow"}=${encodeURIComponent(c.id)}` : href;
     const dealTitle = (c.couponTitle ?? "").trim() || (isCode ? `Use code ${c.couponCode || ""}` : "Deal");
     setRevealingCoupon({
       code: c.couponCode || "",
       title: dealTitle,
       storeName: c.name || "Store",
       storeLogo: c.logoUrl || "",
-      redirect: redirectWithParam,
+      redirect: href,
       storeId: c.id,
       expiry: formatExpiry(c.expiry),
       isCode,
@@ -186,9 +184,7 @@ export default function EventDealsClient({ eventName, eventDescription, coupons,
                   const href = c.link || c.trackingUrl || "#";
                   const isCode = c.couponType === "code";
                   const param = isCode ? "copy" : "shopnow";
-                  const sep = href.includes("?") ? "&" : "?";
-                  const redirectWithParam = href.startsWith("http") ? `${href}${sep}${param}=${encodeURIComponent(c.id)}` : href;
-                  const clickUrl = href.startsWith("http") ? `/api/click?storeId=${encodeURIComponent(c.id)}&redirect=${encodeURIComponent(redirectWithParam)}` : href;
+                  const clickUrl = href.startsWith("http") ? `/api/click?storeId=${encodeURIComponent(c.id)}&redirect=${encodeURIComponent(href)}` : href;
                   const dealTitle = (c.couponTitle ?? "").trim() || (isCode ? `Use code ${c.couponCode || ""}` : "Deal");
                   const badge = getBadgeForCoupon(dealTitle, c.countryCodes, { badgeLabel: c.badgeLabel, badgeShipping: c.badgeShipping, badgeOffer: c.badgeOffer });
                   const percent = badge.type === "percent" ? badge.percent : 10;
@@ -206,7 +202,7 @@ export default function EventDealsClient({ eventName, eventDescription, coupons,
                       title: dealTitle,
                       storeName,
                       storeLogo: c.logoUrl || "",
-                      redirect: redirectWithParam,
+                      redirect: href,
                       storeId: c.id,
                       expiry: expiryDate,
                       isCode,

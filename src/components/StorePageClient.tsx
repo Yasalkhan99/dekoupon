@@ -135,15 +135,13 @@ export default function StorePageClient({
     if (!coupon) return;
     const href = coupon.link || visitUrl;
     const isCode = coupon.couponType === "code";
-    const sep = href.includes("?") ? "&" : "?";
-    const redirectWithParam = href.startsWith("http") ? `${href}${sep}${isCode ? "copy" : "shopnow"}=${encodeURIComponent(coupon.id)}` : href;
     const dealTitle = (coupon.couponTitle ?? "").trim() || (isCode ? `Use code ${coupon.couponCode || ""}` : "Deal");
     setRevealingCoupon({
       code: coupon.couponCode || "",
       title: dealTitle,
       storeName: storeInfo.name,
       storeLogo: storeInfo.logoUrl || "",
-      redirect: redirectWithParam,
+      redirect: href,
       storeId: coupon.id,
       expiry: formatExpiry(coupon.expiry),
       isCode,
@@ -276,10 +274,8 @@ export default function StorePageClient({
                 const href = c.link || visitUrl;
                 const isCode = c.couponType === "code";
                 const param = isCode ? "copy" : "shopnow";
-                const sep = href.includes("?") ? "&" : "?";
-                const redirectWithParam = href.startsWith("http") ? `${href}${sep}${param}=${encodeURIComponent(c.id)}` : href;
                 const clickUrl = href.startsWith("http")
-                  ? `/api/click?storeId=${encodeURIComponent(c.id)}&redirect=${encodeURIComponent(redirectWithParam)}`
+                  ? `/api/click?storeId=${encodeURIComponent(c.id)}&redirect=${encodeURIComponent(href)}`
                   : href;
                 const dealTitle = (c.couponTitle ?? "").trim() || (isCode ? `Use code ${c.couponCode || ""}` : "Deal");
                 const badge = getBadgeForCoupon(dealTitle, storeInfo.countryCodes, {
