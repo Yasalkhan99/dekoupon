@@ -11,6 +11,7 @@ import { useState, useEffect } from "react";
 const QUICK_LINKS = [
   { label: "About", href: "/about" },
   { label: "Contact Us", href: "/contact" },
+  { label: "Imprint", href: "/imprint" },
   { label: "Promotions", href: "/promotions" },
   { label: "Blog", href: "/#latest" },
 ];
