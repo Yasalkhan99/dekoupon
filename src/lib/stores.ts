@@ -286,14 +286,17 @@ export async function getStorePageData(slug: string): Promise<StorePageData> {
   const rowWithLogo = matchingStores.find((r) => (r.logoUrl ?? "").trim() !== "");
   let storeInfo: Store | null =
     matchingStores.find(exactSlugMatch) ?? storeRow ?? rowWithLogo ?? matchingStores[0] ?? null;
-  // Coupons: match by page slug OR by store name (so when store slug was changed, coupons with old slug still show)
+  // Coupons: only show coupons that belong to THIS store (exact slug or exact name match).
+  // This prevents "vevor" coupons showing on "vevor-au" and vice versa.
+  const storeSlugNorm = (storeInfo?.slug || slugify(storeInfo?.name ?? "")).toLowerCase().trim();
+  const storeNameNorm = (storeInfo?.name ?? "").toLowerCase().trim();
   const coupons =
     storeInfo != null
-      ? enabledCoupons.filter(
-          (c) =>
-            slugMatches(c, wantRaw, wantCanonical) ||
-            (c.name ?? "").toLowerCase().trim() === (storeInfo!.name ?? "").toLowerCase().trim()
-        )
+      ? enabledCoupons.filter((c) => {
+          const cSlug = (c.slug || slugify(c.name ?? "")).toLowerCase().trim();
+          const cName = (c.name ?? "").toLowerCase().trim();
+          return cSlug === storeSlugNorm || cName === storeNameNorm;
+        })
       : enabledCoupons.filter((c) => slugMatches(c, wantRaw, wantCanonical));
   if (!storeInfo && coupons.length > 0) {
     const first = coupons[0];
