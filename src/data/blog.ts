@@ -46,6 +46,10 @@ export type BlogPost = {
   meta_title?: string;
   /** SEO: meta description (optional; falls back to excerpt) */
   meta_description?: string;
+  /** Store slug for CTA button (e.g. "phones-direct") → links to /promotions/[storeSlug] */
+  storeSlug?: string;
+  /** CTA button label (e.g. "Get The Latest Sales On Phones Direct"). Default from title if missing. */
+  storeCtaLabel?: string;
 };
 
 /** Blog categories – used on home page (sidebar), footer, and category pages */

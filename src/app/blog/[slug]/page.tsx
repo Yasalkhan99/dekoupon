@@ -18,6 +18,21 @@ function addLazyToContentImages(html: string): string {
   return html.replace(/<img /gi, '<img loading="lazy" decoding="async" ');
 }
 
+/** Split content near the middle at a safe tag boundary so we can inject the CTA button in between. */
+function splitContentAtMiddle(html: string): { before: string; after: string } {
+  if (!html || html.length < 200) return { before: html, after: "" };
+  const target = Math.floor(html.length / 2);
+  const blockEnd = /<\/p>|<\/h[1-6]>|<\/ul>|<\/ol>|<\/div>/gi;
+  let best = 0;
+  let match: RegExpExecArray | null;
+  while ((match = blockEnd.exec(html)) !== null) {
+    if (match.index <= target) best = match.index + match[0].length;
+    else break;
+  }
+  if (best === 0) best = target;
+  return { before: html.slice(0, best), after: html.slice(best) };
+}
+
 type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -45,6 +60,11 @@ export default async function BlogPostPage({ params }: Props) {
   const category = post.category || "Blog";
   const publishedDate = post.publishedDate || "";
   const featuredImageUrl = getBlogFeaturedImageUrl(post.image);
+  const storeSlug = (post as { storeSlug?: string }).storeSlug;
+  const storeCtaLabel = (post as { storeCtaLabel?: string }).storeCtaLabel?.trim() || `Get the latest deals`;
+  const ctaHref = storeSlug ? `/promotions/${encodeURIComponent(storeSlug)}` : `/promotions`;
+  const ctaLabel = storeSlug ? storeCtaLabel : `View All Deals & Promotions`;
+  const { before: contentBefore, after: contentAfter } = splitContentAtMiddle(safeContent);
 
   return (
     <div
@@ -115,12 +135,42 @@ export default async function BlogPostPage({ params }: Props) {
                 <div className="prose prose-zinc mt-0 max-w-none [&_a]:text-blue-600 [&_a]:underline [&_a]:hover:text-blue-800">
                   <div className="blog-content text-lg text-zinc-600" dangerouslySetInnerHTML={{ __html: post.excerpt }} />
                   {post.content ? (
-                    <div
-                      className="blog-content mt-4 text-zinc-700 [&_h1]:mt-8 [&_h1]:text-2xl [&_h1]:font-bold [&_h2]:mt-8 [&_h2]:text-xl [&_h2]:font-bold [&_h3]:mt-6 [&_h3]:text-lg [&_h3]:font-bold [&_ul]:list-disc [&_ul]:pl-6 [&_img]:rounded-lg [&_img]:my-4 [&_img]:w-full [&_img]:h-auto [&_a]:text-blue-600 [&_a]:underline [&_a]:hover:text-blue-800"
-                      dangerouslySetInnerHTML={{ __html: safeContent }}
-                    />
+                    <>
+                      <div
+                        className="blog-content mt-4 text-zinc-700 [&_h1]:mt-8 [&_h1]:text-2xl [&_h1]:font-bold [&_h2]:mt-8 [&_h2]:text-xl [&_h2]:font-bold [&_h3]:mt-6 [&_h3]:text-lg [&_h3]:font-bold [&_ul]:list-disc [&_ul]:pl-6 [&_img]:rounded-lg [&_img]:my-4 [&_img]:w-full [&_img]:h-auto [&_a]:text-blue-600 [&_a]:underline [&_a]:hover:text-blue-800"
+                        dangerouslySetInnerHTML={{ __html: contentBefore }}
+                      />
+                      <div className="my-10 flex justify-center">
+                        <Link
+                          href={ctaHref}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center justify-center rounded-full border-2 border-[var(--footer-accent)] bg-white px-8 py-4 text-center text-lg font-semibold text-[var(--footer-accent)] transition duration-200 hover:bg-[var(--footer-accent)] hover:text-white hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[var(--footer-accent)] focus:ring-offset-2"
+                        >
+                          {ctaLabel}
+                        </Link>
+                      </div>
+                      {contentAfter ? (
+                        <div
+                          className="blog-content text-zinc-700 [&_h1]:mt-8 [&_h1]:text-2xl [&_h1]:font-bold [&_h2]:mt-8 [&_h2]:text-xl [&_h2]:font-bold [&_h3]:mt-6 [&_h3]:text-lg [&_h3]:font-bold [&_ul]:list-disc [&_ul]:pl-6 [&_img]:rounded-lg [&_img]:my-4 [&_img]:w-full [&_img]:h-auto [&_a]:text-blue-600 [&_a]:underline [&_a]:hover:text-blue-800"
+                          dangerouslySetInnerHTML={{ __html: contentAfter }}
+                        />
+                      ) : null}
+                    </>
                   ) : (
-                    <p className="mt-4 text-zinc-700">Full article content – edit this post in Admin → Blog.</p>
+                    <>
+                      <p className="mt-4 text-zinc-700">Full article content – edit this post in Admin → Blog.</p>
+                      <div className="mt-10 flex justify-center">
+                        <Link
+                          href={ctaHref}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center justify-center rounded-full border-2 border-[var(--footer-accent)] bg-white px-8 py-4 text-center text-lg font-semibold text-[var(--footer-accent)] transition duration-200 hover:bg-[var(--footer-accent)] hover:text-white hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[var(--footer-accent)] focus:ring-offset-2"
+                        >
+                          {ctaLabel}
+                        </Link>
+                      </div>
+                    </>
                   )}
                 </div>
               </article>
