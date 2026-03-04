@@ -300,20 +300,20 @@ export default function StorePageClient({
                     className={`flex flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-md ${viewMode === "grid" ? "items-stretch gap-5 p-6" : "sm:flex-row sm:items-center sm:gap-6 sm:p-6"}`}
                   >
                     <div className="flex shrink-0 items-center justify-center">
-                      <div className="flex h-24 w-24 flex-col items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500 px-1 text-center text-white shadow-inner sm:h-28 sm:w-28">
+                      <div className="flex h-24 w-24 flex-shrink-0 flex-col items-center justify-center gap-0.5 overflow-hidden rounded-full bg-gradient-to-br from-amber-400 to-orange-500 px-1.5 py-1 text-center text-white shadow-inner sm:h-28 sm:w-28">
                         {badge.type === "text" ? (
                           <>
-                            <span className="text-lg font-bold leading-tight sm:text-xl">{badge.line1}</span>
+                            <span className="break-words text-center text-xs font-bold leading-tight sm:text-sm">{badge.line1}</span>
                             {badge.line2 ? (
-                              <span className="mt-0.5 text-[10px] font-semibold leading-tight opacity-95 sm:text-xs">{badge.line2}</span>
+                              <span className="break-words text-center text-[7px] font-semibold leading-tight opacity-95 sm:text-[8px]">{badge.line2}</span>
                             ) : null}
-                            <span className="mt-0.5 text-[9px] font-medium uppercase tracking-wide opacity-90 sm:text-[10px]">Savingshub4u</span>
+                            <span className="break-words text-center text-[6px] font-medium leading-tight uppercase tracking-wide opacity-90 sm:text-[7px]">Savingshub4u</span>
                           </>
                         ) : (
                           <>
                             <span className="text-lg font-bold leading-tight sm:text-xl">{percent}%</span>
                             <span className="text-[10px] font-semibold uppercase leading-tight opacity-95 sm:text-xs">OFF</span>
-                            <span className="mt-0.5 text-[9px] font-medium uppercase tracking-wide opacity-90 sm:text-[10px]">Savingshub4u</span>
+                            <span className="mt-0.5 text-[7px] font-medium uppercase leading-tight tracking-wide opacity-90 sm:text-[8px]">Savingshub4u</span>
                           </>
                         )}
                       </div>
@@ -330,7 +330,7 @@ export default function StorePageClient({
                         <button
                           type="button"
                           onClick={handleCouponClick}
-                          className="w-full text-left font-bold text-zinc-900 transition hover:text-blue-600 cursor-pointer"
+                          className="w-full break-words text-left font-bold text-zinc-900 transition hover:text-blue-600 cursor-pointer whitespace-normal"
                         >
                           {dealTitle && dealTitle !== "Deal" ? dealTitle : `${percent}% Off All Products - Limited Stock`}
                         </button>
