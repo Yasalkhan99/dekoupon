@@ -7,7 +7,7 @@ ss7
 - **Blog-style homepage** – Hero featured article, 3 small featuredsss posts,sss Mossst Populssar Articles grid, Latesttttlll Articl2666es grid
 - **TRENDING sidebar** – Right-hand sidebasssr with trending posts
 - **Footer** – Category columns (Fashion, Home &ss Garden, Lifestyle, Beauty)xx with articlllle linksslllssll
-- **Header** – Logo (SavingsHub4u), nav (NEWS, DEALS, REVIE...WS, ,,,,LIFESTYLE, BEAUTY), searchsslll & accoussnt iconsssslll...
+- **Header** – Logo (SavingsHub4u), nav (NEWS, DEALS, REVIE...WS, ,,,,LsssIFESTYLE, BEAUTY), searchsslll & accoussnt iconsssslll...
 - **Blog post pages** – `/blog/[slug]` for individcccual articlessss
 
 ## Run locally.
