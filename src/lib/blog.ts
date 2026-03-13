@@ -11,6 +11,7 @@ import {
 } from "@/data/blog";
 import type { NavDropdownPost } from "@/data/blog";
 import { getSupabase, SUPABASE_BLOG_TABLE, SUPABASE_UPLOADS_BUCKET } from "@/lib/supabase-server";
+import { fetchSanityBlogPosts, fetchSanityPostBySlug } from "@/lib/sanity";
 
 const DEFAULT_FEATURED_IMAGE = "https://picsum.photos/id/1/1200/600";
 const SITE_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://savingshub4u.com";
@@ -129,7 +130,16 @@ export async function readBlogPosts(): Promise<BlogPostWithContent[]> {
     }
   }
 
-  // 3) Static posts from blog.ts (fallback when file empty)
+  // 3) Sanity CMS posts – merge new ones that don't already exist in file/Supabase
+  const sanityPosts = await fetchSanityBlogPosts();
+  for (const sp of sanityPosts) {
+    if (existingIds.has(sp.id) || existingSlugs.has(sp.slug)) continue;
+    existingIds.add(sp.id);
+    existingSlugs.add(sp.slug);
+    merged.push(sp as BlogPostWithContent);
+  }
+
+  // 4) Static posts from blog.ts (fallback when file empty)
   const staticPosts = getStaticBlogPosts();
   for (const s of staticPosts) {
     if (existingIds.has(s.id) || existingSlugs.has(s.slug)) continue;
@@ -188,7 +198,10 @@ export async function updateSingleBlogPost(id: string, post: BlogPostWithContent
 
 export async function getPostBySlug(slug: string): Promise<BlogPostWithContent | null> {
   const posts = await readBlogPosts();
-  return posts.find((p) => p.slug === slug) ?? null;
+  const fromMerged = posts.find((p) => p.slug === slug);
+  if (fromMerged) return fromMerged;
+  const fromSanity = await fetchSanityPostBySlug(slug);
+  return fromSanity ? (fromSanity as BlogPostWithContent) : null;
 }
 
 export async function getPostsByCategory(category: string): Promise<BlogPostWithContent[]> {

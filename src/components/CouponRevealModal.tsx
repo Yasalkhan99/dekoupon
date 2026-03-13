@@ -152,27 +152,23 @@ export default function CouponRevealModal({
             <p className="font-medium text-zinc-700">{storeName}</p>
           </div>
 
-          {/* Code block - for codes show code, for deals show "Deal" */}
-          <div className="mb-4 rounded-xl border-2 border-dashed border-amber-200 bg-amber-50/50 px-4 py-4">
-            {isCode && code ? (
-              <>
-                <p
-                  role="button"
-                  tabIndex={0}
-                  onClick={handleCopyCode}
-                  onKeyDown={(e) => e.key === "Enter" && handleCopyCode()}
-                  className="cursor-pointer select-all text-center text-xl font-bold tracking-wider text-zinc-900 sm:text-2xl"
-                >
-                  {code}
-                </p>
-                <p className="mt-1 text-center text-xs text-zinc-500">
-                  {copied ? "✓ Copied!" : "Click to copy"}
-                </p>
-              </>
-            ) : (
-              <p className="text-center text-sm font-medium text-zinc-600">Deal – click Continue to Store to visit</p>
-            )}
-          </div>
+          {/* Code block - only shown for coupon codes */}
+          {isCode && code && (
+            <div className="mb-4 rounded-xl border-2 border-dashed border-amber-200 bg-amber-50/50 px-4 py-4">
+              <p
+                role="button"
+                tabIndex={0}
+                onClick={handleCopyCode}
+                onKeyDown={(e) => e.key === "Enter" && handleCopyCode()}
+                className="cursor-pointer select-all text-center text-xl font-bold tracking-wider text-zinc-900 sm:text-2xl"
+              >
+                {code}
+              </p>
+              <p className="mt-1 text-center text-xs text-zinc-500">
+                {copied ? "✓ Copied!" : "Click to copy"}
+              </p>
+            </div>
+          )}
 
           {/* Continue to Store (opens in new tab, user stays here) + Close */}
           <div className="space-y-2">
