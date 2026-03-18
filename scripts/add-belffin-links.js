@@ -44,6 +44,29 @@ content = content.replace(
   (match, img) => `<p>${A_TAG}${img}</a></p>`
 );
 
+// 4) Link brand name everywhere (Belffin, Belfin, belffin, Belfins') only when NOT already inside an <a>
+const OPEN = "\u0001O\u0001";
+const CLOSE = "\u0001C\u0001";
+content = content.replace(
+  /<a href="https:\/\/commissionbag\.com\/go\/4upburui"[^>]*>/g,
+  OPEN
+);
+content = content.replace(/<\/a>/g, CLOSE);
+const parts = content.split(CLOSE);
+content = parts
+  .map((part, i) => {
+    const segs = part.split(OPEN);
+    return segs
+      .map((seg, j) => {
+        if (j % 2 === 1) return seg;
+        return seg.replace(/(Belffin|Belfin|belffin|Belfins')/gi, (m) => `${A_TAG}${m}</a>`);
+      })
+      .join(OPEN);
+  })
+  .join(CLOSE);
+content = content.split(OPEN).join('<a href="https://commissionbag.com/go/4upburui" target="_blank" rel="noopener noreferrer">');
+content = content.split(CLOSE).join("</a>");
+
 post.content = content;
 fs.writeFileSync(blogPath, JSON.stringify(posts, null, 2), "utf-8");
-console.log("Belffin links added.");
+console.log("Belffin links added (headings, images, brand names).");
