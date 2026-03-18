@@ -2,7 +2,7 @@
  * Migration script: Import existing blog posts from data/blog.json into Sanity.
  *
  * Usage:
- *   1. Set env vars: NEXT_PUBLIC_SANITY_PROJECT_ID, SANITY_API_TOKEN
+ *   1. Set NEXT_PUBLIC_SANITY_PROJECT_ID and SANITY_API_TOKEN in .env.local or .env
  *   2. Run: node scripts/migrate-to-sanity.js
  *
  * Requires a Sanity write token (not read-only).
@@ -12,6 +12,24 @@
 const { createClient } = require("@sanity/client");
 const fs = require("fs");
 const path = require("path");
+
+// Load .env then .env.local so env vars are available when running: node scripts/migrate-to-sanity.js
+const root = path.join(__dirname, "..");
+for (const file of [".env", ".env.local"]) {
+  const p = path.join(root, file);
+  if (fs.existsSync(p)) {
+    const content = fs.readFileSync(p, "utf-8");
+    for (const line of content.split(/\r?\n/)) {
+      const trimmed = line.replace(/\r$/, "").trim();
+      if (!trimmed || trimmed.startsWith("#")) continue;
+      const m = trimmed.match(/^([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$/);
+      if (m) {
+        const val = m[2].replace(/^["']|["']$/g, "").trim();
+        process.env[m[1]] = val;
+      }
+    }
+  }
+}
 
 const PROJECT_ID = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID;
 const DATASET = process.env.NEXT_PUBLIC_SANITY_DATASET || "production";
