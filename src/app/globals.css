@@ -319,6 +319,7 @@ body {
   top: 50%;
   left: 0;
   right: 0;
+  z-index: 10;
   transform: translateY(-50%);
   pointer-events: none;
   display: flex;
@@ -351,6 +352,8 @@ body {
   border-color: var(--footer-accent);
 }
 .hunted-slider-container .bx-pager {
+  position: relative;
+  z-index: 10;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;

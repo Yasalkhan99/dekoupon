@@ -2,9 +2,34 @@
 
 import Link from "next/link";
 import { useBlogData } from "@/components/BlogDataProvider";
-import { stripHtml } from "@/lib/slugify";
 import type { BlogPost } from "@/data/blog";
-import { useState, useEffect, useCallback } from "react";
+import { resolveHeroSlideImageUrl } from "@/lib/hero-image";
+import { useState, useEffect, useCallback, useMemo } from "react";
+
+/** Home hero carousel — fixed order; must match `slug` in blog data. */
+const HERO_SLIDER_SLUGS: readonly string[] = [
+  "simple-guide-saving-keychron-discount-codes-2026",
+  "simple-comparison-yeswelder-online-deals-vs-in-store-pricing",
+  "how-to-save-big-on-flexispot-2026-verified-coupon-codes-promo-offers",
+  "latest-belffin-coupon-codes-promo-offers-2026",
+];
+
+function heroSlideDate(post: BlogPost): string {
+  const pd = post.publishedDate?.trim();
+  if (pd) return pd;
+  const ca = post.createdAt;
+  if (!ca) return "";
+  const d = new Date(ca);
+  if (Number.isNaN(d.getTime())) return "";
+  return new Intl.DateTimeFormat("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC",
+  })
+    .format(d)
+    .toUpperCase();
+}
 
 function HuntedSlide({
   post,
@@ -13,10 +38,10 @@ function HuntedSlide({
   post: BlogPost;
   isActive: boolean;
 }) {
-  const date = (post as { publishedDate?: string }).publishedDate ?? "";
+  const date = heroSlideDate(post);
   const excerpt = post.excerpt?.replace(/<[^>]+>/g, "").slice(0, 140) || "";
   const href = post.slug ? `/blog/${post.slug}` : "#";
-  const img = post.image || "https://picsum.photos/id/1/1200/600";
+  const img = resolveHeroSlideImageUrl(post.image, post.content, post.slug);
 
   return (
     <li style={{ display: isActive ? "block" : "none" }}>
@@ -56,18 +81,29 @@ function HuntedSlide({
 }
 
 export default function Hero() {
-  const { heroPost, featuredPosts, latestPosts } = useBlogData();
+  const { heroPost, featuredPosts, latestPosts, allPosts } = useBlogData();
   const [index, setIndex] = useState(0);
 
-  const slides: BlogPost[] = [heroPost];
-  const seen = new Set<string>([heroPost.id]);
-  for (const p of [...featuredPosts, ...latestPosts]) {
-    if (slides.length >= 5) break;
-    if (!seen.has(p.id)) {
-      seen.add(p.id);
-      slides.push(p);
+  const slides: BlogPost[] = useMemo(() => {
+    const bySlug = new Map(allPosts.map((p) => [p.slug, p]));
+    const configured: BlogPost[] = [];
+    for (const slug of HERO_SLIDER_SLUGS) {
+      const p = bySlug.get(slug);
+      if (p) configured.push(p);
     }
-  }
+    if (configured.length > 0) return configured;
+
+    const fallback: BlogPost[] = [heroPost];
+    const seen = new Set<string>([heroPost.id]);
+    for (const p of [...featuredPosts, ...latestPosts]) {
+      if (fallback.length >= 5) break;
+      if (!seen.has(p.id)) {
+        seen.add(p.id);
+        fallback.push(p);
+      }
+    }
+    return fallback;
+  }, [allPosts, heroPost, featuredPosts, latestPosts]);
 
   const go = useCallback(
     (dir: number) => {
@@ -86,6 +122,10 @@ export default function Hero() {
     const t = setInterval(() => go(1), 5000);
     return () => clearInterval(t);
   }, [slides.length, go]);
+
+  useEffect(() => {
+    setIndex((i) => (slides.length === 0 ? 0 : Math.min(i, slides.length - 1)));
+  }, [slides.length]);
 
   if (slides.length === 0) return null;
 

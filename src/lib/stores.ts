@@ -20,25 +20,6 @@ async function getStoresFromFile(): Promise<Store[]> {
   }
 }
 
-/** Store categories that map to nav "Fashion" dropdown */
-const FASHION_STORE_CATS = ["Clothing & Accessories", "Women's Fashion", "Footwear", "Beauty and Personal Care"];
-/** Store categories that map to nav "Lifestyle" dropdown */
-const LIFESTYLE_STORE_CATS = ["Home & Garden", "Gifts & Flowers", "Health & Fitness"];
-
-/** Top stores for nav dropdowns (Fashion, Lifestyle) – used in Header. */
-export async function getNavStores(): Promise<{ fashion: Store[]; lifestyle: Store[] }> {
-  const all = await getStores();
-  const enabled = all.filter((s) => s.status !== "disable");
-  const byCat = (cats: string[]) =>
-    enabled
-      .filter((s) => getStoreCategories(s).some((c) => cats.includes(c)))
-      .slice(0, 8);
-  return {
-    fashion: byCat(FASHION_STORE_CATS),
-    lifestyle: byCat(LIFESTYLE_STORE_CATS),
-  };
-}
-
 export async function getStores(): Promise<Store[]> {
   try {
     const supabase = getSupabase();

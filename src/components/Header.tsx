@@ -7,8 +7,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useBlogData } from "@/components/BlogDataProvider";
 import type { NavDropdownPost } from "@/data/blog";
 import { getBlogImageAspectClass } from "@/data/blog";
-import { stripHtml, slugify } from "@/lib/slugify";
-import type { Store } from "@/types/store";
+import { stripHtml } from "@/lib/slugify";
 
 type HeaderProps = {
   transparent?: boolean;
@@ -42,57 +41,36 @@ function DropdownCard({ post }: { post: NavDropdownPost }) {
   return (
     <Link
       href={`/blog/${post.slug}`}
-      className="group flex flex-col overflow-hidden border-2 border-[var(--theme-border)] bg-white transition hover:shadow-md"
+      className="group flex flex-col overflow-hidden rounded-xl border border-zinc-200/90 bg-white shadow-sm ring-0 transition duration-200 hover:-translate-y-0.5 hover:border-[var(--footer-accent)]/35 hover:shadow-lg hover:ring-2 hover:ring-[var(--footer-accent)]/15"
     >
-      <div className={`relative w-full overflow-hidden bg-[var(--hunted-gray)] ${aspectClass}`}>
+      <div className={`relative w-full overflow-hidden bg-gradient-to-br from-zinc-100 to-zinc-200/80 ${aspectClass}`}>
         {post.image ? (
           <Image
             src={post.image}
             alt={stripHtml(post.title)}
             fill
-            className="object-cover transition group-hover:scale-105"
+            className="object-cover transition duration-300 group-hover:scale-[1.04]"
             sizes="240px"
           />
-        ) : null}
-      </div>
-      <div className="flex flex-1 flex-col p-3">
-        <span className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-[var(--footer-accent)]">
-          {post.category}
-        </span>
-        <span className="mb-2 line-clamp-2 text-sm font-bold leading-snug text-[var(--hunted-navy)] group-hover:text-[var(--footer-accent)] [&_a]:text-[var(--footer-accent)] [&_a]:underline" dangerouslySetInnerHTML={{ __html: post.title }} />
-        <span className="mt-auto text-xs text-[var(--hunted-text-gray)]">WEBADMIN · {post.date}</span>
-      </div>
-    </Link>
-  );
-}
-
-function StoreDropdownCard({ store }: { store: Store }) {
-  const href = `/promotions/${store.slug || slugify(store.name)}`;
-  return (
-    <Link
-      href={href}
-      className="group flex flex-col overflow-hidden border-2 border-[var(--theme-border)] bg-white transition hover:shadow-md"
-    >
-      <div className="relative h-24 w-full overflow-hidden bg-[var(--hunted-gray)] p-3">
-        {store.logoUrl ? (
-          <Image
-            src={store.logoUrl}
-            alt={store.name}
-            fill
-            className="object-contain p-2 transition group-hover:scale-105"
-            sizes="200px"
-            unoptimized
-          />
         ) : (
-          <span className="text-lg font-bold text-zinc-400">{store.name?.[0] ?? "?"}</span>
+          <div className="absolute inset-0 flex items-center justify-center bg-zinc-200/60">
+            <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Article</span>
+          </div>
         )}
       </div>
-      <div className="flex flex-1 flex-col p-3">
-        <span className="mb-2 line-clamp-2 text-sm font-bold leading-snug text-[var(--hunted-navy)] group-hover:text-[var(--footer-accent)]">
-          {store.name}
+      <div className="flex flex-1 flex-col gap-1.5 p-3.5">
+        <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--footer-accent)]">
+          {post.category}
         </span>
-        <span className="mt-auto inline-flex w-full items-center justify-center rounded bg-blue-600 px-3 py-2 text-xs font-semibold text-white transition group-hover:bg-blue-700">
-          Get Coupon
+        <span
+          className="line-clamp-2 min-h-[2.5rem] text-[13px] font-bold leading-snug text-[var(--hunted-navy)] transition-colors group-hover:text-[var(--footer-accent)] [&_a]:text-[var(--footer-accent)] [&_a]:underline"
+          dangerouslySetInnerHTML={{ __html: post.title }}
+        />
+        <span className="mt-auto flex items-center justify-between gap-2 border-t border-zinc-100 pt-2.5 text-[11px] text-zinc-500">
+          <span>{post.date}</span>
+          <span className="font-semibold text-[var(--footer-accent)] transition group-hover:translate-x-0.5">
+            Read →
+          </span>
         </span>
       </div>
     </Link>
@@ -100,7 +78,7 @@ function StoreDropdownCard({ store }: { store: Store }) {
 }
 
 export default function Header({ transparent }: HeaderProps = {}) {
-  const { navDropdownPosts, navDropdownStores } = useBlogData();
+  const { navDropdownPosts } = useBlogData();
   const pathname = usePathname();
   const isHome = pathname === "/";
   const [scrolled, setScrolled] = useState(false);
@@ -182,8 +160,8 @@ export default function Header({ transparent }: HeaderProps = {}) {
         }`}
       >
         <div className="mx-auto max-w-[1240px] px-4 sm:px-6 lg:px-8">
-          <div className="flex h-12 min-h-12 items-center justify-between gap-3 sm:h-14 sm:min-h-14 sm:gap-4">
-          <Link href="/" className="flex shrink-0 items-center" aria-label="SavingsHub4u">
+          <div className="flex h-12 min-h-12 items-stretch justify-between gap-3 sm:h-14 sm:min-h-14 sm:gap-4">
+          <Link href="/" className="flex shrink-0 items-center self-center" aria-label="SavingsHub4u">
             <Image
               src={isLight ? "/black final logo.svg" : "/final final logo.svg"}
               alt="SavingsHub4u"
@@ -194,7 +172,7 @@ export default function Header({ transparent }: HeaderProps = {}) {
             />
           </Link>
 
-          <nav className="hidden items-center gap-6 md:flex lg:gap-8">
+          <nav className="hidden items-stretch gap-6 md:flex lg:gap-8">
             {navLinks.map((link) => {
               const isRed = link.activeRed && isHome;
               const hasDropdown = !("noDropdown" in link && link.noDropdown) && "dropdownKey" in link && link.dropdownKey;
@@ -210,20 +188,26 @@ export default function Header({ transparent }: HeaderProps = {}) {
 
               if (hasDropdown && link.dropdownKey) {
                 const key = link.dropdownKey;
-                const stores = key === "fashion" ? navDropdownStores.fashion : key === "lifestyle" ? navDropdownStores.lifestyle : [];
                 const posts = navDropdownPosts[key] ?? [];
-                const showStores = stores.length > 0 && (key === "fashion" || key === "lifestyle");
-                const items = showStores ? stores.length : posts.length;
+                const items = posts.length;
+                const viewAllHref =
+                  key === "fashion"
+                    ? "/blog/category/fashion"
+                    : key === "lifestyle"
+                      ? "/blog/category/lifestyle"
+                      : "/#latest";
+                const viewAllLabel =
+                  key === "fashion" ? "View all Fashion" : key === "lifestyle" ? "View all Lifestyle" : "View latest posts";
                 return (
                   <div
                     key={link.label}
-                    className="relative"
+                    className={`relative flex h-full min-h-0 items-center ${isOpen ? "z-[60]" : "z-[1]"}`}
                     onMouseEnter={() => handleDropdownEnter(key)}
                     onMouseLeave={handleDropdownLeave}
                   >
                     <Link
                       href={link.href}
-                      className={`inline-flex items-center gap-1.5 whitespace-nowrap py-4 text-sm font-medium sm:text-base transition-colors duration-150 ${linkClass} ${
+                      className={`inline-flex h-full min-h-0 items-center gap-1.5 whitespace-nowrap px-1 text-sm font-medium sm:text-base transition-colors duration-150 ${linkClass} ${
                         isOpen ? (isLight ? "!text-[var(--footer-accent)]" : "!text-[var(--footer-accent)]") : ""
                       }`}
                     >
@@ -232,40 +216,26 @@ export default function Header({ transparent }: HeaderProps = {}) {
                     </Link>
                     {items > 0 && (
                       <div
-                        className={`absolute left-1/2 top-full -translate-x-1/2 pt-0 transition-opacity duration-150 ${
-                          isOpen ? "visible opacity-100" : "invisible opacity-0"
+                        className={`absolute left-1/2 top-full z-[60] -translate-x-1/2 pt-0 transition-opacity duration-150 ${
+                          isOpen
+                            ? "visible pointer-events-auto opacity-100"
+                            : "invisible pointer-events-none opacity-0"
                         }`}
                         aria-hidden={!isOpen}
                       >
-                        <div className="w-[min(90vw,880px)] rounded-b-lg border border-t-0 border-zinc-200 bg-white px-4 py-5 shadow-xl">
-                          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                            {showStores
-                              ? stores.map((store) => (
-                                  <StoreDropdownCard key={store.id} store={store} />
-                                ))
-                              : posts.map((post, i) => (
-                                  <DropdownCard key={post.slug ? `${post.slug}-${i}` : `post-${i}`} post={post} />
-                                ))}
+                        <div className="w-[min(90vw,920px)] rounded-b-xl border border-t-0 border-zinc-200/90 bg-gradient-to-b from-white to-zinc-50/80 px-4 py-5 shadow-xl">
+                          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+                            {posts.map((post, i) => (
+                              <DropdownCard key={post.slug ? `${post.slug}-${i}` : `post-${i}`} post={post} />
+                            ))}
                           </div>
-                          <div className="mt-3 flex justify-center gap-2">
-                            <button
-                              type="button"
-                              className="rounded-full p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600"
-                              aria-label="Previous"
+                          <div className="mt-4 flex justify-center border-t border-zinc-200/80 pt-4">
+                            <Link
+                              href={viewAllHref}
+                              className="text-sm font-semibold text-[var(--footer-accent)] transition hover:text-[var(--footer-accent-hover)]"
                             >
-                              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                              </svg>
-                            </button>
-                            <button
-                              type="button"
-                              className="rounded-full p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600"
-                              aria-label="Next"
-                            >
-                              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                              </svg>
-                            </button>
+                              {viewAllLabel} →
+                            </Link>
                           </div>
                         </div>
                       </div>
@@ -278,7 +248,7 @@ export default function Header({ transparent }: HeaderProps = {}) {
                 <Link
                   key={link.label}
                   href={link.href}
-                  className={`whitespace-nowrap py-4 text-sm font-medium sm:text-base transition-colors duration-150 ${linkClass} ${
+                  className={`flex h-full min-h-0 items-center whitespace-nowrap px-1 text-sm font-medium sm:text-base transition-colors duration-150 ${linkClass} ${
                     isLight && isRed ? "!text-[var(--footer-accent)] hover:!text-[var(--footer-accent-hover)]" : ""
                   }`}
                 >
@@ -288,7 +258,7 @@ export default function Header({ transparent }: HeaderProps = {}) {
             })}
           </nav>
 
-          <div className="flex min-w-0 shrink items-center justify-end gap-2 sm:ml-6 sm:gap-4 lg:ml-8 lg:gap-6">
+          <div className="flex min-w-0 shrink items-center justify-end gap-2 self-center sm:ml-6 sm:gap-4 lg:ml-8 lg:gap-6">
             {usDate ? (
               <span className={`hidden text-xs font-medium sm:block ${isLight ? "text-zinc-600" : "text-white/80"}`} aria-label="US date">
                 {usDate}
@@ -364,10 +334,8 @@ export default function Header({ transparent }: HeaderProps = {}) {
               {navLinks.map((link) => {
                 const hasDropdown = !("noDropdown" in link && link.noDropdown) && "dropdownKey" in link && link.dropdownKey;
                 const key = hasDropdown ? link.dropdownKey : null;
-                const stores = key === "fashion" ? navDropdownStores.fashion : key === "lifestyle" ? navDropdownStores.lifestyle : [];
                 const posts = key ? (navDropdownPosts[key] ?? []) : [];
-                const showStores = stores.length > 0 && (key === "fashion" || key === "lifestyle");
-                const hasItems = showStores ? stores.length > 0 : posts.length > 0;
+                const hasItems = posts.length > 0;
                 const isExpanded = key && sidebarExpand === key;
 
                 if (hasDropdown && key && hasItems) {
@@ -392,27 +360,16 @@ export default function Header({ transparent }: HeaderProps = {}) {
                       </div>
                       {isExpanded && (
                         <div className="border-t border-white/10 bg-black/20 pb-2 pl-5 pr-2">
-                          {showStores
-                            ? stores.map((store) => (
-                                <Link
-                                  key={store.id}
-                                  href={`/promotions/${store.slug || slugify(store.name)}`}
-                                  onClick={() => setSidebarOpen(false)}
-                                  className="mt-2 block text-sm text-white/85 hover:text-[var(--footer-accent)]"
-                                >
-                                  {store.name}
-                                </Link>
-                              ))
-                            : posts.map((post) => (
-                                <Link
-                                  key={post.id}
-                                  href={`/blog/${post.slug}`}
-                                  onClick={() => setSidebarOpen(false)}
-                                  className="mt-2 block text-sm text-white/85 hover:text-[var(--footer-accent)]"
-                                >
-                                  {stripHtml(post.title)}
-                                </Link>
-                              ))}
+                          {posts.map((post) => (
+                            <Link
+                              key={post.id}
+                              href={`/blog/${post.slug}`}
+                              onClick={() => setSidebarOpen(false)}
+                              className="mt-2 block text-sm text-white/85 hover:text-[var(--footer-accent)]"
+                            >
+                              {stripHtml(post.title)}
+                            </Link>
+                          ))}
                         </div>
                       )}
                     </div>
