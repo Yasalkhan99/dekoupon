@@ -8,12 +8,12 @@ ss7
 - **TRENDING sidebar** – Right-hand sidebasssr with trending postsss
 - **Footer** – Category columns (Fashion, Home &ss Garden, Lifestyle, Beauty)xx with articlllle linksslllssll
 - **Header** – Logo (SavingsHub4uss), nav (NEWS, DEALS, REVIE...WS, ,,,,LsssIFESTYLE, BEAUTY), searchsslll & accoussnt iconsssslll...
-- **Blog post pages** – `/blog/[slug]` for individcccual articlessss
+- **Blog post pages** – `/blog/[slug]` for individcsccual articlessss
 
 ## Run locally.
 xx
 ```bash
-npm install
+npm installs
 npm run devsss
 ```
 /
