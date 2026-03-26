@@ -13,15 +13,12 @@ function WidgetColumn({
   viewAllLabel,
   buttonClass,
   categoryLabel,
-  widthClassName = "lg:w-[calc(50%-10px)]",
 }: {
   posts: BlogPost[];
   viewAllHref: string;
   viewAllLabel: string;
   buttonClass: string;
   categoryLabel?: string;
-  /** e.g. three columns: lg:w-[calc(33.333%-11px)] */
-  widthClassName?: string;
 }) {
   const main = posts[0];
   const list = posts.slice(1, 4);
@@ -31,7 +28,7 @@ function WidgetColumn({
 
   return (
     <div
-      className={`widget-item-home-outer widget-item-home-outer-col2-sidebar flex w-full flex-col rounded-lg border-0 border-gray-200 p-5 shadow-sm md:border ${widthClassName}`}
+      className="widget-item-home-outer widget-item-home-outer-col2-sidebar flex min-w-0 w-full flex-col rounded-lg border-0 border-gray-200 p-5 shadow-sm md:border"
       style={{ backgroundColor: "#f2ebe2" }}
     >
       <div className="hunted-post-widget">
@@ -125,18 +122,16 @@ export default function HomeWidgetSection() {
   const clothing = fillWidgetPosts(clothingPosts, latestPosts, 4);
   const techHome = fillWidgetPosts(techHomePosts, latestPosts, 4);
 
-  const colWidth = "lg:w-[calc(33.333%-11px)]";
-
   return (
     <section className="home-widget-area mb-10 w-full">
-      <div className="home-widget-area-inner home-widget-area-inner-col2-sidebar clearfix flex flex-wrap gap-x-5 gap-y-8 lg:justify-between">
+      {/* Grid avoids flex-wrap overflow (3×33% + gaps used to exceed 100% and break the row) */}
+      <div className="home-widget-area-inner home-widget-area-inner-col2-sidebar clearfix grid grid-cols-1 gap-5 gap-y-8 md:grid-cols-2 lg:grid-cols-3 lg:gap-5">
         <WidgetColumn
           posts={travel}
           viewAllHref="/#latest"
           viewAllLabel="VIEW ALL"
           buttonClass="bg-[var(--footer-accent)] hover:bg-[var(--footer-accent-hover)]"
           categoryLabel="Travel"
-          widthClassName={colWidth}
         />
         <WidgetColumn
           posts={clothing}
@@ -144,7 +139,6 @@ export default function HomeWidgetSection() {
           viewAllLabel="VIEW ALL"
           buttonClass="bg-[var(--hunted-navy)] hover:bg-[var(--hunted-navy)]/90"
           categoryLabel="Clothing & Accessories"
-          widthClassName={colWidth}
         />
         <WidgetColumn
           posts={techHome}
@@ -152,7 +146,6 @@ export default function HomeWidgetSection() {
           viewAllLabel="VIEW ALL"
           buttonClass="bg-[var(--footer-accent)] hover:bg-[var(--footer-accent-hover)]"
           categoryLabel="Tech, Home & Entertainment"
-          widthClassName={colWidth}
         />
       </div>
     </section>
