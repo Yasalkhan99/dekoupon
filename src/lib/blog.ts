@@ -241,8 +241,9 @@ export const getBlogData = cache(async (): Promise<BlogData> => {
   const withPopular = posts.filter((p) => hasNiche(p, "popular"));
   const withTrending = posts.filter((p) => hasNiche(p, "trending"));
   const mostPopularPosts = withPopular.length > 0 ? withPopular.slice(0, 10) : sorted.slice(0, 10);
-  const latestPosts = sorted.slice(0, 6);
-  const trendingPosts = withTrending.length > 0 ? withTrending.slice(0, 6) : sorted.slice(0, 6);
+  /** Enough for home "Latest" + Load more; avoids hiding new Sanity posts behind a long blog.json tail */
+  const latestPosts = sorted.slice(0, 36);
+  const trendingPosts = withTrending.length > 0 ? withTrending.slice(0, 12) : sorted.slice(0, 12);
   const seenIds = new Set<string>();
   const heroFlowPosts: BlogPostWithContent[] = [];
   for (const p of [...featured, ...withTrending, ...withPopular]) {

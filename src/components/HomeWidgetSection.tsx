@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useBlogData } from "@/components/BlogDataProvider";
 import { stripHtml } from "@/lib/slugify";
+import { resolveHeroSlideImageUrl } from "@/lib/hero-image";
 import type { BlogPost } from "@/data/blog";
 
 function WidgetColumn({
@@ -12,12 +13,15 @@ function WidgetColumn({
   viewAllLabel,
   buttonClass,
   categoryLabel,
+  widthClassName = "lg:w-[calc(50%-10px)]",
 }: {
   posts: BlogPost[];
   viewAllHref: string;
   viewAllLabel: string;
   buttonClass: string;
   categoryLabel?: string;
+  /** e.g. three columns: lg:w-[calc(33.333%-11px)] */
+  widthClassName?: string;
 }) {
   const main = posts[0];
   const list = posts.slice(1, 4);
@@ -26,7 +30,10 @@ function WidgetColumn({
   const mainDate = (main as { publishedDate?: string }).publishedDate ?? "";
 
   return (
-    <div className="widget-item-home-outer widget-item-home-outer-col2-sidebar flex w-full flex-col rounded-lg border-0 border-gray-200 p-5 shadow-sm lg:w-[calc(50%-10px)] md:border" style={{ backgroundColor: "#f2ebe2" }}>
+    <div
+      className={`widget-item-home-outer widget-item-home-outer-col2-sidebar flex w-full flex-col rounded-lg border-0 border-gray-200 p-5 shadow-sm md:border ${widthClassName}`}
+      style={{ backgroundColor: "#f2ebe2" }}
+    >
       <div className="hunted-post-widget">
         {categoryLabel && (
           <h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-[var(--hunted-navy)]">{categoryLabel}</h3>
@@ -50,7 +57,7 @@ function WidgetColumn({
               <Link href={post.slug ? `/blog/${post.slug}` : "#"} className="flex gap-3">
                 <div className="relative h-[60px] w-[96px] shrink-0 overflow-hidden bg-[var(--hunted-gray)]">
                   <Image
-                    src={post.image}
+                    src={resolveHeroSlideImageUrl(post.image, post.content, post.slug)}
                     alt={stripHtml(post.title)}
                     fill
                     className="object-cover"
@@ -78,27 +85,58 @@ function WidgetColumn({
   );
 }
 
+function fillWidgetPosts(
+  matched: BlogPost[],
+  latestPosts: BlogPost[],
+  take: number
+): BlogPost[] {
+  if (matched.length >= take) return matched.slice(0, take);
+  const ids = new Set(matched.map((p) => p.id));
+  const rest = latestPosts.filter((p) => !ids.has(p.id));
+  return [...matched, ...rest].slice(0, take);
+}
+
 export default function HomeWidgetSection() {
   const { latestPosts, allPosts } = useBlogData();
-  const travelPosts = (allPosts || []).filter((p) =>
-    (p.category || "").toLowerCase().includes("travel")
-  ).slice(0, 4);
-  const clothingPosts = (allPosts || []).filter((p) =>
-    (p.category || "").toLowerCase().includes("clothing") ||
-    (p.category || "").toLowerCase().includes("fashion")
-  ).slice(0, 4);
-  const travel = travelPosts.length >= 4 ? travelPosts : [...travelPosts, ...latestPosts.filter((f) => !travelPosts.some((p) => p.id === f.id))].slice(0, 4);
-  const clothing = clothingPosts.length >= 4 ? clothingPosts : [...clothingPosts, ...latestPosts.filter((f) => !clothingPosts.some((p) => p.id === f.id))].slice(0, 4);
+  const travelPosts = (allPosts || [])
+    .filter((p) => (p.category || "").toLowerCase().includes("travel"))
+    .slice(0, 4);
+  const clothingPosts = (allPosts || [])
+    .filter((p) => {
+      const c = (p.category || "").toLowerCase();
+      return c.includes("clothing") || c.includes("fashion");
+    })
+    .slice(0, 4);
+  const techHomePosts = (allPosts || [])
+    .filter((p) => {
+      const c = (p.category || "").toLowerCase();
+      return (
+        c.includes("technology") ||
+        c.includes("electronic") ||
+        c.includes("home") ||
+        c.includes("garden") ||
+        c.includes("entertainment") ||
+        c.includes("gaming")
+      );
+    })
+    .slice(0, 4);
+
+  const travel = fillWidgetPosts(travelPosts, latestPosts, 4);
+  const clothing = fillWidgetPosts(clothingPosts, latestPosts, 4);
+  const techHome = fillWidgetPosts(techHomePosts, latestPosts, 4);
+
+  const colWidth = "lg:w-[calc(33.333%-11px)]";
 
   return (
     <section className="home-widget-area mb-10 w-full">
-      <div className="home-widget-area-inner home-widget-area-inner-col2-sidebar clearfix flex flex-wrap gap-x-5 gap-y-8">
+      <div className="home-widget-area-inner home-widget-area-inner-col2-sidebar clearfix flex flex-wrap gap-x-5 gap-y-8 lg:justify-between">
         <WidgetColumn
           posts={travel}
           viewAllHref="/#latest"
           viewAllLabel="VIEW ALL"
           buttonClass="bg-[var(--footer-accent)] hover:bg-[var(--footer-accent-hover)]"
           categoryLabel="Travel"
+          widthClassName={colWidth}
         />
         <WidgetColumn
           posts={clothing}
@@ -106,6 +144,15 @@ export default function HomeWidgetSection() {
           viewAllLabel="VIEW ALL"
           buttonClass="bg-[var(--hunted-navy)] hover:bg-[var(--hunted-navy)]/90"
           categoryLabel="Clothing & Accessories"
+          widthClassName={colWidth}
+        />
+        <WidgetColumn
+          posts={techHome}
+          viewAllHref="/#latest"
+          viewAllLabel="VIEW ALL"
+          buttonClass="bg-[var(--footer-accent)] hover:bg-[var(--footer-accent-hover)]"
+          categoryLabel="Tech, Home & Entertainment"
+          widthClassName={colWidth}
         />
       </div>
     </section>

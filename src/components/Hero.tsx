@@ -6,13 +6,15 @@ import type { BlogPost } from "@/data/blog";
 import { resolveHeroSlideImageUrl } from "@/lib/hero-image";
 import { useState, useEffect, useCallback, useMemo } from "react";
 
-/** Home hero carousel — fixed order; must match `slug` in blog data. */
-const HERO_SLIDER_SLUGS: readonly string[] = [
+/** Shown first in the hero (brand guides). Newer posts are appended after these without removing them. */
+const HERO_PRIORITY_SLUGS: readonly string[] = [
   "simple-guide-saving-keychron-discount-codes-2026",
   "simple-comparison-yeswelder-online-deals-vs-in-store-pricing",
   "how-to-save-big-on-flexispot-2026-verified-coupon-codes-promo-offers",
   "latest-belffin-coupon-codes-promo-offers-2026",
 ];
+
+const MAX_HERO_SLIDES = 12;
 
 function heroSlideDate(post: BlogPost): string {
   const pd = post.publishedDate?.trim();
@@ -86,15 +88,38 @@ export default function Hero() {
 
   const slides: BlogPost[] = useMemo(() => {
     const bySlug = new Map(allPosts.map((p) => [p.slug, p]));
-    const configured: BlogPost[] = [];
-    for (const slug of HERO_SLIDER_SLUGS) {
-      const p = bySlug.get(slug);
-      if (p) configured.push(p);
-    }
-    if (configured.length > 0) return configured;
+    const out: BlogPost[] = [];
+    const seen = new Set<string>();
 
-    const fallback: BlogPost[] = [heroPost];
-    const seen = new Set<string>([heroPost.id]);
+    for (const slug of HERO_PRIORITY_SLUGS) {
+      const p = bySlug.get(slug);
+      if (p && !seen.has(p.id)) {
+        seen.add(p.id);
+        out.push(p);
+      }
+    }
+
+    const sortedNewest = [...allPosts].sort((a, b) => {
+      const ta = new Date(a.createdAt ?? 0).getTime();
+      const tb = new Date(b.createdAt ?? 0).getTime();
+      return tb - ta;
+    });
+
+    for (const p of sortedNewest) {
+      if (out.length >= MAX_HERO_SLIDES) break;
+      if (!seen.has(p.id)) {
+        seen.add(p.id);
+        out.push(p);
+      }
+    }
+
+    if (out.length > 0) return out;
+
+    const fallback: BlogPost[] = [];
+    if (heroPost?.id) {
+      fallback.push(heroPost);
+      seen.add(heroPost.id);
+    }
     for (const p of [...featuredPosts, ...latestPosts]) {
       if (fallback.length >= 5) break;
       if (!seen.has(p.id)) {
