@@ -4,11 +4,13 @@ import PromotionsFooter from "@/components/PromotionsFooter";
 import PromotionsHeader from "@/components/PromotionsHeader";
 import ShareCouponForm from "@/components/ShareCouponForm";
 import { getStores, getStoreCategories } from "@/lib/stores";
+import { canonicalUrl } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: { absolute: "Share a Coupon & Submit Promo Codes | SavingsHub4U" },
   description:
     "Submit and share the latest coupons, promo codes, and deals on SavingsHub4U. Help others save money by adding verified discounts and exclusive offers today.",
+  alternates: { canonical: canonicalUrl("/promotions/share-a-coupon") },
 };
 
 function slug(str: string) {

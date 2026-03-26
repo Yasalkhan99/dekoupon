@@ -5,11 +5,13 @@ import PromotionsFooter from "@/components/PromotionsFooter";
 import PromotionsHeader from "@/components/PromotionsHeader";
 import { getStores, slugify } from "@/lib/stores";
 import BrandsAlphabetBar from "./BrandsAlphabetBar";
+import { canonicalUrl } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: { absolute: "Top Brands Coupons & Promo Codes | SavingsHub4U" },
   description:
     "Browse verified coupons and promo codes from top brands at SavingsHub4U. Find the latest deals, exclusive discounts, and special offers on fashion, travel, tech, food delivery, and more, all updated daily to help you save more.",
+  alternates: { canonical: canonicalUrl("/promotions/brands") },
 };
 
 function filterStoresByLetter(stores: Awaited<ReturnType<typeof getStores>>, letter: string | null) {

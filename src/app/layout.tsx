@@ -4,6 +4,7 @@ import AnalyticsScripts from "@/components/AnalyticsScripts";
 import BlogDataProvider from "@/components/BlogDataProvider";
 import "./globals.css";
 import { getBlogData, getDefaultBlogData } from "@/lib/blog";
+import { getSiteOrigin } from "@/lib/site";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,7 +28,7 @@ export const metadata: Metadata = {
   description:
     "Save smarter with SavingsHub4u. Verified coupon codes, exclusive deals, and money-saving tips from top brands. Your personal savings partner for online shopping.",
   keywords: ["coupons", "deals", "promo codes", "savings", "discounts", "SavingsHub4u"],
-  metadataBase: new URL("https://savingshub4u.com"),
+  metadataBase: new URL(getSiteOrigin()),
   verification: {
     google: "-7AN96PpsD05XVDAVyGYpixzeS5Rb-_ySJ0F2mK5rLs",
   },
@@ -38,7 +39,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "SavingsHub4u – Your Gateway to Smart Savings & Best Coupons",
     description: "Save smarter with verified coupon codes and exclusive deals from top brands. Your personal savings partner.",
-    url: "https://savingshub4u.com",
+    url: `${getSiteOrigin()}/`,
     siteName: "SavingsHub4u",
   },
   twitter: {

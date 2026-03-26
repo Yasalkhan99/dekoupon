@@ -1,5 +1,14 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
+import { canonicalUrl } from "@/lib/site";
 import CouponRevealClient from "./CouponRevealClient";
+
+export const metadata: Metadata = {
+  title: "Reveal coupon | SavingsHub4U",
+  description: "View your coupon code and continue to the store.",
+  alternates: { canonical: canonicalUrl("/coupon/reveal") },
+  robots: { index: false, follow: true },
+};
 
 type Props = { searchParams: Promise<Record<string, string | undefined>> };
 

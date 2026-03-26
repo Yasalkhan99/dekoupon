@@ -8,6 +8,7 @@ import PostsWithLoadMore from "@/components/PostsWithLoadMore";
 import { getPostsByCategory } from "@/lib/blog";
 import { getBlogCategoryBySlug } from "@/data/blog";
 import { BLOG_CATEGORY_META } from "@/data/blog-category-meta";
+import { canonicalUrl } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -17,11 +18,12 @@ type Props = { params: Promise<{ slug: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const slugLower = slug.toLowerCase();
+  const canonical = canonicalUrl(`/blog/category/${encodeURIComponent(slugLower)}`);
   const meta = BLOG_CATEGORY_META[slugLower];
   if (meta) {
-    return { title: { absolute: meta.title }, description: meta.description };
+    return { title: { absolute: meta.title }, description: meta.description, alternates: { canonical } };
   }
-  return {};
+  return { alternates: { canonical } };
 }
 
 export default async function BlogCategoryPage({ params }: Props) {

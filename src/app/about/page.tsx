@@ -5,6 +5,7 @@ import PromotionsFooter from "@/components/PromotionsFooter";
 import PromotionsHeader from "@/components/PromotionsHeader";
 import { getStores, getCoupons } from "@/lib/stores";
 import { getBlogData } from "@/lib/blog";
+import { canonicalUrl } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -13,6 +14,7 @@ export const metadata: Metadata = {
   title: { absolute: "About SavingsHub4U | Your Trusted Coupons & Deals Platform" },
   description:
     "Learn more about SavingsHub4U, your go-to destination for verified coupons, promo codes, and exclusive online deals. Discover our mission to help shoppers save more every day with trusted, updated discounts.",
+  alternates: { canonical: canonicalUrl("/about") },
 };
 
 const VALUES = [

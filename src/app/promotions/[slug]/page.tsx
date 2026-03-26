@@ -8,6 +8,7 @@ import { getClickCounts } from "@/lib/clicks";
 import { getStorePageData, getStoreCategories } from "@/lib/stores";
 import type { Store } from "@/types/store";
 import StorePageClient from "@/components/StorePageClient";
+import { canonicalUrl } from "@/lib/site";
 
 function replaceSeoPlaceholders(
   text: string,
@@ -44,6 +45,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: { absolute: title.slice(0, 100) },
     description: description.slice(0, 160),
+    alternates: { canonical: canonicalUrl(`/promotions/${encodeURIComponent(slug)}`) },
   };
 }
 

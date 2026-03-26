@@ -9,6 +9,7 @@ import PromotionsHeader from "@/components/PromotionsHeader";
 import { getCategoryBySlug } from "@/data/categories";
 import { CATEGORY_META } from "@/data/category-meta";
 import { getStores, getStoreCategories, slugify } from "@/lib/stores";
+import { canonicalUrl } from "@/lib/site";
 
 const PER_PAGE = 24;
 
@@ -19,11 +20,12 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug: categorySlug } = await params;
   const slugLower = categorySlug.toLowerCase();
+  const canonical = canonicalUrl(`/promotions/category/${encodeURIComponent(slugLower)}`);
   const meta = CATEGORY_META[slugLower];
   if (meta) {
-    return { title: { absolute: meta.title }, description: meta.description };
+    return { title: { absolute: meta.title }, description: meta.description, alternates: { canonical } };
   }
-  return {};
+  return { alternates: { canonical } };
 }
 
 function categoryToSlug(str: string) {

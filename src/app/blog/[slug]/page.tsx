@@ -8,6 +8,7 @@ import MainSidebar from "@/components/MainSidebar";
 import { getPostBySlug, readBlogPosts, getBlogFeaturedImageUrl, resolveContentImageUrls } from "@/lib/blog";
 import { stripHtml } from "@/lib/slugify";
 import { getBlogImageAspectClass, blogCategorySlug } from "@/data/blog";
+import { canonicalUrl } from "@/lib/site";
 
 /** Har request pe fresh data (Supabase se) – taake admin update ke baad changes turant dikhen */
 export const dynamic = "force-dynamic";
@@ -46,6 +47,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: title.slice(0, 100),
     description: description.slice(0, 160),
+    alternates: { canonical: canonicalUrl(`/blog/${encodeURIComponent(slug)}`) },
   };
 }
 

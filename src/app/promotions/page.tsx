@@ -13,6 +13,7 @@ import { stripHtml } from "@/lib/slugify";
 import { STORE_CATEGORIES } from "@/data/categories";
 import { getBlogImageAspectClass, type ImageAspectRatio } from "@/data/blog";
 import type { Store } from "@/types/store";
+import { canonicalUrl } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -21,6 +22,7 @@ export const metadata: Metadata = {
   title: { absolute: "Latest Promotions & Exclusive Deals | SavingsHub4U" },
   description:
     "Explore the latest promotions, limited-time offers, and exclusive online deals at SavingsHub4U. Save big on travel, fashion, electronics, food delivery, and more with updated discounts added daily.",
+  alternates: { canonical: canonicalUrl("/promotions") },
 };
 
 const PER_PAGE = 24;

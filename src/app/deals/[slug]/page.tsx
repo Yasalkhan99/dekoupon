@@ -8,6 +8,7 @@ import { getClickCounts } from "@/lib/clicks";
 import { getCoupons } from "@/lib/stores";
 import { getEventBySlug } from "@/data/events";
 import EventDealsClient from "@/components/EventDealsClient";
+import { canonicalUrl } from "@/lib/site";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -19,6 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: { absolute: title },
     description: event.metaDescription ?? event.description ?? undefined,
+    alternates: { canonical: canonicalUrl(`/deals/${encodeURIComponent(slug)}`) },
   };
 }
 

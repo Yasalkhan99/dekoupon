@@ -1,11 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { canonicalUrl } from "@/lib/site";
 import ContactForm from "./ContactForm";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Contact Us | SavingsHub4u",
   description: "Get in touch with SavingsHub4u. Send us your questions, feedback, or partnership inquiries.",
+  alternates: { canonical: canonicalUrl("/contact") },
 };
 
 export default function ContactPage() {

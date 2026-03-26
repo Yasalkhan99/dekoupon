@@ -1,9 +1,12 @@
+import type { Metadata } from "next";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { canonicalUrl } from "@/lib/site";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Imprint",
   description: "Legal imprint and company information for SavingsHub4u.",
+  alternates: { canonical: canonicalUrl("/imprint") },
 };
 
 const ROWS: { label: string; value: string }[] = [
