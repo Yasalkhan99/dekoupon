@@ -2,10 +2,28 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { verifySession, getCookieName } from "@/lib/admin-auth";
 
+/** True for URLs that should stay cacheable (JS chunks, optimized images, public images/fonts). */
+function isPublicStaticAsset(pathname: string): boolean {
+  if (pathname.startsWith("/_next/static") || pathname.startsWith("/_next/image")) return true;
+  return /\.(?:ico|png|jpe?g|gif|webp|svg|woff2?|mp4|webm)$/i.test(pathname);
+}
+
+/**
+ * Main navigations only — avoid caching HTML so users don't get stuck on stale/offline/error pages
+ * until they clear site data (common "connection error" until cache clear).
+ */
+function shouldSendNoCacheHtml(request: NextRequest): boolean {
+  if (request.method !== "GET") return false;
+  const dest = request.headers.get("sec-fetch-dest");
+  if (dest === "document") return true;
+  const accept = request.headers.get("accept") || "";
+  if (accept.includes("text/html") && !accept.includes("application/json")) return true;
+  return false;
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Only protect /admin, not /admin/login
   if (pathname === "/admin/login") {
     const cookie = request.cookies.get(getCookieName())?.value;
     if (cookie && (await verifySession(cookie))) {
@@ -14,20 +32,29 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  if (!pathname.startsWith("/admin")) {
+  if (pathname.startsWith("/admin")) {
+    const cookie = request.cookies.get(getCookieName())?.value;
+    if (!cookie || !(await verifySession(cookie))) {
+      const loginUrl = new URL("/admin/login", request.url);
+      loginUrl.searchParams.set("redirect", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
     return NextResponse.next();
   }
 
-  const cookie = request.cookies.get(getCookieName())?.value;
-  if (!cookie || !(await verifySession(cookie))) {
-    const loginUrl = new URL("/admin/login", request.url);
-    loginUrl.searchParams.set("redirect", pathname);
-    return NextResponse.redirect(loginUrl);
+  if (!isPublicStaticAsset(pathname) && shouldSendNoCacheHtml(request)) {
+    const res = NextResponse.next();
+    res.headers.set("Cache-Control", "private, no-cache, no-store, must-revalidate, max-age=0");
+    res.headers.set("Pragma", "no-cache");
+    return res;
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/admin", "/admin/:path*"],
+  matcher: [
+    "/",
+    "/((?!_next/static|_next/image).*)",
+  ],
 };

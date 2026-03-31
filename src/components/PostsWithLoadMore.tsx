@@ -13,12 +13,15 @@ type Props = {
   initialCount?: number;
   /** Optional: override how many to add on "Load more" (default 2) */
   loadMoreCount?: number;
+  /** Pass `h3` on homepage (sections use `h2`). Default `h2` for category pages under an `h1`. */
+  articleTitleHeading?: "h2" | "h3";
 };
 
 export default function PostsWithLoadMore({
   posts,
   initialCount = INITIAL_COUNT,
   loadMoreCount = LOAD_MORE_COUNT,
+  articleTitleHeading = "h2",
 }: Props) {
   const [visibleCount, setVisibleCount] = useState(initialCount);
   const visible = posts.slice(0, visibleCount);
@@ -30,7 +33,7 @@ export default function PostsWithLoadMore({
     <>
       <div className="hunted-row-1-2">
         {visible.map((post) => (
-          <ArticleCard key={post.id} post={post} />
+          <ArticleCard key={post.id} post={post} titleHeading={articleTitleHeading} />
         ))}
       </div>
       {hasMore && (

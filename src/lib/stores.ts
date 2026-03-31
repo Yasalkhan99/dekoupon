@@ -253,10 +253,6 @@ export async function getStorePageData(slug: string): Promise<StorePageData> {
   // Use stricter matching for the main store row so that stores with
   // similar names (e.g. US vs UK variants) don't collapse into one.
   const matchingStores = enabledStores.filter((s) => storeSlugMatches(s, wantRaw, wantCanonical));
-  // No store matches URL slug → 404 (old slug after slug change should not work)
-  if (matchingStores.length === 0) {
-    return { storeInfo: null, coupons: [], otherStores: [] };
-  }
   const allCouponsFromTable = await getCoupons();
   const enabledCoupons = allCouponsFromTable.filter((c) => c.status !== "disable");
   // Prefer the store whose slug exactly matches the URL (e.g. UK slug "true-classic-tees-discount-code"
@@ -293,6 +289,10 @@ export async function getStorePageData(slug: string): Promise<StorePageData> {
       websiteUrl: first.link,
       status: "enable",
     };
+  }
+  // No store row and no coupons match → 404
+  if (!storeInfo && coupons.length === 0) {
+    return { storeInfo: null, coupons: [], otherStores: [] };
   }
   const currentName = storeInfo?.name?.toLowerCase();
   const otherStores = enabledStores

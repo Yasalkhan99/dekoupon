@@ -4,6 +4,9 @@
 
 const DEFAULT_ORIGIN = "https://savingshub4u.com";
 
+/** Single source for homepage `<title>` and visible/sr-only `<h1>` (SEO). */
+export const HOME_PAGE_TITLE = "Savings Tips, Deals & Coupon Guides Blog | SavingsHub4U";
+
 export function getSiteOrigin(): string {
   const raw = (process.env.NEXT_PUBLIC_SITE_URL || DEFAULT_ORIGIN).replace(/\/$/, "").trim();
   return raw || DEFAULT_ORIGIN;

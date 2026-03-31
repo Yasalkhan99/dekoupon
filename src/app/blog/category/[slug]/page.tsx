@@ -9,6 +9,8 @@ import { getPostsByCategory } from "@/lib/blog";
 import { getBlogCategoryBySlug } from "@/data/blog";
 import { BLOG_CATEGORY_META } from "@/data/blog-category-meta";
 import { canonicalUrl } from "@/lib/site";
+import { buildBlogCategoryJsonLd } from "@/lib/json-ld";
+import JsonLd from "@/components/JsonLd";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -39,6 +41,7 @@ export default async function BlogCategoryPage({ params }: Props) {
       style={{ backgroundColor: "#e5dfd6" }}
       suppressHydrationWarning
     >
+      <JsonLd data={buildBlogCategoryJsonLd(category, slug.toLowerCase())} />
       <Header />
       <main className="w-full">
         {/* Hero – category header */}

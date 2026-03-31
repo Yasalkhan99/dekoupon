@@ -10,13 +10,15 @@ import HomeWidgetSection from "@/components/HomeWidgetSection";
 import TopDealsSection from "@/components/TopDealsSection";
 import Footer from "@/components/Footer";
 import { getBlogData } from "@/lib/blog";
-import { canonicalUrl } from "@/lib/site";
+import { canonicalUrl, HOME_PAGE_TITLE } from "@/lib/site";
+import { buildHomeJsonLd } from "@/lib/json-ld";
+import JsonLd from "@/components/JsonLd";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export const metadata: Metadata = {
-  title: { absolute: "Savings Tips, Deals & Coupon Guides Blog | SavingsHub4U" },
+  title: { absolute: HOME_PAGE_TITLE },
   description:
     "Explore the SavingsHub4U blog for expert savings tips, coupon guides, deal updates, and smart shopping strategies. Learn how to maximize discounts and find the best online offers every day.",
   alternates: { canonical: canonicalUrl("/") },
@@ -27,7 +29,9 @@ export default async function Home() {
 
   return (
     <div className="body-outer min-h-screen w-full text-[#555]" style={{ backgroundColor: "#e5dfd6" }}>
+      <JsonLd data={buildHomeJsonLd(latestPosts)} />
       <main className="w-full">
+        <h1 className="sr-only">{HOME_PAGE_TITLE}</h1>
         <Header transparent />
         {/* Hero row: slider left (narrower on lg), category tabs right – same height as hero */}
         <div className="mx-auto max-w-7xl px-5 md:px-6">
@@ -69,13 +73,13 @@ export default async function Home() {
                   <h2 className="mb-4 border-b-0 pb-2 text-lg font-bold uppercase tracking-wide text-[var(--hunted-navy)] sm:border-b-[3px] sm:border-[var(--footer-accent)] sm:text-xl">
                     Latest
                   </h2>
-                  <PostsWithLoadMore posts={latestPosts} />
+                  <PostsWithLoadMore posts={latestPosts} articleTitleHeading="h3" />
                 </section>
                 <section className="mb-10">
                   <h2 className="mb-4 border-b-0 pb-2 text-lg font-bold uppercase tracking-wide text-[var(--hunted-navy)] sm:border-b-[3px] sm:border-[var(--footer-accent)] sm:text-xl">
                     Most Popular Articles
                   </h2>
-                  <PostsWithLoadMore posts={mostPopularPosts} />
+                  <PostsWithLoadMore posts={mostPopularPosts} articleTitleHeading="h3" />
                 </section>
               </div>
             </div>

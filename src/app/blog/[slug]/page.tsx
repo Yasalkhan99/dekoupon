@@ -9,6 +9,9 @@ import { getPostBySlug, readBlogPosts, getBlogFeaturedImageUrl, resolveContentIm
 import { stripHtml } from "@/lib/slugify";
 import { getBlogImageAspectClass, blogCategorySlug } from "@/data/blog";
 import { canonicalUrl } from "@/lib/site";
+import { demoteHtmlH1ToH2 } from "@/lib/html-headings";
+import { buildBlogPostJsonLd } from "@/lib/json-ld";
+import JsonLd from "@/components/JsonLd";
 
 /** Har request pe fresh data (Supabase se) – taake admin update ke baad changes turant dikhen */
 export const dynamic = "force-dynamic";
@@ -57,8 +60,9 @@ export default async function BlogPostPage({ params }: Props) {
   if (!post) notFound();
 
   const safeContent = post.content
-    ? addLazyToContentImages(resolveContentImageUrls(post.content))
+    ? demoteHtmlH1ToH2(addLazyToContentImages(resolveContentImageUrls(post.content)))
     : "";
+  const safeExcerpt = demoteHtmlH1ToH2(post.excerpt || "");
   const category = post.category || "Blog";
   const publishedDate = post.publishedDate || "";
   const featuredImageUrl = getBlogFeaturedImageUrl(post.image);
@@ -74,6 +78,7 @@ export default async function BlogPostPage({ params }: Props) {
       style={{ backgroundColor: "#e5dfd6" }}
       suppressHydrationWarning
     >
+      <JsonLd data={buildBlogPostJsonLd(post, slug)} />
       <Header />
       <main className="w-full">
         {/* Hero – full image visible; blurred duplicate fills letterbox areas instead of black */}
@@ -135,7 +140,7 @@ export default async function BlogPostPage({ params }: Props) {
             <div className="site-content-sidebar site-content-sidebar-cc2">
               <article className="min-w-0 px-0 py-6 sm:pr-2">
                 <div className="prose prose-zinc mt-0 max-w-none [&_a]:text-blue-600 [&_a]:underline [&_a]:hover:text-blue-800">
-                  <div className="blog-content text-lg text-zinc-600" dangerouslySetInnerHTML={{ __html: post.excerpt }} />
+                  <div className="blog-content text-lg text-zinc-600" dangerouslySetInnerHTML={{ __html: safeExcerpt }} />
                   {post.content ? (
                     <>
                       <div

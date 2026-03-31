@@ -5,6 +5,8 @@ import BlogDataProvider from "@/components/BlogDataProvider";
 import "./globals.css";
 import { getBlogData, getDefaultBlogData } from "@/lib/blog";
 import { getSiteOrigin } from "@/lib/site";
+import { buildGlobalJsonLd } from "@/lib/json-ld";
+import JsonLd from "@/components/JsonLd";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -70,6 +72,7 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning
       >
+        <JsonLd data={buildGlobalJsonLd()} />
         <AnalyticsScripts />
         <BlogDataProvider
           initialData={{
