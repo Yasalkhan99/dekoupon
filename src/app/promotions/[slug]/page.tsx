@@ -69,39 +69,41 @@ export default async function StorePage({ params }: Props) {
   return (
     <div className="min-h-screen bg-white text-zinc-900" suppressHydrationWarning>
       <PromotionsHeader />
-      {/* Breadcrumb strip - light peach/orange, centered Store title, current in blue */}
-      <div className="border-b border-amber-200/60 bg-[#fff8f0]">
-        <div className="mx-auto max-w-7xl px-4 py-2.5 text-center sm:px-6 sm:py-5 md:py-6 lg:px-8">
-          <h1 className="text-xl font-bold text-zinc-900 sm:text-2xl md:text-3xl">{displayName}</h1>
-          <nav className="mt-1 text-sm text-zinc-600 md:mt-2" aria-label="Breadcrumb">
-            <ol className="flex flex-wrap items-center justify-center gap-1">
-              <li>
-                <Link href="/" className="hover:text-zinc-900">{siteName}</Link>
-              </li>
-              <li aria-hidden>›</li>
-              <li>
-                <Link href="/promotions" className="hover:text-zinc-900">{categoryLabel}</Link>
-              </li>
-              <li aria-hidden>›</li>
-              <li>
-                <span className="font-medium text-blue-600">{displayName}</span>
-              </li>
-            </ol>
-          </nav>
+      {/* DOM: main first (a11y). Mobile: flex order shows coupons above beige strip; md+: breadcrumb on top */}
+      <div className="flex flex-col">
+        <main className="order-1 mx-auto w-full max-w-7xl px-4 pb-6 pt-2 sm:px-6 sm:pb-8 sm:pt-6 md:order-2 md:py-8 lg:px-8">
+          <StorePageClient
+            storeInfo={storeInfo}
+            coupons={coupons}
+            otherStores={otherStores}
+            codesCount={codesCount}
+            dealsCount={dealsCount}
+            visitUrl={visitUrl}
+            clickCounts={clickCounts}
+          />
+        </main>
+
+        <div className="order-2 border-b border-t border-amber-200/60 bg-[#fff8f0] md:order-1 md:border-t-0">
+          <div className="mx-auto max-w-7xl px-4 py-2.5 text-center sm:px-6 sm:py-5 md:py-6 lg:px-8">
+            <h1 className="text-xl font-bold text-zinc-900 sm:text-2xl md:text-3xl">{displayName}</h1>
+            <nav className="mt-1 text-sm text-zinc-600 md:mt-2" aria-label="Breadcrumb">
+              <ol className="flex flex-wrap items-center justify-center gap-1">
+                <li>
+                  <Link href="/" className="hover:text-zinc-900">{siteName}</Link>
+                </li>
+                <li aria-hidden>›</li>
+                <li>
+                  <Link href="/promotions" className="hover:text-zinc-900">{categoryLabel}</Link>
+                </li>
+                <li aria-hidden>›</li>
+                <li>
+                  <span className="font-medium text-blue-600">{displayName}</span>
+                </li>
+              </ol>
+            </nav>
+          </div>
         </div>
       </div>
-
-      <main className="mx-auto max-w-7xl px-4 pb-6 pt-2 sm:px-6 sm:pb-8 sm:pt-6 md:py-8 lg:px-8">
-        <StorePageClient
-          storeInfo={storeInfo}
-          coupons={coupons}
-          otherStores={otherStores}
-          codesCount={codesCount}
-          dealsCount={dealsCount}
-          visitUrl={visitUrl}
-          clickCounts={clickCounts}
-        />
-      </main>
 
       {/* Newsletter - blue banner 70% width (15% margin each side), left/right SVGs */}
       <section className="relative mx-[15%] overflow-hidden rounded-2xl bg-blue-600 py-10">

@@ -381,7 +381,7 @@ export default function StorePageClient({
                     <button
                       type="button"
                       onClick={handleCouponClick}
-                      className="flex w-full items-stretch gap-2.5 rounded-xl border border-zinc-200 bg-white p-2.5 pr-1 text-left shadow-sm transition active:bg-zinc-50 md:hidden"
+                      className="flex w-full items-stretch gap-2 rounded-xl border border-zinc-200 bg-white p-2.5 text-left shadow-sm transition active:bg-zinc-50 md:hidden"
                     >
                       <div
                         className="flex h-[3.25rem] w-[3.25rem] shrink-0 flex-col items-center justify-center gap-0 self-center overflow-hidden rounded-full bg-gradient-to-br from-amber-400 to-orange-500 px-1 py-0.5 text-center text-white shadow-inner"
@@ -454,10 +454,10 @@ export default function StorePageClient({
                           {expiryLong}
                         </p>
                       </div>
-                      <div className="flex w-7 shrink-0 items-center justify-center text-amber-500" aria-hidden>
-                        <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                        </svg>
+                      <div className="flex shrink-0 flex-col items-center justify-center self-center pl-0.5">
+                        <span className="rounded-lg bg-blue-600 px-2 py-2 text-center text-[10px] font-semibold uppercase leading-tight text-white shadow-sm">
+                          {isCode ? "GET CODE" : "GET DEAL"}
+                        </span>
                       </div>
                     </button>
 
