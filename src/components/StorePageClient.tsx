@@ -373,8 +373,8 @@ export default function StorePageClient({
                     id={`o-${encodeURIComponent(c.id)}`}
                     className={
                       viewMode === "grid"
-                        ? "list-none md:flex md:flex-col md:items-stretch md:gap-5 md:overflow-hidden md:rounded-2xl md:border md:border-zinc-200 md:bg-white md:p-6 md:shadow-md"
-                        : "list-none md:flex md:flex-row md:items-center md:gap-6 md:overflow-hidden md:rounded-2xl md:border md:border-zinc-200 md:bg-white md:p-6 md:shadow-md"
+                        ? "list-none w-full md:flex md:flex-col md:items-stretch md:gap-5 md:overflow-hidden md:rounded-2xl md:border md:border-zinc-200 md:bg-white md:p-6 md:shadow-md"
+                        : "list-none w-full md:flex md:flex-row md:items-center md:gap-6 md:overflow-hidden md:rounded-2xl md:border md:border-zinc-200 md:bg-white md:p-6 md:shadow-md"
                     }
                   >
                     {/* Mobile: compact row (reference) — ~3 cards visible per screen */}
@@ -461,66 +461,125 @@ export default function StorePageClient({
                       </div>
                     </button>
 
-                    {/* Desktop / tablet: original layout (md+) */}
+                    {/* Desktop (md+): list = horizontal row like reference; grid = stacked */}
                     <div
-                      className={`hidden md:flex ${viewMode === "grid" ? "flex-col items-stretch gap-5" : "flex-row items-center gap-6"}`}
+                      className={`hidden min-w-0 w-full md:flex ${
+                        viewMode === "grid" ? "flex-col items-stretch gap-5" : "flex-row items-center gap-6"
+                      }`}
                     >
                       <div className="flex shrink-0 items-center justify-center">
-                        <div className="flex h-24 w-24 flex-shrink-0 flex-col items-center justify-center gap-0.5 overflow-hidden rounded-full bg-gradient-to-br from-amber-400 to-orange-500 px-1.5 py-1 text-center text-white shadow-inner sm:h-28 sm:w-28">
+                        <div className="flex h-24 w-24 flex-shrink-0 flex-col items-center justify-center gap-0.5 overflow-hidden rounded-full bg-gradient-to-br from-amber-400 to-orange-500 px-1.5 py-1 text-center text-white shadow-inner lg:h-28 lg:w-28">
                           {badge.type === "text" ? (
                             <>
-                              <span className="break-words text-center text-xs font-bold leading-tight sm:text-sm">{badge.line1}</span>
+                              <span className="break-words text-center text-xs font-bold leading-tight lg:text-sm">{badge.line1}</span>
                               {badge.line2 ? (
-                                <span className="break-words text-center text-[7px] font-semibold leading-tight opacity-95 sm:text-[8px]">{badge.line2}</span>
+                                <span className="break-words text-center text-[7px] font-semibold leading-tight opacity-95 lg:text-[8px]">{badge.line2}</span>
                               ) : null}
-                              <span className="break-words text-center text-[6px] font-medium leading-tight uppercase tracking-wide opacity-90 sm:text-[7px]">Savingshub4u</span>
+                              <span className="break-words text-center text-[6px] font-medium leading-tight uppercase tracking-wide opacity-90 lg:text-[7px]">
+                                SAVINGSHUB4U
+                              </span>
                             </>
                           ) : (
                             <>
-                              <span className="text-lg font-bold leading-tight sm:text-xl">{percent}%</span>
-                              <span className="text-[10px] font-semibold uppercase leading-tight opacity-95 sm:text-xs">OFF</span>
-                              <span className="mt-0.5 text-[7px] font-medium uppercase leading-tight tracking-wide opacity-90 sm:text-[8px]">Savingshub4u</span>
+                              <span className="text-center text-lg font-bold leading-tight lg:text-xl">
+                                {percent}% OFF
+                              </span>
+                              <span className="text-[7px] font-medium uppercase leading-tight tracking-wide opacity-90 lg:text-[8px]">
+                                SAVINGSHUB4U
+                              </span>
                             </>
                           )}
                         </div>
                       </div>
-                      <div
-                        className={`flex min-w-0 flex-1 flex-col items-start p-5 pt-0 text-left ${viewMode === "list" ? "sm:flex-row sm:items-center sm:justify-between sm:pt-5" : "sm:pt-0"}`}
-                      >
-                        <div className="min-w-0 w-full flex-1 space-y-2">
-                          {c.trending === true && (
-                            <span className="mb-1 inline-block rounded bg-red-500 px-2 py-0.5 text-xs font-semibold text-white">Exclusive</span>
-                          )}
-                          <p className="flex items-center gap-1.5 text-left text-xs text-zinc-500">
-                            <svg className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                            {expiryDate}
-                          </p>
-                          <button
-                            type="button"
-                            onClick={handleCouponClick}
-                            className="w-full cursor-pointer break-words whitespace-normal text-left font-bold text-zinc-900 transition hover:text-blue-600"
-                          >
-                            {dealTitle && dealTitle !== "Deal" ? dealTitle : `${percent}% Off All Products - Limited Stock`}
-                          </button>
-                          <p className="flex items-center gap-1 text-left text-xs text-zinc-500" title="Clicks">
-                            <svg className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122m2.122-10.606l2.12 2.122M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                            {clickCount} click{clickCount !== 1 ? "s" : ""}
-                          </p>
+                      {viewMode === "list" ? (
+                        <div className="flex min-w-0 flex-1 flex-row items-center justify-between gap-4 text-left lg:gap-6">
+                          <div className="min-w-0 flex-1 space-y-2 pr-2">
+                            {c.trending === true && (
+                              <span className="mb-1 inline-block rounded bg-red-500 px-2 py-0.5 text-xs font-semibold text-white">
+                                Exclusive
+                              </span>
+                            )}
+                            <p className="flex items-center gap-1.5 text-xs text-zinc-500">
+                              <svg className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                              </svg>
+                              {expiryDate}
+                            </p>
+                            <button
+                              type="button"
+                              onClick={handleCouponClick}
+                              className="block max-w-full cursor-pointer text-left text-base font-bold text-zinc-900 transition hover:text-blue-600"
+                            >
+                              {dealTitle && dealTitle !== "Deal" ? dealTitle : `${percent}% Off All Products - Limited Stock`}
+                            </button>
+                            <p className="flex items-center gap-1 text-xs text-zinc-500" title="Clicks">
+                              <svg className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122m2.122-10.606l2.12 2.122M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              {clickCount} click{clickCount !== 1 ? "s" : ""}
+                            </p>
+                          </div>
+                          <div className="flex shrink-0 items-center gap-3">
+                            <button
+                              type="button"
+                              onClick={handleCouponClick}
+                              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+                            >
+                              {isCode ? "GET CODE" : "GET DEAL"}
+                            </button>
+                            <span className="flex items-center gap-1 text-xs text-zinc-500" title="Comments">
+                              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                              </svg>
+                              0
+                            </span>
+                          </div>
                         </div>
-                        <div className="mt-5 flex w-full flex-shrink-0 items-center justify-start gap-3 sm:mt-0 sm:w-auto">
-                          <button
-                            type="button"
-                            onClick={handleCouponClick}
-                            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
-                          >
-                            {isCode ? "GET CODE" : "GET DEAL"}
-                          </button>
-                          <span className="flex items-center gap-1 text-xs text-zinc-500" title="Comments">
-                            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
-                            0
-                          </span>
+                      ) : (
+                        <div className="flex min-w-0 flex-1 flex-col gap-4 text-left">
+                          <div className="min-w-0 space-y-2">
+                            {c.trending === true && (
+                              <span className="mb-1 inline-block rounded bg-red-500 px-2 py-0.5 text-xs font-semibold text-white">
+                                Exclusive
+                              </span>
+                            )}
+                            <p className="flex items-center gap-1.5 text-xs text-zinc-500">
+                              <svg className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                              </svg>
+                              {expiryDate}
+                            </p>
+                            <button
+                              type="button"
+                              onClick={handleCouponClick}
+                              className="block w-full max-w-full cursor-pointer text-left text-base font-bold text-zinc-900 transition hover:text-blue-600"
+                            >
+                              {dealTitle && dealTitle !== "Deal" ? dealTitle : `${percent}% Off All Products - Limited Stock`}
+                            </button>
+                            <p className="flex items-center gap-1 text-xs text-zinc-500" title="Clicks">
+                              <svg className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122m2.122-10.606l2.12 2.122M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              {clickCount} click{clickCount !== 1 ? "s" : ""}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <button
+                              type="button"
+                              onClick={handleCouponClick}
+                              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+                            >
+                              {isCode ? "GET CODE" : "GET DEAL"}
+                            </button>
+                            <span className="flex items-center gap-1 text-xs text-zinc-500" title="Comments">
+                              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                              </svg>
+                              0
+                            </span>
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </div>
                   </li>
                 );
