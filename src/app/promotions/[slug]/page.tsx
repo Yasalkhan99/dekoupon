@@ -71,9 +71,9 @@ export default async function StorePage({ params }: Props) {
       <PromotionsHeader />
       {/* Breadcrumb strip - light peach/orange, centered Store title, current in blue */}
       <div className="border-b border-amber-200/60 bg-[#fff8f0]">
-        <div className="mx-auto max-w-7xl px-4 py-6 text-center sm:px-6 lg:px-8">
-          <h1 className="text-2xl font-bold text-zinc-900 sm:text-3xl">{displayName}</h1>
-          <nav className="mt-2 text-sm text-zinc-600" aria-label="Breadcrumb">
+        <div className="mx-auto max-w-7xl px-4 py-2.5 text-center sm:px-6 sm:py-5 md:py-6 lg:px-8">
+          <h1 className="text-xl font-bold text-zinc-900 sm:text-2xl md:text-3xl">{displayName}</h1>
+          <nav className="mt-1 text-sm text-zinc-600 md:mt-2" aria-label="Breadcrumb">
             <ol className="flex flex-wrap items-center justify-center gap-1">
               <li>
                 <Link href="/" className="hover:text-zinc-900">{siteName}</Link>
@@ -91,7 +91,7 @@ export default async function StorePage({ params }: Props) {
         </div>
       </div>
 
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-7xl px-4 pb-6 pt-2 sm:px-6 sm:pb-8 sm:pt-6 md:py-8 lg:px-8">
         <StorePageClient
           storeInfo={storeInfo}
           coupons={coupons}

@@ -79,6 +79,21 @@ function getBadgeForCoupon(
 
 const MONTHS_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
+const MONTHS_LONG = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
+
 /** Format expiry for display - deterministic UTC format to avoid hydration mismatch */
 function formatExpiry(expiry: string | undefined): string {
   if (!expiry || !expiry.trim()) return "31 Dec, 2027";
@@ -91,6 +106,21 @@ function formatExpiry(expiry: string | undefined): string {
     return `${day} ${month}, ${year}`;
   } catch {
     return "31 Dec, 2027";
+  }
+}
+
+/** Long month name for mobile compact cards - UTC only */
+function formatExpiryLong(expiry: string | undefined): string {
+  if (!expiry || !expiry.trim()) return "December 31, 2027";
+  try {
+    const d = new Date(expiry.trim());
+    if (Number.isNaN(d.getTime())) return "December 31, 2027";
+    const day = d.getUTCDate();
+    const month = MONTHS_LONG[d.getUTCMonth()];
+    const year = d.getUTCFullYear();
+    return `${month} ${day}, ${year}`;
+  } catch {
+    return "December 31, 2027";
   }
 }
 
@@ -224,16 +254,16 @@ export default function StorePageClient({
           blurBackdrop
         />
       ) : null}
-      <div className="flex flex-col gap-8 lg:grid lg:grid-cols-[18rem_1fr] lg:items-start lg:gap-x-10 lg:gap-y-0">
+      <div className="flex flex-col gap-5 md:gap-8 lg:grid lg:grid-cols-[18rem_1fr] lg:items-start lg:gap-x-10 lg:gap-y-0">
         {/* Part A: Coupons only – mobile par sabse upar; desktop par right column row 1 */}
         <div className="order-1 min-w-0 flex-1 lg:col-start-2 lg:row-start-1">
           {/* Store name + Discount Code heading, grid/list + sort */}
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-xl font-bold text-zinc-900 sm:text-2xl">
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2 md:mb-4 md:gap-3">
+            <h2 className="text-lg font-bold text-zinc-900 sm:text-2xl">
               {(storeInfo.storePageHeading ?? "").trim() || displayName}
             </h2>
-            <div className="flex items-center gap-2">
-              <div className="flex rounded border border-zinc-200 bg-white overflow-hidden">
+            <div className="hidden items-center gap-2 md:flex">
+              <div className="flex overflow-hidden rounded border border-zinc-200 bg-white">
                 <button
                   type="button"
                   onClick={() => setViewMode("grid")}
@@ -263,17 +293,58 @@ export default function StorePageClient({
             </div>
           </div>
 
+          {/* Mobile only: All / Coupons / Deals tabs (reference style) */}
+          <div className="mb-1.5 flex gap-1 border-b border-zinc-200 md:hidden">
+            {(
+              [
+                { key: "all" as const, label: "All" },
+                { key: "code" as const, label: `Coupons(${codesCount})` },
+                { key: "deal" as const, label: `Deals(${dealsCount})` },
+              ] as const
+            ).map(({ key, label }) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setFilter(key)}
+                className={`relative -mb-px flex-1 pb-2 text-center text-sm font-medium transition ${
+                  filter === key ? "text-zinc-900" : "text-zinc-500"
+                }`}
+              >
+                {label}
+                {filter === key ? (
+                  <span className="absolute bottom-0 left-2 right-2 h-0.5 rounded-full bg-amber-400" aria-hidden />
+                ) : null}
+              </button>
+            ))}
+          </div>
+          <div className="mb-2 md:hidden">
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as "ending" | "newest" | "used")}
+              className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-700 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-400"
+            >
+              <option value="ending">Ending Soon</option>
+              <option value="newest">Newest</option>
+              <option value="used">Most Used</option>
+            </select>
+          </div>
+
           <div role="region" aria-label="Coupon list">
             {sorted.length === 0 ? (
               <div className="rounded-xl border border-zinc-200 bg-white p-8 text-center text-zinc-500 shadow-sm">
                 No offers in this category.
               </div>
             ) : (
-              <ul className={viewMode === "grid" ? "grid gap-5 sm:grid-cols-2 sm:gap-6" : "space-y-6"}>
+              <ul
+                className={
+                  viewMode === "grid"
+                    ? "flex flex-col gap-2 md:grid md:grid-cols-2 md:gap-6"
+                    : "flex flex-col gap-2 md:space-y-6"
+                }
+              >
                 {sorted.map((c) => {
                 const href = c.link || visitUrl;
                 const isCode = c.couponType === "code";
-                const param = isCode ? "copy" : "shopnow";
                 const clickUrl = href.startsWith("http")
                   ? `/api/click?storeId=${encodeURIComponent(c.id)}&redirect=${encodeURIComponent(href)}`
                   : href;
@@ -285,6 +356,7 @@ export default function StorePageClient({
                 });
                 const percent = badge.type === "percent" ? badge.percent : 10;
                 const expiryDate = formatExpiry(c.expiry);
+                const expiryLong = formatExpiryLong(c.expiry);
                 const handleCouponClick = () => {
                   setExtraClicks((prev) => ({ ...prev, [c.id]: (prev[c.id] ?? 0) + 1 }));
                   const param = isCode ? "copy" : "shopnow";
@@ -293,64 +365,161 @@ export default function StorePageClient({
                   window.location.href = clickUrl;
                 };
                 const clickCount = (initialClickCounts[c.id] ?? 0) + (extraClicks[c.id] ?? 0);
+                const titleLine =
+                  dealTitle && dealTitle !== "Deal" ? dealTitle : `${percent}% Off All Products - Limited Stock`;
                 return (
                   <li
                     key={c.id}
                     id={`o-${encodeURIComponent(c.id)}`}
-                    className={`flex flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-md ${viewMode === "grid" ? "items-stretch gap-5 p-6" : "sm:flex-row sm:items-center sm:gap-6 sm:p-6"}`}
+                    className={
+                      viewMode === "grid"
+                        ? "list-none md:flex md:flex-col md:items-stretch md:gap-5 md:overflow-hidden md:rounded-2xl md:border md:border-zinc-200 md:bg-white md:p-6 md:shadow-md"
+                        : "list-none md:flex md:flex-row md:items-center md:gap-6 md:overflow-hidden md:rounded-2xl md:border md:border-zinc-200 md:bg-white md:p-6 md:shadow-md"
+                    }
                   >
-                    <div className="flex shrink-0 items-center justify-center">
-                      <div className="flex h-24 w-24 flex-shrink-0 flex-col items-center justify-center gap-0.5 overflow-hidden rounded-full bg-gradient-to-br from-amber-400 to-orange-500 px-1.5 py-1 text-center text-white shadow-inner sm:h-28 sm:w-28">
+                    {/* Mobile: compact row (reference) — ~3 cards visible per screen */}
+                    <button
+                      type="button"
+                      onClick={handleCouponClick}
+                      className="flex w-full items-stretch gap-2.5 rounded-xl border border-zinc-200 bg-white p-2.5 pr-1 text-left shadow-sm transition active:bg-zinc-50 md:hidden"
+                    >
+                      <div
+                        className="flex h-[3.25rem] w-[3.25rem] shrink-0 flex-col items-center justify-center gap-0 self-center overflow-hidden rounded-full bg-gradient-to-br from-amber-400 to-orange-500 px-1 py-0.5 text-center text-white shadow-inner"
+                        aria-hidden
+                      >
                         {badge.type === "text" ? (
                           <>
-                            <span className="break-words text-center text-xs font-bold leading-tight sm:text-sm">{badge.line1}</span>
+                            <span className="line-clamp-2 max-h-[1.6rem] break-words text-center text-[8px] font-bold leading-tight">
+                              {badge.line1}
+                            </span>
                             {badge.line2 ? (
-                              <span className="break-words text-center text-[7px] font-semibold leading-tight opacity-95 sm:text-[8px]">{badge.line2}</span>
+                              <span className="line-clamp-1 max-h-[0.65rem] break-words text-center text-[6px] font-semibold leading-tight opacity-95">
+                                {badge.line2}
+                              </span>
                             ) : null}
-                            <span className="break-words text-center text-[6px] font-medium leading-tight uppercase tracking-wide opacity-90 sm:text-[7px]">Savingshub4u</span>
+                            <span className="line-clamp-1 text-center text-[5px] font-medium uppercase leading-tight tracking-wide opacity-90">
+                              Savingshub4u
+                            </span>
                           </>
                         ) : (
                           <>
-                            <span className="text-lg font-bold leading-tight sm:text-xl">{percent}%</span>
-                            <span className="text-[10px] font-semibold uppercase leading-tight opacity-95 sm:text-xs">OFF</span>
-                            <span className="mt-0.5 text-[7px] font-medium uppercase leading-tight tracking-wide opacity-90 sm:text-[8px]">Savingshub4u</span>
+                            <span className="text-sm font-bold leading-none">{percent}%</span>
+                            <span className="text-[7px] font-semibold uppercase leading-none opacity-95">OFF</span>
+                            <span className="mt-0.5 text-[5px] font-medium uppercase leading-tight tracking-wide opacity-90">
+                              Savingshub4u
+                            </span>
                           </>
                         )}
                       </div>
-                    </div>
-                    <div className={`flex min-w-0 flex-1 flex-col items-start text-left p-5 pt-0 ${viewMode === "list" ? "sm:flex-row sm:items-center sm:justify-between sm:pt-5" : "sm:pt-0"}`}>
-                      <div className="min-w-0 w-full flex-1 space-y-2">
-                        {c.trending === true && (
-                          <span className="mb-1 inline-block rounded bg-red-500 px-2 py-0.5 text-xs font-semibold text-white">Exclusive</span>
-                        )}
-                        <p className="flex items-center gap-1.5 text-left text-xs text-zinc-500">
-                          <svg className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                          {expiryDate}
-                        </p>
-                        <button
-                          type="button"
-                          onClick={handleCouponClick}
-                          className="w-full break-words text-left font-bold text-zinc-900 transition hover:text-blue-600 cursor-pointer whitespace-normal"
+                      <div className="min-w-0 flex-1 py-0.5">
+                        <span
+                          className={`inline-block rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white ${
+                            isCode ? "bg-blue-600" : "bg-amber-500"
+                          }`}
                         >
-                          {dealTitle && dealTitle !== "Deal" ? dealTitle : `${percent}% Off All Products - Limited Stock`}
-                        </button>
-                        <p className="flex items-center gap-1 text-left text-xs text-zinc-500" title="Clicks">
-                          <svg className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122m2.122-10.606l2.12 2.122M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                          {clickCount} click{clickCount !== 1 ? "s" : ""}
+                          {isCode ? "Code" : "Deal"}
+                        </span>
+                        {c.trending === true ? (
+                          <span className="ml-1.5 inline-block rounded bg-red-500 px-1 py-0.5 text-[9px] font-semibold text-white">
+                            Hot
+                          </span>
+                        ) : null}
+                        <p className="mt-1 line-clamp-2 text-[13px] font-bold leading-snug text-zinc-900">{titleLine}</p>
+                        <p className="mt-0.5 text-[11px] text-slate-500">
+                          {isCode ? "Verified & Hand-Tested Code" : "Verified & Hand-Tested Deal"}
+                        </p>
+                        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px]">
+                          <span className="flex items-center gap-0.5 font-medium text-amber-600">
+                            <svg className="h-3.5 w-3.5 shrink-0" fill="currentColor" viewBox="0 0 20 20" aria-hidden>
+                              <path
+                                fillRule="evenodd"
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                            Verified
+                          </span>
+                          <span className="flex items-center gap-0.5 text-zinc-500">
+                            <svg className="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                            {clickCount} view{clickCount !== 1 ? "s" : ""}
+                          </span>
+                        </div>
+                        <p className="mt-0.5 flex items-center gap-1 text-[11px] text-zinc-500">
+                          <svg className="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                          {expiryLong}
                         </p>
                       </div>
-                      <div className="mt-5 flex w-full flex-shrink-0 items-center justify-start gap-3 sm:mt-0 sm:w-auto">
-                        <button
-                          type="button"
-                          onClick={handleCouponClick}
-                          className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
-                        >
-                          {isCode ? "GET CODE" : "GET DEAL"}
-                        </button>
-                        <span className="flex items-center gap-1 text-xs text-zinc-500" title="Comments">
-                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
-                          0
-                        </span>
+                      <div className="flex w-7 shrink-0 items-center justify-center text-amber-500" aria-hidden>
+                        <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                        </svg>
+                      </div>
+                    </button>
+
+                    {/* Desktop / tablet: original layout (md+) */}
+                    <div
+                      className={`hidden md:flex ${viewMode === "grid" ? "flex-col items-stretch gap-5" : "flex-row items-center gap-6"}`}
+                    >
+                      <div className="flex shrink-0 items-center justify-center">
+                        <div className="flex h-24 w-24 flex-shrink-0 flex-col items-center justify-center gap-0.5 overflow-hidden rounded-full bg-gradient-to-br from-amber-400 to-orange-500 px-1.5 py-1 text-center text-white shadow-inner sm:h-28 sm:w-28">
+                          {badge.type === "text" ? (
+                            <>
+                              <span className="break-words text-center text-xs font-bold leading-tight sm:text-sm">{badge.line1}</span>
+                              {badge.line2 ? (
+                                <span className="break-words text-center text-[7px] font-semibold leading-tight opacity-95 sm:text-[8px]">{badge.line2}</span>
+                              ) : null}
+                              <span className="break-words text-center text-[6px] font-medium leading-tight uppercase tracking-wide opacity-90 sm:text-[7px]">Savingshub4u</span>
+                            </>
+                          ) : (
+                            <>
+                              <span className="text-lg font-bold leading-tight sm:text-xl">{percent}%</span>
+                              <span className="text-[10px] font-semibold uppercase leading-tight opacity-95 sm:text-xs">OFF</span>
+                              <span className="mt-0.5 text-[7px] font-medium uppercase leading-tight tracking-wide opacity-90 sm:text-[8px]">Savingshub4u</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      <div
+                        className={`flex min-w-0 flex-1 flex-col items-start p-5 pt-0 text-left ${viewMode === "list" ? "sm:flex-row sm:items-center sm:justify-between sm:pt-5" : "sm:pt-0"}`}
+                      >
+                        <div className="min-w-0 w-full flex-1 space-y-2">
+                          {c.trending === true && (
+                            <span className="mb-1 inline-block rounded bg-red-500 px-2 py-0.5 text-xs font-semibold text-white">Exclusive</span>
+                          )}
+                          <p className="flex items-center gap-1.5 text-left text-xs text-zinc-500">
+                            <svg className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                            {expiryDate}
+                          </p>
+                          <button
+                            type="button"
+                            onClick={handleCouponClick}
+                            className="w-full cursor-pointer break-words whitespace-normal text-left font-bold text-zinc-900 transition hover:text-blue-600"
+                          >
+                            {dealTitle && dealTitle !== "Deal" ? dealTitle : `${percent}% Off All Products - Limited Stock`}
+                          </button>
+                          <p className="flex items-center gap-1 text-left text-xs text-zinc-500" title="Clicks">
+                            <svg className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122m2.122-10.606l2.12 2.122M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            {clickCount} click{clickCount !== 1 ? "s" : ""}
+                          </p>
+                        </div>
+                        <div className="mt-5 flex w-full flex-shrink-0 items-center justify-start gap-3 sm:mt-0 sm:w-auto">
+                          <button
+                            type="button"
+                            onClick={handleCouponClick}
+                            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+                          >
+                            {isCode ? "GET CODE" : "GET DEAL"}
+                          </button>
+                          <span className="flex items-center gap-1 text-xs text-zinc-500" title="Comments">
+                            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                            0
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </li>

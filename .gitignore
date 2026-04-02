@@ -40,3 +40,6 @@ env-vars.txt
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local Supabase data dumps (may contain PII; do not commit)
+supabase_data_dump.sql
