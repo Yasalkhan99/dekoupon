@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { preload } from "react-dom";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import HeroCategoryTabs from "@/components/HeroCategoryTabs";
@@ -10,7 +11,8 @@ import HomeWidgetSection from "@/components/HomeWidgetSection";
 import TopDealsSection from "@/components/TopDealsSection";
 import Footer from "@/components/Footer";
 import { getCachedBlogData } from "@/lib/blog";
-import { canonicalUrl, HOME_PAGE_TITLE } from "@/lib/site";
+import { getHomeHeroLcpImageUrl } from "@/lib/hero-lcp";
+import { canonicalUrl, getSiteOrigin, HOME_PAGE_TITLE } from "@/lib/site";
 import { buildHomeJsonLd } from "@/lib/json-ld";
 import JsonLd from "@/components/JsonLd";
 
@@ -24,7 +26,25 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-  const { mostPopularPosts, latestPosts } = await getCachedBlogData();
+  const blog = await getCachedBlogData();
+  const { mostPopularPosts, latestPosts } = blog;
+
+  const lcpHeroUrl = getHomeHeroLcpImageUrl(blog);
+  if (lcpHeroUrl) {
+    let crossOrigin: "anonymous" | undefined;
+    try {
+      const imgOrigin = new URL(lcpHeroUrl).origin;
+      const siteOrigin = new URL(getSiteOrigin()).origin;
+      if (imgOrigin !== siteOrigin) crossOrigin = "anonymous";
+    } catch {
+      crossOrigin = undefined;
+    }
+    preload(lcpHeroUrl, {
+      as: "image",
+      fetchPriority: "high",
+      ...(crossOrigin ? { crossOrigin } : {}),
+    });
+  }
 
   return (
     <div className="body-outer min-h-screen w-full text-[#555]" style={{ backgroundColor: "#e5dfd6" }}>

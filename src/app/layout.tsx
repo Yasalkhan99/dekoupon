@@ -55,15 +55,29 @@ export const metadata: Metadata = {
   },
 };
 
+function supabasePreconnectOrigin(): string | null {
+  const raw = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+  if (!raw) return null;
+  try {
+    return new URL(raw).origin;
+  } catch {
+    return null;
+  }
+}
+
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   const blogData = await getCachedBlogData();
+  const supOrigin = supabasePreconnectOrigin();
   return (
     <html lang="en">
       <head>
+        {supOrigin ? <link rel="preconnect" href={supOrigin} crossOrigin="anonymous" /> : null}
+        <link rel="preconnect" href="https://cdn.sanity.io" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         <meta name="linkscircleverifycode" content="62dc9b67-2d00-439c-b7ae-c041349c3d42" />
         <meta name="commission-factory-verification" content="e2943d7405c54258a7f58e3f0f8390a4" />
       </head>

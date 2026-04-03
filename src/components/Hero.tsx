@@ -4,17 +4,8 @@ import Link from "next/link";
 import { useBlogData } from "@/components/BlogDataProvider";
 import type { BlogPost } from "@/data/blog";
 import { resolveHeroSlideImageUrl } from "@/lib/hero-image";
+import { HERO_PRIORITY_SLUGS, MAX_HERO_SLIDES } from "@/lib/hero-config";
 import { useState, useEffect, useCallback, useMemo } from "react";
-
-/** Shown first in the hero (brand guides). Newer posts are appended after these without removing them. */
-const HERO_PRIORITY_SLUGS: readonly string[] = [
-  "simple-guide-saving-keychron-discount-codes-2026",
-  "simple-comparison-yeswelder-online-deals-vs-in-store-pricing",
-  "how-to-save-big-on-flexispot-2026-verified-coupon-codes-promo-offers",
-  "latest-belffin-coupon-codes-promo-offers-2026",
-];
-
-const MAX_HERO_SLIDES = 12;
 
 function heroSlideDate(post: BlogPost): string {
   const pd = post.publishedDate?.trim();
@@ -44,16 +35,23 @@ function HuntedSlide({
   const excerpt = post.excerpt?.replace(/<[^>]+>/g, "").slice(0, 140) || "";
   const href = post.slug ? `/blog/${post.slug}` : "#";
   const img = resolveHeroSlideImageUrl(post.image, post.content, post.slug);
+  const imgAlt = post.title.replace(/<[^>]+>/g, "").trim().slice(0, 120) || "Featured article";
 
   return (
     <li style={{ display: isActive ? "block" : "none" }}>
       <Link href={href} className="block h-full">
-        <div
-          className="slide-container hero-slide-height"
-          style={{
-            backgroundImage: `url(${img})`,
-          }}
-        >
+        <div className="slide-container hero-slide-height">
+          {/* Real <img> so LCP gets fetchPriority (CSS backgrounds cannot). */}
+          <img
+            src={img}
+            alt={imgAlt}
+            width={1200}
+            height={630}
+            fetchPriority={isActive ? "high" : "low"}
+            loading={isActive ? "eager" : "lazy"}
+            decoding="async"
+            className="pointer-events-none absolute inset-0 z-0 h-full w-full object-cover"
+          />
           <div className="slide-info-outer">
             <div className="slide-info">
               <div className="slide-info-inner">
