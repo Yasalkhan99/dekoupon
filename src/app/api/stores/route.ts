@@ -86,8 +86,19 @@ async function deleteAllStoresFromSupabase() {
   if (error) throw new Error(error.message);
 }
 
-export async function GET() {
+/** Minimal store rows for header/hero search (no logoUrl — avoids multi‑MB base64 in JSON). */
+function toStoreSuggestions(stores: Store[]) {
+  return stores
+    .filter((s) => s.status !== "disable")
+    .map((s) => ({ id: s.id, name: s.name, slug: s.slug }));
+}
+
+export async function GET(request: Request) {
   const stores = await readStores();
+  const { searchParams } = new URL(request.url);
+  if (searchParams.get("suggestions") === "1") {
+    return NextResponse.json(toStoreSuggestions(stores));
+  }
   return NextResponse.json(stores);
 }
 

@@ -136,18 +136,9 @@ export default async function PromotionsPage({
                 <PromotionsHeroSearch initialQuery={searchQuery ?? ""} />
               </div>
             </div>
+            {/* DOM: LCP image (banner-2) first for earlier discovery; flex order keeps visual left→right */}
             <div className="flex flex-1 items-end justify-center gap-4 lg:justify-end">
-              <div className="relative h-64 w-44 shrink-0 overflow-hidden rounded-2xl shadow-lg sm:h-72 sm:w-52">
-                <Image
-                  src="/banner-index-1.webp"
-                  alt="Save with coupons and deals"
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 640px) 176px, 208px"
-                  priority
-                />
-              </div>
-              <div className="relative h-80 w-56 shrink-0 overflow-hidden rounded-2xl shadow-lg sm:h-96 sm:w-64">
+              <div className="relative order-2 h-80 w-56 shrink-0 overflow-hidden rounded-2xl shadow-lg sm:h-96 sm:w-64">
                 <Image
                   src="/banner-index-2.webp"
                   alt="Best affiliate coupons and discounts"
@@ -155,6 +146,17 @@ export default async function PromotionsPage({
                   className="object-cover"
                   sizes="(max-width: 640px) 224px, 256px"
                   priority
+                  fetchPriority="high"
+                />
+              </div>
+              <div className="relative order-1 h-64 w-44 shrink-0 overflow-hidden rounded-2xl shadow-lg sm:h-72 sm:w-52">
+                <Image
+                  src="/banner-index-1.webp"
+                  alt="Save with coupons and deals"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 640px) 176px, 208px"
+                  fetchPriority="low"
                 />
               </div>
             </div>

@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState, useEffect, useRef, useCallback, useMemo, type KeyboardEvent } from "react";
 import { slugify } from "@/lib/slugify";
@@ -11,7 +10,6 @@ type StoreSuggestion = {
   id: string;
   name: string;
   slug?: string;
-  logoUrl?: string;
 };
 
 export default function PromotionsHeroSearch({ initialQuery = "" }: { initialQuery?: string }) {
@@ -29,7 +27,7 @@ export default function PromotionsHeroSearch({ initialQuery = "" }: { initialQue
     if (hasFetchedStores || loadingStores) return;
     try {
       setLoadingStores(true);
-      const res = await fetch("/api/stores", { cache: "no-store" });
+      const res = await fetch("/api/stores?suggestions=1", { cache: "no-store" });
       if (!res.ok) throw new Error("Failed to load stores");
       const data: StoreSuggestion[] = await res.json();
       const uniqueByName = new Map<string, StoreSuggestion>();
@@ -40,7 +38,6 @@ export default function PromotionsHeroSearch({ initialQuery = "" }: { initialQue
           id: s.id,
           name: s.name,
           slug: s.slug,
-          logoUrl: s.logoUrl,
         });
       });
       setStoresList(
@@ -179,19 +176,8 @@ export default function PromotionsHeroSearch({ initialQuery = "" }: { initialQue
                     onClick={() => handleSelectStore(store)}
                     className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-zinc-700 hover:bg-zinc-50"
                   >
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-zinc-200 bg-zinc-100 text-xs font-semibold text-zinc-600">
-                      {store.logoUrl ? (
-                        <Image
-                          src={store.logoUrl}
-                          alt={store.name}
-                          width={36}
-                          height={36}
-                          className="h-full w-full object-contain"
-                          unoptimized
-                        />
-                      ) : (
-                        store.name.slice(0, 2).toUpperCase()
-                      )}
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-zinc-200 bg-zinc-100 text-xs font-semibold text-zinc-600">
+                      {store.name.slice(0, 2).toUpperCase()}
                     </span>
                     <span className="min-w-0 flex-1 truncate">{store.name}</span>
                     <span className="shrink-0 text-xs font-medium uppercase tracking-wide text-blue-500">View</span>
