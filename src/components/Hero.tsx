@@ -5,7 +5,7 @@ import { useBlogData } from "@/components/BlogDataProvider";
 import type { BlogPost } from "@/data/blog";
 import { resolveHeroSlideImageUrl } from "@/lib/hero-image";
 import { HERO_PRIORITY_SLUGS, MAX_HERO_SLIDES } from "@/lib/hero-config";
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, type ReactNode } from "react";
 
 function heroSlideDate(post: BlogPost): string {
   const pd = post.publishedDate?.trim();
@@ -24,34 +24,46 @@ function heroSlideDate(post: BlogPost): string {
     .toUpperCase();
 }
 
+function stripUrlQuery(u: string): string {
+  const i = u.indexOf("?");
+  return i === -1 ? u : u.slice(0, i);
+}
+
 function HuntedSlide({
   post,
   isActive,
+  slideIndex,
+  lcpImageSrc,
 }: {
   post: BlogPost;
   isActive: boolean;
+  slideIndex: number;
+  lcpImageSrc?: string | null;
 }) {
   const date = heroSlideDate(post);
   const excerpt = post.excerpt?.replace(/<[^>]+>/g, "").slice(0, 140) || "";
   const href = post.slug ? `/blog/${post.slug}` : "#";
   const img = resolveHeroSlideImageUrl(post.image, post.content, post.slug);
   const imgAlt = post.title.replace(/<[^>]+>/g, "").trim().slice(0, 120) || "Featured article";
+  const lcp = lcpImageSrc?.trim() ?? "";
+  const serverLcpCoversFirst = slideIndex === 0 && lcp !== "" && stripUrlQuery(img) === stripUrlQuery(lcp);
 
   return (
     <li style={{ display: isActive ? "block" : "none" }}>
       <Link href={href} className="block h-full">
         <div className="slide-container hero-slide-height">
-          {/* Real <img> so LCP gets fetchPriority (CSS backgrounds cannot). */}
-          <img
-            src={img}
-            alt={imgAlt}
-            width={1200}
-            height={630}
-            fetchPriority={isActive ? "high" : "low"}
-            loading={isActive ? "eager" : "lazy"}
-            decoding="async"
-            className="pointer-events-none absolute inset-0 z-0 h-full w-full object-cover"
-          />
+          {!serverLcpCoversFirst ? (
+            <img
+              src={img}
+              alt={imgAlt}
+              width={1200}
+              height={630}
+              fetchPriority={isActive ? "high" : "low"}
+              loading={isActive ? "eager" : "lazy"}
+              decoding="async"
+              className="pointer-events-none absolute inset-0 z-0 h-full w-full object-cover"
+            />
+          ) : null}
           <div className="slide-info-outer">
             <div className="slide-info">
               <div className="slide-info-inner">
@@ -80,7 +92,13 @@ function HuntedSlide({
   );
 }
 
-export default function Hero() {
+export default function Hero({
+  lcpImageSrc,
+  children,
+}: {
+  lcpImageSrc?: string | null;
+  children?: ReactNode;
+} = {}) {
   const { heroPost, featuredPosts, latestPosts, allPosts } = useBlogData();
   const [index, setIndex] = useState(0);
 
@@ -155,8 +173,9 @@ export default function Hero() {
   return (
     <div className="hunted-slider-container clearfix mt-4 w-full md:-mt-14 md:pt-14">
       <div className="relative">
+        {children}
         <ul
-          className="bxslider-main hero-slider-list"
+          className="relative z-[1] bxslider-main hero-slider-list"
           style={{ overflow: "hidden", margin: 0, padding: 0, listStyle: "none" }}
         >
           {slides.map((post, i) => (
@@ -164,6 +183,8 @@ export default function Hero() {
               key={post.id}
               post={post}
               isActive={i === index}
+              slideIndex={i}
+              lcpImageSrc={lcpImageSrc}
             />
           ))}
         </ul>

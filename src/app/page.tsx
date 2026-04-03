@@ -11,7 +11,7 @@ import HomeWidgetSection from "@/components/HomeWidgetSection";
 import TopDealsSection from "@/components/TopDealsSection";
 import Footer from "@/components/Footer";
 import { getCachedBlogData } from "@/lib/blog";
-import { getHomeHeroLcpImageUrl } from "@/lib/hero-lcp";
+import { getHomeHeroLcpMeta } from "@/lib/hero-lcp";
 import { canonicalUrl, getSiteOrigin, HOME_PAGE_TITLE } from "@/lib/site";
 import { buildHomeJsonLd } from "@/lib/json-ld";
 import JsonLd from "@/components/JsonLd";
@@ -29,17 +29,17 @@ export default async function Home() {
   const blog = await getCachedBlogData();
   const { mostPopularPosts, latestPosts } = blog;
 
-  const lcpHeroUrl = getHomeHeroLcpImageUrl(blog);
-  if (lcpHeroUrl) {
+  const lcpHero = getHomeHeroLcpMeta(blog);
+  if (lcpHero) {
     let crossOrigin: "anonymous" | undefined;
     try {
-      const imgOrigin = new URL(lcpHeroUrl).origin;
+      const imgOrigin = new URL(lcpHero.src).origin;
       const siteOrigin = new URL(getSiteOrigin()).origin;
       if (imgOrigin !== siteOrigin) crossOrigin = "anonymous";
     } catch {
       crossOrigin = undefined;
     }
-    preload(lcpHeroUrl, {
+    preload(lcpHero.src, {
       as: "image",
       fetchPriority: "high",
       ...(crossOrigin ? { crossOrigin } : {}),
@@ -56,7 +56,20 @@ export default async function Home() {
         <div className="mx-auto max-w-7xl px-5 md:px-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:gap-6">
             <div className="min-w-0 flex-1 lg:max-w-[calc(100%-340px)]">
-              <Hero />
+              <Hero lcpImageSrc={lcpHero?.src ?? null}>
+                {lcpHero ? (
+                  <img
+                    src={lcpHero.src}
+                    alt={lcpHero.alt}
+                    width={1200}
+                    height={630}
+                    fetchPriority="high"
+                    decoding="async"
+                    sizes="(max-width: 1024px) 100vw, 75vw"
+                    className="pointer-events-none absolute inset-0 z-0 min-h-[400px] w-full object-cover md:min-h-[500px]"
+                  />
+                ) : null}
+              </Hero>
             </div>
             <div className="lg:h-[500px] lg:w-80 lg:shrink-0">
               <HeroCategoryTabs />
@@ -83,7 +96,7 @@ export default async function Home() {
                       height={400}
                       className="h-full w-full object-contain object-center bg-transparent"
                       sizes="(max-width: 768px) 100vw, (max-width: 1152px) 90vw, 1152px"
-                      priority={false}
+                      fetchPriority="low"
                     />
                   </Link>
                 </div>

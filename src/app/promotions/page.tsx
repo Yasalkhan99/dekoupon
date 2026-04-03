@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
+import { preload } from "react-dom";
 import PromotionsFooter from "@/components/PromotionsFooter";
 import PromotionsHeader from "@/components/PromotionsHeader";
 import PromotionsHeroSearch from "@/components/PromotionsHeroSearch";
@@ -80,6 +81,9 @@ export default async function PromotionsPage({
 }: {
   searchParams: Promise<{ page?: string; q?: string }>;
 }) {
+  /** Same-origin LCP hero — pairs with middleware Link preload + visible <img fetchPriority="high">. */
+  preload("/banner-index-2.webp", { as: "image", fetchPriority: "high" });
+
   const { page: pageStr, q: searchQuery } = await searchParams;
   const currentPage = Math.max(1, parseInt(String(pageStr || "1"), 10) || 1);
   const [allRows, allCouponsFromTable, { featuredPosts }] = await Promise.all([
@@ -130,26 +134,27 @@ export default async function PromotionsPage({
             {/* Images first in DOM (earlier LCP discovery); order-2 keeps them on the right / below headline visually */}
             <div className="order-2 flex flex-1 items-end justify-center gap-4 lg:order-2 lg:justify-end">
               <div className="relative h-80 w-56 shrink-0 overflow-hidden rounded-2xl shadow-lg sm:h-96 sm:w-64">
-                <Image
+                {/* Native img so LCP exposes fetchpriority (matches home hero pattern). */}
+                <img
                   src="/banner-index-2.webp"
                   alt="Best affiliate coupons and discounts"
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 640px) 224px, 256px"
-                  priority
+                  width={512}
+                  height={768}
                   fetchPriority="high"
-                  unoptimized
+                  decoding="async"
+                  className="absolute inset-0 h-full w-full object-cover"
                 />
               </div>
               <div className="relative h-64 w-44 shrink-0 overflow-hidden rounded-2xl shadow-lg sm:h-72 sm:w-52">
-                <Image
+                <img
                   src="/banner-index-1.webp"
                   alt="Save with coupons and deals"
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 640px) 176px, 208px"
+                  width={416}
+                  height={624}
                   fetchPriority="low"
-                  unoptimized
+                  loading="lazy"
+                  decoding="async"
+                  className="absolute inset-0 h-full w-full object-cover"
                 />
               </div>
             </div>

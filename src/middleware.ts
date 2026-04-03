@@ -53,7 +53,7 @@ export async function middleware(request: NextRequest) {
   const isPromotionsIndex = pathname === "/promotions" || pathname === "/promotions/";
   if (isPromotionsIndex && shouldSendNoCacheHtml(request)) {
     const res = NextResponse.next();
-    res.headers.set("Cache-Control", "public, s-maxage=60, stale-while-revalidate=300");
+    res.headers.set("Cache-Control", "public, s-maxage=120, stale-while-revalidate=600");
     res.headers.set("Link", '</banner-index-2.webp>; rel=preload; as=image; type=image/webp');
     return res;
   }

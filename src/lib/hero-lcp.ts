@@ -48,11 +48,20 @@ function buildHeroSlides(data: BlogData): BlogPost[] {
   return fallback;
 }
 
-/** First visible hero slide image URL (matches client `Hero` ordering) — for LCP preload + fetchPriority. */
-export function getHomeHeroLcpImageUrl(data: BlogData): string | null {
+export type HomeHeroLcpMeta = { src: string; alt: string };
+
+/** First hero slide — URL + alt (matches client `Hero` ordering). */
+export function getHomeHeroLcpMeta(data: BlogData): HomeHeroLcpMeta | null {
   const slides = buildHeroSlides(data);
   const first = slides[0];
   if (!first) return null;
   const withContent = first as BlogPostWithContent;
-  return resolveHeroSlideImageUrl(withContent.image, withContent.content, first.slug);
+  const src = resolveHeroSlideImageUrl(withContent.image, withContent.content, first.slug);
+  const alt = first.title.replace(/<[^>]+>/g, "").trim().slice(0, 120) || "Featured article";
+  return { src, alt };
+}
+
+/** @deprecated use getHomeHeroLcpMeta */
+export function getHomeHeroLcpImageUrl(data: BlogData): string | null {
+  return getHomeHeroLcpMeta(data)?.src ?? null;
 }

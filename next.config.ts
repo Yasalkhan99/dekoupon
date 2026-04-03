@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  experimental: {
+    /** Inlines route CSS as <style> to cut render-blocking .css chunk (LCP/FCP). Experimental — disable if issues. */
+    inlineCss: true,
+  },
   images: {
     remotePatterns: [
       {

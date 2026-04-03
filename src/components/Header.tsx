@@ -168,6 +168,7 @@ export default function Header({ transparent }: HeaderProps = {}) {
               width={160}
               height={32}
               priority
+              fetchPriority={isHome ? "high" : "low"}
               className="h-8 w-auto object-contain"
             />
           </Link>
