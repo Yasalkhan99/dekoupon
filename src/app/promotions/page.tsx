@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
+import { unstable_cache } from "next/cache";
 import PromotionsFooter from "@/components/PromotionsFooter";
 import PromotionsHeader from "@/components/PromotionsHeader";
 import PromotionsHeroSearch from "@/components/PromotionsHeroSearch";
@@ -15,8 +16,19 @@ import { getBlogImageAspectClass, type ImageAspectRatio } from "@/data/blog";
 import type { Store } from "@/types/store";
 import { canonicalUrl } from "@/lib/site";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+/** Cached store/coupon lists — same payload as before, faster TTFB on warm cache. */
+const getStoresForPromotions = unstable_cache(
+  () => getStores(),
+  ["promotions-page-stores"],
+  { revalidate: 120 },
+);
+const getCouponsForPromotions = unstable_cache(
+  () => getCoupons(),
+  ["promotions-page-coupons"],
+  { revalidate: 120 },
+);
+
+export const revalidate = 120;
 
 export const metadata: Metadata = {
   title: { absolute: "Latest Promotions & Exclusive Deals | SavingsHub4U" },
@@ -83,7 +95,11 @@ export default async function PromotionsPage({
 }) {
   const { page: pageStr, q: searchQuery } = await searchParams;
   const currentPage = Math.max(1, parseInt(String(pageStr || "1"), 10) || 1);
-  const [allRows, allCouponsFromTable] = await Promise.all([getStores(), getCoupons()]);
+  const [allRows, allCouponsFromTable, { featuredPosts }] = await Promise.all([
+    getStoresForPromotions(),
+    getCouponsForPromotions(),
+    getBlogData(),
+  ]);
   const enabled = allRows.filter((s) => s.status !== "disable");
   const { uniqueStores, getCouponCount: getCouponCountFromStores } = buildUniqueStoresAndCouponCounts(enabled);
   const searchFilteredStores = filterStoresByQuery(uniqueStores, searchQuery ?? "");
@@ -115,7 +131,6 @@ export default async function PromotionsPage({
 
   const totalPages = Math.max(1, Math.ceil(searchFilteredStores.length / PER_PAGE));
   const pageStores = searchFilteredStores.slice((currentPage - 1) * PER_PAGE, currentPage * PER_PAGE);
-  const { featuredPosts } = await getBlogData();
 
   return (
     <div className="min-h-screen bg-white text-zinc-900">
@@ -125,20 +140,9 @@ export default async function PromotionsPage({
       <section className="relative overflow-visible bg-amber-50/95 px-4 py-12 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-6xl">
           <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between lg:gap-10">
-            <div className="flex-1 overflow-visible">
-              <h1 className="text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl">
-                Discover The Best Affiliate <span className="text-blue-600">Coupons</span>
-              </h1>
-              <p className="mt-3 max-w-xl text-base text-zinc-600">
-                Save big on your favorite brands with our exclusive coupons, discount codes, and deals.
-              </p>
-              <div className="mt-6 max-w-2xl">
-                <PromotionsHeroSearch initialQuery={searchQuery ?? ""} />
-              </div>
-            </div>
-            {/* DOM: LCP image (banner-2) first for earlier discovery; flex order keeps visual left→right */}
-            <div className="flex flex-1 items-end justify-center gap-4 lg:justify-end">
-              <div className="relative order-2 h-80 w-56 shrink-0 overflow-hidden rounded-2xl shadow-lg sm:h-96 sm:w-64">
+            {/* Images first in DOM (earlier LCP discovery); order-2 keeps them on the right / below headline visually */}
+            <div className="order-2 flex flex-1 items-end justify-center gap-4 lg:order-2 lg:justify-end">
+              <div className="relative h-80 w-56 shrink-0 overflow-hidden rounded-2xl shadow-lg sm:h-96 sm:w-64">
                 <Image
                   src="/banner-index-2.webp"
                   alt="Best affiliate coupons and discounts"
@@ -147,9 +151,10 @@ export default async function PromotionsPage({
                   sizes="(max-width: 640px) 224px, 256px"
                   priority
                   fetchPriority="high"
+                  unoptimized
                 />
               </div>
-              <div className="relative order-1 h-64 w-44 shrink-0 overflow-hidden rounded-2xl shadow-lg sm:h-72 sm:w-52">
+              <div className="relative h-64 w-44 shrink-0 overflow-hidden rounded-2xl shadow-lg sm:h-72 sm:w-52">
                 <Image
                   src="/banner-index-1.webp"
                   alt="Save with coupons and deals"
@@ -157,7 +162,19 @@ export default async function PromotionsPage({
                   className="object-cover"
                   sizes="(max-width: 640px) 176px, 208px"
                   fetchPriority="low"
+                  unoptimized
                 />
+              </div>
+            </div>
+            <div className="order-1 flex-1 overflow-visible lg:order-1">
+              <h1 className="text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl">
+                Discover The Best Affiliate <span className="text-blue-600">Coupons</span>
+              </h1>
+              <p className="mt-3 max-w-xl text-base text-zinc-600">
+                Save big on your favorite brands with our exclusive coupons, discount codes, and deals.
+              </p>
+              <div className="mt-6 max-w-2xl">
+                <PromotionsHeroSearch initialQuery={searchQuery ?? ""} />
               </div>
             </div>
           </div>

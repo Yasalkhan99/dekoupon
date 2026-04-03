@@ -42,6 +42,15 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  /** Promotions index: short CDN cache + LCP hero preload (cuts TTFB / LCP resource load delay). */
+  const isPromotionsIndex = pathname === "/promotions" || pathname === "/promotions/";
+  if (isPromotionsIndex && shouldSendNoCacheHtml(request)) {
+    const res = NextResponse.next();
+    res.headers.set("Cache-Control", "public, s-maxage=60, stale-while-revalidate=300");
+    res.headers.set("Link", '</banner-index-2.webp>; rel=preload; as=image; type=image/webp');
+    return res;
+  }
+
   if (!isPublicStaticAsset(pathname) && shouldSendNoCacheHtml(request)) {
     const res = NextResponse.next();
     res.headers.set("Cache-Control", "private, no-cache, no-store, must-revalidate, max-age=0");
