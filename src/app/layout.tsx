@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import AnalyticsScripts from "@/components/AnalyticsScripts";
 import BlogDataProvider from "@/components/BlogDataProvider";
 import "./globals.css";
-import { getBlogData, getDefaultBlogData } from "@/lib/blog";
+import { getCachedBlogData } from "@/lib/blog";
 import { getSiteOrigin } from "@/lib/site";
 import { buildGlobalJsonLd } from "@/lib/json-ld";
 import JsonLd from "@/components/JsonLd";
@@ -11,16 +11,20 @@ import JsonLd from "@/components/JsonLd";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  display: "swap",
+  adjustFontFallback: true,
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  display: "swap",
+  preload: false,
+  adjustFontFallback: true,
 });
 
-/** Fresh blog data (hero, nav images) – upload ke baad pics turant dikhen */
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+/** Blog payload cached ~90s — see getCachedBlogData in @/lib/blog */
+export const revalidate = 90;
 
 export const metadata: Metadata = {
   title: {
@@ -56,12 +60,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  let blogData;
-  try {
-    blogData = await getBlogData();
-  } catch {
-    blogData = getDefaultBlogData();
-  }
+  const blogData = await getCachedBlogData();
   return (
     <html lang="en">
       <head>

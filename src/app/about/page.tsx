@@ -3,12 +3,11 @@ import Link from "next/link";
 import Image from "next/image";
 import PromotionsFooter from "@/components/PromotionsFooter";
 import PromotionsHeader from "@/components/PromotionsHeader";
-import { getStores, getCoupons } from "@/lib/stores";
-import { getBlogData } from "@/lib/blog";
+import { getStoresCached, getCouponsCached } from "@/lib/stores";
+import { getCachedBlogData } from "@/lib/blog";
 import { canonicalUrl } from "@/lib/site";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const revalidate = 120;
 
 export const metadata: Metadata = {
   title: { absolute: "About SavingsHub4U | Your Trusted Coupons & Deals Platform" },
@@ -36,8 +35,11 @@ const VALUES = [
 ];
 
 export default async function AboutPage() {
-  const [stores, coupons] = await Promise.all([getStores(), getCoupons()]);
-  const { featuredPosts, latestPosts } = await getBlogData();
+  const [stores, coupons, { featuredPosts, latestPosts }] = await Promise.all([
+    getStoresCached(),
+    getCouponsCached(),
+    getCachedBlogData(),
+  ]);
   const totalStores = stores.length;
   const totalCoupons = coupons.length;
   const latestInsights = latestPosts.slice(0, 3);

@@ -1,32 +1,19 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { unstable_cache } from "next/cache";
 import PromotionsFooter from "@/components/PromotionsFooter";
 import PromotionsHeader from "@/components/PromotionsHeader";
 import PromotionsHeroSearch from "@/components/PromotionsHeroSearch";
 import CategoryIcon from "@/components/CategoryIcon";
 import Pagination from "@/components/Pagination";
 import NewsletterSubscribe from "@/components/NewsletterSubscribe";
-import { getStores, getCoupons, slugify, canonicalSlug, hasCouponData, slugMatches } from "@/lib/stores";
-import { getBlogData } from "@/lib/blog";
+import { getStoresCached, getCouponsCached, slugify, canonicalSlug, hasCouponData, slugMatches } from "@/lib/stores";
+import { getCachedBlogData } from "@/lib/blog";
 import { stripHtml } from "@/lib/slugify";
 import { STORE_CATEGORIES } from "@/data/categories";
 import { getBlogImageAspectClass, type ImageAspectRatio } from "@/data/blog";
 import type { Store } from "@/types/store";
 import { canonicalUrl } from "@/lib/site";
-
-/** Cached store/coupon lists — same payload as before, faster TTFB on warm cache. */
-const getStoresForPromotions = unstable_cache(
-  () => getStores(),
-  ["promotions-page-stores"],
-  { revalidate: 120 },
-);
-const getCouponsForPromotions = unstable_cache(
-  () => getCoupons(),
-  ["promotions-page-coupons"],
-  { revalidate: 120 },
-);
 
 export const revalidate = 120;
 
@@ -96,9 +83,9 @@ export default async function PromotionsPage({
   const { page: pageStr, q: searchQuery } = await searchParams;
   const currentPage = Math.max(1, parseInt(String(pageStr || "1"), 10) || 1);
   const [allRows, allCouponsFromTable, { featuredPosts }] = await Promise.all([
-    getStoresForPromotions(),
-    getCouponsForPromotions(),
-    getBlogData(),
+    getStoresCached(),
+    getCouponsCached(),
+    getCachedBlogData(),
   ]);
   const enabled = allRows.filter((s) => s.status !== "disable");
   const { uniqueStores, getCouponCount: getCouponCountFromStores } = buildUniqueStoresAndCouponCounts(enabled);

@@ -42,6 +42,13 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  /** Home: short CDN cache for document (faster repeat / edge TTFB). */
+  if (pathname === "/" && shouldSendNoCacheHtml(request)) {
+    const res = NextResponse.next();
+    res.headers.set("Cache-Control", "public, s-maxage=60, stale-while-revalidate=300");
+    return res;
+  }
+
   /** Promotions index: short CDN cache + LCP hero preload (cuts TTFB / LCP resource load delay). */
   const isPromotionsIndex = pathname === "/promotions" || pathname === "/promotions/";
   if (isPromotionsIndex && shouldSendNoCacheHtml(request)) {

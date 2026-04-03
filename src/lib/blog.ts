@@ -1,5 +1,6 @@
 import { readFile, writeFile, mkdir } from "fs/promises";
 import path from "path";
+import { unstable_cache } from "next/cache";
 import { cache } from "react";
 import type { BlogPost } from "@/data/blog";
 import {
@@ -318,5 +319,18 @@ export function getDefaultBlogData(): BlogData {
     allPosts: [],
   };
 }
+
+/** Cross-request cache for layout + pages that need full blog payload (lower TTFB vs force-dynamic). */
+export const getCachedBlogData = unstable_cache(
+  async (): Promise<BlogData> => {
+    try {
+      return await getBlogData();
+    } catch {
+      return getDefaultBlogData();
+    }
+  },
+  ["app-blog-data-v1"],
+  { revalidate: 90 },
+);
 
 export { categories };

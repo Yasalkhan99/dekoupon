@@ -9,13 +9,12 @@ import MainSidebar from "@/components/MainSidebar";
 import HomeWidgetSection from "@/components/HomeWidgetSection";
 import TopDealsSection from "@/components/TopDealsSection";
 import Footer from "@/components/Footer";
-import { getBlogData } from "@/lib/blog";
+import { getCachedBlogData } from "@/lib/blog";
 import { canonicalUrl, HOME_PAGE_TITLE } from "@/lib/site";
 import { buildHomeJsonLd } from "@/lib/json-ld";
 import JsonLd from "@/components/JsonLd";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const revalidate = 90;
 
 export const metadata: Metadata = {
   title: { absolute: HOME_PAGE_TITLE },
@@ -25,7 +24,7 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-  const { mostPopularPosts, latestPosts } = await getBlogData();
+  const { mostPopularPosts, latestPosts } = await getCachedBlogData();
 
   return (
     <div className="body-outer min-h-screen w-full text-[#555]" style={{ backgroundColor: "#e5dfd6" }}>
