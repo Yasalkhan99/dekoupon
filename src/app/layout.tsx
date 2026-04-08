@@ -73,7 +73,7 @@ export default async function RootLayout({
   const blogData = await getCachedBlogData();
   const supOrigin = supabasePreconnectOrigin();
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         {supOrigin ? <link rel="preconnect" href={supOrigin} crossOrigin="anonymous" /> : null}
         <link rel="preconnect" href="https://cdn.sanity.io" crossOrigin="anonymous" />

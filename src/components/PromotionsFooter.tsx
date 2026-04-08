@@ -31,9 +31,9 @@ export default function PromotionsFooter({ className }: { className?: string }) 
 
   return (
     <footer className={`mt-12 border-t border-zinc-800 bg-black text-white ${className ?? ""}`}>
-      <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          <div>
+      <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8" suppressHydrationWarning>
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4" suppressHydrationWarning>
+          <div suppressHydrationWarning>
             <Link href="/" className="inline-flex items-center gap-2 text-lg font-bold text-white transition hover:opacity-90">
               <Image src="/final final logo.svg" alt="SavingsHub4u" width={140} height={28} className="h-7 w-auto object-contain" />
             </Link>
@@ -51,7 +51,7 @@ export default function PromotionsFooter({ className }: { className?: string }) 
               ))}
             </ul>
           </div>
-          <div>
+          <div suppressHydrationWarning>
             <h4 className="mb-4 text-sm font-bold uppercase tracking-wide text-white">Important Links</h4>
             <ul className="space-y-2 text-sm text-white/80">
               <li><Link href="/about" className="transition hover:text-blue-400">About Us</Link></li>
@@ -73,12 +73,15 @@ export default function PromotionsFooter({ className }: { className?: string }) 
           </div>
         </div>
       </div>
-      <div className="border-t border-zinc-800 bg-zinc-900/80 px-4 py-4">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 sm:flex-row sm:px-6 lg:px-8">
+      <div className="border-t border-zinc-800 bg-zinc-900/80 px-4 py-4" suppressHydrationWarning>
+        <div
+          className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 sm:flex-row sm:px-6 lg:px-8"
+          suppressHydrationWarning
+        >
           <p className="text-xs text-white/90">
             © {new Date().getFullYear()} SavingsHub4u. All Rights Reserved.
           </p>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3" suppressHydrationWarning>
             <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-white/5 text-white transition hover:border-blue-400 hover:text-blue-400" aria-label="Facebook">
               <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" /></svg>
             </a>

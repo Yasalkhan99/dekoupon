@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useEffect, useRef, useCallback, useMemo, type KeyboardEvent } from "react";
 import { slugify } from "@/lib/slugify";
+import StoreSearchAvatar from "@/components/StoreSearchAvatar";
 
 const DEBOUNCE_MS = 300;
 
@@ -10,6 +11,8 @@ type StoreSuggestion = {
   id: string;
   name: string;
   slug?: string;
+  logoUrl?: string;
+  logoAltText?: string;
 };
 
 export default function PromotionsHeroSearch({ initialQuery = "" }: { initialQuery?: string }) {
@@ -30,20 +33,11 @@ export default function PromotionsHeroSearch({ initialQuery = "" }: { initialQue
       const res = await fetch("/api/stores?suggestions=1", { cache: "no-store" });
       if (!res.ok) throw new Error("Failed to load stores");
       const data: StoreSuggestion[] = await res.json();
-      const uniqueByName = new Map<string, StoreSuggestion>();
-      data.forEach((s) => {
-        const key = (s.name || "").trim().toLowerCase();
-        if (!key || uniqueByName.has(key)) return;
-        uniqueByName.set(key, {
-          id: s.id,
-          name: s.name,
-          slug: s.slug,
-        });
-      });
+      // API returns one row per canonical store (merged); sort for stable prefix search.
       setStoresList(
-        Array.from(uniqueByName.values()).sort((a, b) =>
-          a.name.localeCompare(b.name, undefined, { sensitivity: "base" }),
-        ),
+        data
+          .filter((s) => (s.name || "").trim())
+          .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" })),
       );
       setHasFetchedStores(true);
     } catch (err) {
@@ -150,10 +144,12 @@ export default function PromotionsHeroSearch({ initialQuery = "" }: { initialQue
           placeholder="Find coupon or store..."
           className="min-w-0 flex-1 bg-transparent py-4 pl-3 pr-4 text-base text-zinc-900 placeholder:text-zinc-400 focus:outline-none sm:py-5 sm:pl-4 sm:text-lg"
           autoComplete="off"
+          suppressHydrationWarning
         />
         <button
           type="submit"
           className="shrink-0 bg-blue-600 px-6 font-semibold text-white transition hover:bg-blue-700 sm:px-8"
+          suppressHydrationWarning
         >
           Search
         </button>
@@ -175,10 +171,14 @@ export default function PromotionsHeroSearch({ initialQuery = "" }: { initialQue
                     type="button"
                     onClick={() => handleSelectStore(store)}
                     className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-zinc-700 hover:bg-zinc-50"
+                    suppressHydrationWarning
                   >
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-zinc-200 bg-zinc-100 text-xs font-semibold text-zinc-600">
-                      {store.name.slice(0, 2).toUpperCase()}
-                    </span>
+                    <StoreSearchAvatar
+                      name={store.name}
+                      logoUrl={store.logoUrl}
+                      logoAltText={store.logoAltText}
+                      initialsClassName="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-zinc-200 bg-zinc-100 text-xs font-semibold text-zinc-600"
+                    />
                     <span className="min-w-0 flex-1 truncate">{store.name}</span>
                     <span className="shrink-0 text-xs font-medium uppercase tracking-wide text-blue-500">View</span>
                   </button>

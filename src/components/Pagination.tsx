@@ -47,7 +47,7 @@ export default function Pagination({
           Previous
         </span>
       )}
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1" suppressHydrationWarning>
         {start > 1 && (
           <>
             <Link

@@ -5,6 +5,7 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { slugify } from "@/lib/slugify";
+import StoreSearchAvatar from "@/components/StoreSearchAvatar";
 
 const SITE_NAME = "SavingsHub4u";
 
@@ -21,6 +22,8 @@ type StoreSuggestion = {
   id: string;
   name: string;
   slug?: string;
+  logoUrl?: string;
+  logoAltText?: string;
 };
 
 export default function PromotionsHeader() {
@@ -40,20 +43,10 @@ export default function PromotionsHeader() {
       const res = await fetch("/api/stores?suggestions=1", { cache: "no-store" });
       if (!res.ok) throw new Error("Failed to load stores");
       const data: StoreSuggestion[] = await res.json();
-      const uniqueByName = new Map<string, StoreSuggestion>();
-      data.forEach((s) => {
-        const key = (s.name || "").trim().toLowerCase();
-        if (!key || uniqueByName.has(key)) return;
-        uniqueByName.set(key, {
-          id: s.id,
-          name: s.name,
-          slug: s.slug,
-        });
-      });
       setStoresList(
-        Array.from(uniqueByName.values()).sort((a, b) =>
-          a.name.localeCompare(b.name, undefined, { sensitivity: "base" }),
-        ),
+        data
+          .filter((s) => (s.name || "").trim())
+          .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" })),
       );
       setHasFetchedStores(true);
     } catch (error) {
@@ -129,8 +122,14 @@ export default function PromotionsHeader() {
                 onFocus={() => searchTerm.trim() && setShowSuggestions(true)}
                 onKeyDown={handleKeyDown}
                 className="w-full flex-1 bg-transparent py-2.5 pl-5 pr-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none"
+                suppressHydrationWarning
               />
-              <button type="submit" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-500 text-white transition hover:bg-amber-600" aria-label="Search">
+              <button
+                type="submit"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-500 text-white transition hover:bg-amber-600"
+                aria-label="Search"
+                suppressHydrationWarning
+              >
                 <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
@@ -152,10 +151,14 @@ export default function PromotionsHeader() {
                             type="button"
                             onClick={() => handleSelectStore(store)}
                             className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-zinc-700 hover:bg-zinc-50"
+                            suppressHydrationWarning
                           >
-                            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-zinc-100 text-xs font-semibold text-zinc-600">
-                              {store.name.slice(0, 2).toUpperCase()}
-                            </span>
+                            <StoreSearchAvatar
+                              name={store.name}
+                              logoUrl={store.logoUrl}
+                              logoAltText={store.logoAltText}
+                              initialsClassName="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-xs font-semibold text-zinc-600"
+                            />
                             <span className="flex-1 truncate">{store.name}</span>
                             <span className="text-xs uppercase tracking-wide text-blue-500">View</span>
                           </button>

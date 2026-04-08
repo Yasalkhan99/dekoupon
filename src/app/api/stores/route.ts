@@ -3,8 +3,16 @@ import { readFile, writeFile, mkdir } from "fs/promises";
 import path from "path";
 import type { Store } from "@/types/store";
 import { getSupabase, SUPABASE_STORES_TABLE, SUPABASE_COUPONS_TABLE } from "@/lib/supabase-server";
-import { getCoupons, insertCoupon, updateCoupon, deleteCouponById } from "@/lib/stores";
-import { hasCouponData } from "@/lib/store-utils";
+import {
+  getCoupons,
+  insertCoupon,
+  updateCoupon,
+  deleteCouponById,
+  slugify,
+  canonicalSlug,
+  hasCouponData,
+  slugMatches,
+} from "@/lib/stores";
 
 const getStoresPath = () => path.join(process.cwd(), "data", "stores.json");
 
@@ -86,19 +94,110 @@ async function deleteAllStoresFromSupabase() {
   if (error) throw new Error(error.message);
 }
 
-/** Minimal store rows for header/hero search (no logoUrl — avoids multi‑MB base64 in JSON). */
-function toStoreSuggestions(stores: Store[]) {
-  return stores
-    .filter((s) => s.status !== "disable")
-    .map((s) => ({ id: s.id, name: s.name, slug: s.slug }));
+/** Skip only very large data-URL logos so suggestions JSON stays reasonable. */
+const MAX_SUGGESTION_LOGO_DATA_URL_LEN = 65536;
+
+function pickSuggestionLogo(store: Store): { logoUrl?: string; logoAltText?: string } {
+  const raw = (store.logoUrl || "").trim();
+  if (!raw) return {};
+  if (raw.startsWith("data:") && raw.length > MAX_SUGGESTION_LOGO_DATA_URL_LEN) return {};
+  return { logoUrl: raw, logoAltText: store.logoAltText || store.name };
+}
+
+function pickBestLogoFromCandidates(candidates: Store[]): { logoUrl?: string; logoAltText?: string } {
+  const withLogo = candidates.map((c) => pickSuggestionLogo(c)).filter((p) => p.logoUrl);
+  if (withLogo.length === 0) return {};
+  const score = (u: string) =>
+    u.startsWith("https:") ? 0 : u.startsWith("http:") ? 1 : u.startsWith("/") ? 2 : 3;
+  withLogo.sort((a, b) => score(a.logoUrl!) - score(b.logoUrl!));
+  const first = withLogo[0];
+  return { logoUrl: first.logoUrl, logoAltText: first.logoAltText };
+}
+
+function suggestionGroupKey(s: Store): string | null {
+  const rawSlug = (s.slug || slugify(s.name)).toLowerCase().trim() || (s.name ?? "").toLowerCase().trim();
+  if (!rawSlug) return null;
+  return canonicalSlug(rawSlug);
+}
+
+/** Prefer store profile row for label/slug; take best logo from any row in the group (store or coupon). */
+function mergeSuggestionFields(candidates: Store[]) {
+  const storeRow = candidates.find((c) => !hasCouponData(c));
+  const primary = storeRow ?? candidates[0];
+  const logoFields = pickBestLogoFromCandidates(candidates);
+  return {
+    id: primary.id,
+    name: primary.name,
+    slug: primary.slug,
+    ...logoFields,
+  };
+}
+
+/** Coupon titles often start with the merchant name when slug keys differ. */
+function couponTitleLooksLikeStoreRow(coupon: Store, storeRow: Store): boolean {
+  const cn = (coupon.name || "").trim().toLowerCase();
+  if (!cn) return false;
+  const names = [storeRow.name, storeRow.subStoreName]
+    .map((s) => (s || "").trim().toLowerCase())
+    .filter((s) => s.length >= 3);
+  for (const sn of names) {
+    if (cn === sn) return true;
+    if (!cn.startsWith(sn)) continue;
+    const rest = cn.slice(sn.length);
+    if (rest.length === 0 || /^[\s\-–—:|]/.test(rest)) return true;
+  }
+  return false;
+}
+
+function bucketWantRaw(bucket: Store[]): string {
+  const primary = bucket.find((c) => !hasCouponData(c)) ?? bucket[0];
+  return (primary.slug || slugify(primary.name)).toLowerCase().trim() || (primary.name ?? "").toLowerCase().trim();
+}
+
+function toStoreSuggestions(stores: Store[], coupons: Store[]) {
+  const enabledStores = stores.filter((s) => s.status !== "disable");
+  const byKey = new Map<string, Store[]>();
+  for (const s of enabledStores) {
+    const key = suggestionGroupKey(s);
+    if (!key) continue;
+    const list = byKey.get(key);
+    if (list) list.push(s);
+    else byKey.set(key, [s]);
+  }
+  const enabledCoupons = coupons.filter((c) => c.status !== "disable");
+  const couponIdsInBuckets = new Set<string>();
+  for (const c of enabledCoupons) {
+    for (const [key, bucket] of byKey) {
+      const wantRaw = bucketWantRaw(bucket);
+      if (!wantRaw) continue;
+      if (slugMatches(c, wantRaw, key)) {
+        bucket.push(c);
+        couponIdsInBuckets.add(c.id);
+        break;
+      }
+    }
+  }
+  for (const c of enabledCoupons) {
+    if (couponIdsInBuckets.has(c.id)) continue;
+    for (const [, bucket] of byKey) {
+      const primary = bucket.find((x) => !hasCouponData(x)) ?? bucket[0];
+      if (couponTitleLooksLikeStoreRow(c, primary)) {
+        bucket.push(c);
+        couponIdsInBuckets.add(c.id);
+        break;
+      }
+    }
+  }
+  return Array.from(byKey.values()).map(mergeSuggestionFields);
 }
 
 export async function GET(request: Request) {
-  const stores = await readStores();
   const { searchParams } = new URL(request.url);
   if (searchParams.get("suggestions") === "1") {
-    return NextResponse.json(toStoreSuggestions(stores));
+    const [stores, coupons] = await Promise.all([readStores(), getCoupons()]);
+    return NextResponse.json(toStoreSuggestions(stores, coupons));
   }
+  const stores = await readStores();
   return NextResponse.json(stores);
 }
 

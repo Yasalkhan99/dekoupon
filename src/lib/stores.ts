@@ -1,5 +1,5 @@
 import path from "path";
-import { unstable_cache } from "next/cache";
+import { cache } from "react";
 import { readFile, writeFile, mkdir } from "fs/promises";
 import type { Store } from "@/types/store";
 import { slugify } from "./slugify";
@@ -307,15 +307,11 @@ export async function getStorePageData(slug: string): Promise<StorePageData> {
   return { storeInfo, coupons, otherStores };
 }
 
-/** Shared list caches for marketing pages (promotions, about, etc.) — faster TTFB when warm. */
-export const getStoresCached = unstable_cache(
-  () => getStores(),
-  ["app-stores-list-v1"],
-  { revalidate: 120 },
-);
+/**
+ * Request-level dedupe for marketing pages (promotions, about, etc.).
+ * Not using unstable_cache: full store/coupon JSON often exceeds the 2MB Next.js data-cache limit
+ * when logos are embedded as data URLs.
+ */
+export const getStoresCached = cache(() => getStores());
 
-export const getCouponsCached = unstable_cache(
-  () => getCoupons(),
-  ["app-coupons-list-v1"],
-  { revalidate: 120 },
-);
+export const getCouponsCached = cache(() => getCoupons());

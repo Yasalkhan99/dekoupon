@@ -203,6 +203,7 @@ export default async function PromotionsPage({
                   <article
                     key={store.id}
                     className="flex flex-col overflow-hidden rounded-xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:shadow-md"
+                    suppressHydrationWarning
                   >
                     <div className="flex items-start gap-4">
                       {store.logoUrl ? (
@@ -230,7 +231,10 @@ export default async function PromotionsPage({
                         </p>
                       </div>
                     </div>
-                    <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-zinc-500">
+                    <div
+                      className="mt-4 flex flex-wrap items-center gap-3 text-xs text-zinc-500"
+                      suppressHydrationWarning
+                    >
                       <span>Expires: {store.expiry}</span>
                       <span>{count} Coupon{count !== 1 ? "s" : ""}</span>
                     </div>
@@ -399,9 +403,10 @@ export default async function PromotionsPage({
                   <article
                     key={store.id}
                     className="flex flex-col overflow-hidden rounded-xl border border-zinc-100 bg-white p-5 shadow-md transition hover:shadow-lg"
+                    suppressHydrationWarning
                   >
                     {store.logoUrl ? (
-                      <div className="relative mb-4 h-16 w-full">
+                      <div className="relative mb-4 h-16 w-full" suppressHydrationWarning>
                         <Image
                           src={store.logoUrl}
                           alt={store.name}
@@ -415,7 +420,9 @@ export default async function PromotionsPage({
                       <h3 className="mb-4 text-lg font-bold text-zinc-900">{store.name}</h3>
                     )}
                     <p className="mb-4 flex-1 text-sm text-zinc-600 line-clamp-2">{store.description}</p>
-                    <div className="mb-3 text-xs text-zinc-500">Expiry: {store.expiry}</div>
+                    <div className="mb-3 text-xs text-zinc-500" suppressHydrationWarning>
+                      Expiry: {store.expiry}
+                    </div>
                     <Link
                       href={`/promotions/${store.slug || slugify(store.name)}`}
                       className="text-sm font-medium text-blue-600 hover:underline"
@@ -444,14 +451,18 @@ export default async function PromotionsPage({
           <h2 className="mb-6 text-2xl font-bold tracking-tight text-zinc-900">
             Featured Blogs
           </h2>
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3" suppressHydrationWarning>
             {featuredPosts.map((post) => (
               <Link
                 key={post.id}
                 href={`/blog/${post.slug}`}
                 className="group flex flex-col overflow-hidden rounded-xl border border-zinc-100 bg-white shadow-md transition hover:shadow-lg"
+                suppressHydrationWarning
               >
-                <div className={`relative w-full overflow-hidden bg-zinc-100 ${getBlogImageAspectClass((post as { imageAspectRatio?: ImageAspectRatio }).imageAspectRatio)}`}>
+                <div
+                  className={`relative w-full overflow-hidden bg-zinc-100 ${getBlogImageAspectClass((post as { imageAspectRatio?: ImageAspectRatio }).imageAspectRatio)}`}
+                  suppressHydrationWarning
+                >
                   {post.image ? (
                     <Image
                       src={post.image}
@@ -462,16 +473,20 @@ export default async function PromotionsPage({
                     />
                   ) : null}
                 </div>
-                <div className="flex flex-1 flex-col p-4">
+                <div className="flex flex-1 flex-col p-4" suppressHydrationWarning>
                   <span className="mb-2 text-xs font-semibold uppercase tracking-wide text-red-600">{post.category}</span>
                   <h3 className="mb-2 line-clamp-2 text-base font-bold text-zinc-900 group-hover:text-blue-600 [&_a]:text-red-600 [&_a]:underline" dangerouslySetInnerHTML={{ __html: post.title }} />
-                  <div className="blog-content mb-3 flex-1 line-clamp-2 text-sm text-zinc-600" dangerouslySetInnerHTML={{ __html: post.excerpt }} />
+                  <div
+                    className="blog-content mb-3 flex-1 line-clamp-2 text-sm text-zinc-600"
+                    dangerouslySetInnerHTML={{ __html: post.excerpt }}
+                    suppressHydrationWarning
+                  />
                   <span className="text-sm font-medium text-blue-600 group-hover:underline">Read More →</span>
                 </div>
               </Link>
             ))}
           </div>
-          <div className="mt-6 text-center">
+          <div className="mt-6 text-center" suppressHydrationWarning>
             <Link href="/" className="inline-flex text-sm font-medium text-blue-600 hover:underline">
               View all articles →
             </Link>
@@ -481,13 +496,21 @@ export default async function PromotionsPage({
 
       {/* Newsletter - 70% width (15% margin each side), no bottom gap */}
       <section className="relative mx-[15%] overflow-hidden rounded-2xl bg-blue-600 px-4 py-14 sm:px-6 lg:px-8">
-        <div className="absolute left-4 top-1/2 hidden h-32 w-32 -translate-y-1/2 opacity-30 lg:block" aria-hidden>
+        <div
+          className="absolute left-4 top-1/2 hidden h-32 w-32 -translate-y-1/2 opacity-30 lg:block"
+          aria-hidden
+          suppressHydrationWarning
+        >
           <Image src="/Group 1171275124.svg" alt="" width={128} height={128} className="h-full w-full object-contain" unoptimized />
         </div>
-        <div className="absolute right-4 top-1/2 hidden h-32 w-32 -translate-y-1/2 opacity-30 lg:block" aria-hidden>
+        <div
+          className="absolute right-4 top-1/2 hidden h-32 w-32 -translate-y-1/2 opacity-30 lg:block"
+          aria-hidden
+          suppressHydrationWarning
+        >
           <Image src="/Group 1171275125.svg" alt="" width={128} height={128} className="h-full w-full object-contain" unoptimized />
         </div>
-        <div className="relative mx-auto max-w-2xl text-center">
+        <div className="relative mx-auto max-w-2xl text-center" suppressHydrationWarning>
           <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">
             Join our newsletter for updates!
           </h2>
