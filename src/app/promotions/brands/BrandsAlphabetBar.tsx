@@ -13,8 +13,8 @@ export default function BrandsAlphabetBar({ activeLetter }: Props) {
         href="/promotions/brands"
         className={`min-w-[2rem] rounded px-2.5 py-1.5 text-center text-sm font-medium transition ${
           !activeLetter
-            ? "bg-zinc-900 text-white"
-            : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 hover:text-zinc-900"
+            ? "bg-[var(--footer-accent)] text-white shadow-sm"
+            : "bg-zinc-100 text-zinc-600 hover:bg-emerald-50 hover:text-emerald-900"
         }`}
       >
         All
@@ -23,8 +23,8 @@ export default function BrandsAlphabetBar({ activeLetter }: Props) {
         href="/promotions/brands?letter=0-9"
         className={`min-w-[2rem] rounded px-2.5 py-1.5 text-center text-sm font-medium transition ${
           activeLetter === "0-9"
-            ? "bg-zinc-900 text-white"
-            : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 hover:text-zinc-900"
+            ? "bg-[var(--footer-accent)] text-white shadow-sm"
+            : "bg-zinc-100 text-zinc-600 hover:bg-emerald-50 hover:text-emerald-900"
         }`}
       >
         0-9
@@ -35,8 +35,8 @@ export default function BrandsAlphabetBar({ activeLetter }: Props) {
           href={`/promotions/brands?letter=${char}`}
           className={`min-w-[2rem] rounded px-2.5 py-1.5 text-center text-sm font-medium transition ${
             activeLetter === char
-              ? "bg-zinc-900 text-white"
-              : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 hover:text-zinc-900"
+              ? "bg-[var(--footer-accent)] text-white shadow-sm"
+              : "bg-zinc-100 text-zinc-600 hover:bg-emerald-50 hover:text-emerald-900"
           }`}
         >
           {char}

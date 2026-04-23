@@ -1,13 +1,12 @@
 "use client";
 
-import Link from "next/link";
-import Image from "next/image";
+import Link, { useLinkStatus } from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { slugify } from "@/lib/slugify";
 import StoreSearchAvatar from "@/components/StoreSearchAvatar";
 
-const SITE_NAME = "SavingsHub4u";
+const SITE_NAME = "Dekoupon";
 
 const navLinks = [
   { label: "Home", href: "/" },
@@ -25,6 +24,14 @@ type StoreSuggestion = {
   logoUrl?: string;
   logoAltText?: string;
 };
+
+function NavLinkPending() {
+  const { pending } = useLinkStatus();
+  if (!pending) return null;
+  return (
+    <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--footer-accent)] shadow-sm animate-pulse motion-reduce:animate-none" />
+  );
+}
 
 export default function PromotionsHeader() {
   const pathname = usePathname();
@@ -56,8 +63,8 @@ export default function PromotionsHeader() {
     }
   }, [hasFetchedStores, loadingStores]);
 
-  useEffect(() => {
-    loadStores();
+  const ensureStoresLoaded = useCallback(() => {
+    void loadStores();
   }, [loadStores]);
 
   useEffect(() => {
@@ -106,27 +113,40 @@ export default function PromotionsHeader() {
       <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
         {/* Row 1: Logo + name | Rounded search + orange button | Two circular icons */}
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <Link href="/" className="flex shrink-0 items-center" aria-label={SITE_NAME}>
-            <Image src="/black final logo.svg" alt={SITE_NAME} width={160} height={32} priority className="h-8 w-auto object-contain" />
+          <Link href="/" className="flex shrink-0 items-center gap-2.5" aria-label={SITE_NAME}>
+            <span
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--footer-accent)] text-sm font-black text-white ring-2 ring-emerald-900/15 sm:h-10 sm:w-10 sm:text-base"
+              aria-hidden
+            >
+              D
+            </span>
+            <span className="text-[1.05rem] font-extrabold leading-none tracking-tight text-zinc-900 sm:text-[1.2rem]" style={{ fontFamily: "var(--font-nav), system-ui, sans-serif" }}>
+              <span className="text-emerald-600">Deko</span>
+              upon
+            </span>
           </Link>
           <form onSubmit={handleSearchSubmit} className="relative flex flex-1 justify-center md:max-w-md md:px-6" ref={searchWrapperRef}>
-            <div className="flex w-full overflow-hidden rounded-full border border-zinc-200 bg-zinc-50/80 shadow-sm focus-within:border-amber-400 focus-within:ring-2 focus-within:ring-amber-400/20">
+            <div className="flex w-full overflow-hidden rounded-full border border-zinc-200 bg-zinc-50/80 shadow-sm focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-500/25">
               <input
                 type="search"
                 placeholder="Find coupon..."
                 value={searchTerm}
                 onChange={(e) => {
+                  ensureStoresLoaded();
                   setSearchTerm(e.target.value);
                   setShowSuggestions(Boolean(e.target.value));
                 }}
-                onFocus={() => searchTerm.trim() && setShowSuggestions(true)}
+                onFocus={() => {
+                  ensureStoresLoaded();
+                  if (searchTerm.trim()) setShowSuggestions(true);
+                }}
                 onKeyDown={handleKeyDown}
                 className="w-full flex-1 bg-transparent py-2.5 pl-5 pr-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none"
                 suppressHydrationWarning
               />
               <button
                 type="submit"
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-500 text-white transition hover:bg-amber-600"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--footer-accent)] text-white transition hover:bg-[var(--footer-accent-hover)]"
                 aria-label="Search"
                 suppressHydrationWarning
               >
@@ -160,7 +180,7 @@ export default function PromotionsHeader() {
                               initialsClassName="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-xs font-semibold text-zinc-600"
                             />
                             <span className="flex-1 truncate">{store.name}</span>
-                            <span className="text-xs uppercase tracking-wide text-blue-500">View</span>
+                            <span className="text-xs uppercase tracking-wide text-[var(--footer-accent)]">View</span>
                           </button>
                         </li>
                       ))}
@@ -178,8 +198,13 @@ export default function PromotionsHeader() {
               <Link
                 key={link.label}
                 href={link.href}
-                className={`text-sm font-medium text-zinc-600 transition hover:text-zinc-900 ${active ? "text-blue-600" : ""}`}
+                className={`relative inline-flex items-center gap-1.5 pl-0.5 text-sm font-medium transition hover:text-zinc-900 motion-reduce:transition-none ${
+                  active ? "text-[var(--footer-accent)]" : "text-zinc-600"
+                }`}
               >
+                <span className="inline-flex min-w-[10px] shrink-0 justify-center" aria-hidden>
+                  <NavLinkPending />
+                </span>
                 {link.label}
               </Link>
             );

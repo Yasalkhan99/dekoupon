@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import PromotionsFooter from "@/components/PromotionsFooter";
-import PromotionsHeader from "@/components/PromotionsHeader";
 import { getStores, slugify } from "@/lib/stores";
 import BrandsAlphabetBar from "./BrandsAlphabetBar";
 import { canonicalUrl } from "@/lib/site";
@@ -38,9 +37,8 @@ export default async function BrandsPage({ searchParams }: Props) {
   const stores = filterStoresByLetter(sorted, normalizedLetter);
 
   return (
-    <div className="min-h-screen bg-white text-zinc-900" suppressHydrationWarning>
-      <PromotionsHeader />
-      <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="flex min-h-0 flex-1 flex-col" suppressHydrationWarning>
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-10 sm:px-6 lg:px-8 lg:py-12">
         <nav className="mb-6 text-sm text-zinc-500" aria-label="Breadcrumb">
           <ol className="flex flex-wrap items-center gap-1">
             <li>
@@ -77,7 +75,7 @@ export default async function BrandsPage({ searchParams }: Props) {
             </p>
             <Link
               href="/admin"
-              className="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+              className="inline-flex items-center rounded-md bg-[var(--footer-accent)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--footer-accent-hover)]"
             >
               Go to Admin
             </Link>
@@ -113,7 +111,7 @@ export default async function BrandsPage({ searchParams }: Props) {
                 </div>
                 <Link
                   href={`/promotions/${store.slug || slugify(store.name)}`}
-                  className="inline-flex w-full items-center justify-center rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
+                  className="inline-flex w-full items-center justify-center rounded-lg bg-[var(--footer-accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--footer-accent-hover)]"
                 >
                   Get Coupon
                 </Link>

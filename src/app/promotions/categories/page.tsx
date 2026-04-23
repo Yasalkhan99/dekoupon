@@ -3,7 +3,6 @@ import Link from "next/link";
 import CategoriesSidebar from "@/components/CategoriesSidebar";
 import CategoryIcon from "@/components/CategoryIcon";
 import PromotionsFooter from "@/components/PromotionsFooter";
-import PromotionsHeader from "@/components/PromotionsHeader";
 import { STORE_CATEGORIES } from "@/data/categories";
 import { getStores, getStoreCategories } from "@/lib/stores";
 import { canonicalUrl } from "@/lib/site";
@@ -26,9 +25,8 @@ export default async function CategoriesPage() {
   }, {});
 
   return (
-    <div className="min-h-screen bg-white text-zinc-900" suppressHydrationWarning>
-      <PromotionsHeader />
-      <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="flex min-h-0 flex-1 flex-col" suppressHydrationWarning>
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-10 sm:px-6 lg:px-8 lg:py-12">
         <nav className="mb-6 text-sm text-zinc-500" aria-label="Breadcrumb">
           <ol className="flex flex-wrap items-center gap-1">
             <li>
@@ -47,10 +45,10 @@ export default async function CategoriesPage() {
           </ol>
         </nav>
 
-        <div className="flex flex-col gap-8 lg:flex-row lg:items-start">
-          <div className="min-w-0 flex-1">
+        <div className="grid gap-8 lg:grid-cols-12 lg:items-start lg:gap-10">
+          <div className="min-w-0 lg:col-span-8 xl:col-span-9">
             {/* Couponly-style: heading on light section */}
-            <section className="mb-8 rounded-xl bg-amber-50/80 px-6 py-8 sm:px-8">
+            <section className="mb-8 rounded-xl border border-emerald-900/10 bg-[var(--card-bg)] px-6 py-8 shadow-sm sm:px-8">
               <h1 className="text-center text-3xl font-bold tracking-tight text-zinc-900">
                 Categories
               </h1>
@@ -78,7 +76,9 @@ export default async function CategoriesPage() {
               ))}
             </div>
           </div>
-          <CategoriesSidebar />
+          <div className="lg:col-span-4 xl:col-span-3">
+            <CategoriesSidebar />
+          </div>
         </div>
       </main>
 

@@ -1,34 +1,28 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import type { BlogPost } from "@/data/blog";
-import { getBlogImageAspectClass } from "@/data/blog";
-import { stripHtml } from "@/lib/slugify";
+import ResilientPostImage from "@/components/ResilientPostImage";
 
 type TopDealsSectionProps = {
   posts: BlogPost[];
 };
 
-function Card({ post }: { post: BlogPost }) {
+function TickerCard({ post }: { post: BlogPost }) {
   return (
     <Link
       href={post.slug ? `/blog/${post.slug}` : "#"}
-      className="group flex shrink-0 flex-col overflow-hidden border-0 border-white/20 bg-[var(--hunted-navy)] transition hover:shadow-xl md:border-2 md:hover:border-[var(--footer-accent)] w-[160px] min-w-[160px] sm:w-[200px] sm:min-w-[200px] md:w-[220px] md:min-w-[220px]"
+      className="group flex w-[min(200px,78vw)] shrink-0 flex-col overflow-hidden rounded-lg border border-stone-300/90 bg-white shadow-sm transition hover:border-[var(--footer-accent)] hover:shadow-md sm:w-[220px]"
     >
-      <div className={`relative w-full overflow-hidden ${getBlogImageAspectClass(post.imageAspectRatio)}`}>
-        <Image
-          src={post.image || "https://picsum.photos/id/1/400/300"}
-          alt={stripHtml(post.title)}
-          fill
-          className="object-cover transition duration-300 group-hover:scale-105"
-          sizes="(max-width: 640px) 160px, (max-width: 1024px) 200px, 20vw"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-[var(--hunted-navy)]/80 to-transparent" />
-      </div>
-      <div className="flex flex-1 flex-col p-3 sm:p-4">
+      <ResilientPostImage
+        post={post}
+        fallbackKey="ticker"
+        wrapperClassName="relative aspect-[4/3] w-full overflow-hidden bg-stone-200"
+        imgClassName="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-[1.04]"
+      />
+      <div className="border-t border-stone-200/90 p-3">
         <h3
-          className="line-clamp-2 text-sm font-bold leading-snug text-white group-hover:text-[var(--footer-accent)] md:text-base"
+          className="line-clamp-2 text-xs font-bold leading-snug text-stone-900 group-hover:text-[var(--footer-accent)] sm:text-sm"
           dangerouslySetInnerHTML={{ __html: post.title }}
         />
       </div>
@@ -43,19 +37,24 @@ export default function TopDealsSection({ posts }: TopDealsSectionProps) {
   if (items.length === 0) return null;
 
   return (
-    <section className="bg-[var(--hunted-navy)] py-12 md:py-16">
-      <div className="mx-auto max-w-[1240px] px-5 sm:px-6 lg:px-8">
-        <h2 className="mb-8 text-center text-2xl font-bold uppercase tracking-wide text-white md:text-3xl">
-          Top Brand Blogs
-        </h2>
-        <div className="overflow-hidden">
-          <div
-            className="top-deals-track flex gap-3 sm:gap-6"
-            style={{ width: "max-content" }}
-          >
-            {duplicated.map((post, i) => (
-              <Card key={`${post.id}-${i}`} post={post} />
-            ))}
+    <section className="news-wire-room mt-8 w-full min-w-0 sm:mt-10" aria-label="Brand ticker">
+      <div className="overflow-hidden rounded-xl border border-stone-800/12 bg-[var(--card-bg)] shadow-[0_20px_50px_-24px_rgba(28,25,23,0.2)]">
+        <header className="flex min-w-0 items-stretch border-b-2 border-[var(--footer-accent)] bg-stone-900 text-[10px] font-semibold uppercase tracking-[0.18em] text-stone-500">
+          <span className="flex items-center bg-[var(--footer-accent)] px-3 py-2.5 font-bold tracking-[0.12em] text-white">
+            Ticker
+          </span>
+          <span className="hidden min-w-0 flex-1 items-center px-2 text-stone-400 sm:flex sm:line-clamp-2 sm:leading-snug sm:px-3 lg:line-clamp-none">
+            Brand desk · rotating reads from the wire
+          </span>
+          <span className="flex items-center px-2 font-mono text-[10px] text-stone-500 sm:px-3">Live</span>
+        </header>
+        <div className="relative bg-[#ebe4da]/55 py-4">
+          <div className="overflow-hidden">
+            <div className="top-deals-track flex gap-3 px-3 sm:gap-4 sm:px-4" style={{ width: "max-content" }}>
+              {duplicated.map((post, i) => (
+                <TickerCard key={`${post.id}-${i}`} post={post} />
+              ))}
+            </div>
           </div>
         </div>
       </div>

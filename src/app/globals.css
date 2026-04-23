@@ -1,37 +1,79 @@
 @import "tailwindcss";
 
-/* Theme – Hunted Editorial Magazine (homepage) + SavingsHub4u */
+/* Theme – warm neutrals + emerald accent (inner pages use --page-bg / --card-bg) */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-  /* Hunted theme colors */
-  --hunted-red: #d43939;
-  --hunted-red-hover: #b82e2e;
-  /* Footer accent – blue (brand blue) */
-  --footer-accent: #0F92F4;
-  --footer-accent-hover: #0d7ed6;
-  /* Newsletter bar – blue */
-  --newsletter-bg: #155DFC;
-  --hunted-navy: #162238;
-  --hunted-black: #000;
-  --hunted-gray: #ccc;
-  --hunted-text-gray: #555;
-  --hunted-text-light: #999;
+  --background: #faf7f2;
+  --foreground: #1c1917;
+  /* Hunted theme colors – reds for alerts / legacy */
+  --hunted-red: #dc2626;
+  --hunted-red-hover: #b91c1c;
+  /* Brand accent – emerald */
+  --footer-accent: #059669;
+  --footer-accent-hover: #047857;
+  /* Newsletter / promo bars */
+  --newsletter-bg: #064e3b;
+  --hunted-navy: #1c1917;
+  --hunted-black: #0c0a09;
+  --hunted-gray: #d6d3d1;
+  --hunted-text-gray: #57534e;
+  --hunted-text-light: #78716c;
   --hunted-white: #fff;
-  /* Homepage – clearly visible (non-white) backgrounds */
-  --page-bg: #eae6e1;
-  --card-bg: #f5f0ea;
-  /* Sidebar widgets – blue theme (no pink) */
-  --sidebar-widget-1: #dce8f5;
-  --sidebar-widget-2: #e3eef9;
-  --sidebar-widget-3: #e8f0fa;
+  /* Homepage – warm paper tones */
+  --page-bg: #ede8e1;
+  --card-bg: #faf6f1;
+  /* Sidebar widgets – warm stone / peach */
+  --sidebar-widget-1: #f5ebe3;
+  --sidebar-widget-2: #f0e4d8;
+  --sidebar-widget-3: #e8d9cc;
   /* Legacy / compatibility */
-  --theme-primary: #d43939;
-  --theme-primary-hover: #b82e2e;
-  --theme-accent: #162238;
-  --theme-accent-hover: #1a2a47;
-  --theme-breadcrumb-bg: #f8f9fa;
-  --theme-border: #e5e7eb;
+  --theme-primary: #dc2626;
+  --theme-primary-hover: #b91c1c;
+  --theme-accent: #292524;
+  --theme-accent-hover: #44403c;
+  --theme-breadcrumb-bg: #faf7f2;
+  --theme-border: #d6d3d1;
+
+  /* Navbar – ink slate + emerald (clear contrast, “masthead” read) */
+  --nav-accent: #5eead4;
+  --nav-accent-hover: #99f6e4;
+  --nav-accent-muted: rgba(45, 212, 191, 0.22);
+  --nav-home-active: #5eead4;
+  --nav-home-active-hover: #ccfbf1;
+  --nav-surface-dark: linear-gradient(180deg, #18181b 0%, #0f1419 100%);
+  --nav-border-dark: rgba(45, 212, 191, 0.35);
+  --nav-text-on-dark: #f4f4f5;
+  --nav-text-muted-on-dark: rgba(228, 228, 231, 0.55);
+  --nav-rail-dark-bg: rgba(24, 24, 27, 0.92);
+  --nav-rail-dark-ring: rgba(63, 63, 70, 0.85);
+  --nav-link-hover-dark: rgba(255, 255, 255, 0.08);
+  --nav-surface-light: rgba(255, 253, 250, 0.97);
+  --nav-text-on-light: #18181b;
+  --nav-text-muted-on-light: #52525b;
+  --nav-rail-light-bg: #f4f4f5;
+  --nav-rail-light-ring: #d4d4d8;
+  --nav-link-hover-light: #e4e4e7;
+  --nav-mobile-bg: linear-gradient(180deg, #18181b 0%, #0f172a 100%);
+}
+
+/* Main site header – font + surfaces (used by Header.tsx); --font-nav from next/font on body */
+.site-header {
+  font-family: var(--font-nav), ui-sans-serif, system-ui, sans-serif;
+}
+.site-header--surface-dark {
+  background: var(--nav-surface-dark);
+  border-bottom: 1px solid var(--nav-border-dark);
+  color: var(--nav-text-on-dark);
+  box-shadow: 0 12px 40px -20px rgba(0, 0, 0, 0.45);
+}
+.site-header--surface-light {
+  background: var(--nav-surface-light);
+  border-bottom: 1px solid rgba(16, 185, 129, 0.22);
+  color: var(--nav-text-on-light);
+  box-shadow: 0 10px 36px -16px rgba(24, 24, 27, 0.1);
+  backdrop-filter: blur(14px);
+}
+.site-header__accent {
+  background: linear-gradient(90deg, #059669 0%, #2dd4bf 50%, #059669 100%);
 }
 
 @theme inline {
@@ -171,6 +213,24 @@ body {
   }
 }
 
+/* Home hero + category desk + wire room – editorial headlines */
+.news-hero .news-hero-headline,
+.news-category-desk .category-desk-headline,
+.news-wire-room .category-desk-headline {
+  font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+}
+.news-hero .news-hero-headline a,
+.news-category-desk .category-desk-headline a,
+.news-wire-room .category-desk-headline a {
+  color: inherit;
+  text-decoration: none;
+}
+.news-hero .news-hero-headline a:hover,
+.news-category-desk .category-desk-headline a:hover,
+.news-wire-room .category-desk-headline a:hover {
+  color: var(--footer-accent);
+}
+
 /* Hunted hero slider – fullwidth, mobile responsive */
 .hunted-slider-container {
   width: 100%;
@@ -233,7 +293,12 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(22,34,56,0.75) 100%);
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.22) 0%,
+    rgba(28, 25, 23, 0.78) 45%,
+    rgba(6, 78, 59, 0.9) 100%
+  );
 }
 .hunted-slider-container .slide-info {
   width: 100%;

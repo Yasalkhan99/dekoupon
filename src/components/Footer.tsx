@@ -129,28 +129,8 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* Newsletter bar – background matches SVG illustration blues */}
+      {/* Newsletter bar */}
       <div className="relative overflow-hidden px-5 py-8 sm:px-6 lg:px-8" style={{ backgroundColor: "var(--newsletter-bg)" }}>
-        {/* Left decorative SVG */}
-        <div className="absolute left-0 top-1/2 hidden w-[120px] -translate-y-1/2 opacity-90 sm:block lg:w-[160px]">
-          <Image
-            src="/Group 1171275124.svg"
-            alt=""
-            width={160}
-            height={164}
-            className="h-auto w-full object-contain"
-          />
-        </div>
-        {/* Right decorative SVG */}
-        <div className="absolute right-0 top-1/2 hidden w-[120px] -translate-y-1/2 opacity-90 sm:block lg:w-[160px]">
-          <Image
-            src="/Group 1171275125.svg"
-            alt=""
-            width={160}
-            height={164}
-            className="h-auto w-full object-contain"
-          />
-        </div>
         <div className="relative mx-auto max-w-[600px] text-center">
           <h2 className="mb-2 text-xl font-bold uppercase tracking-wide text-white">
             Subscribe to Our Newsletter
@@ -163,7 +143,7 @@ export default function Footer() {
             className="flex flex-col gap-3 sm:flex-row sm:justify-center"
             inputClassName="min-w-0 flex-1 rounded border-2 border-white bg-white px-4 py-3 text-zinc-800 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-white/50 sm:max-w-[280px]"
             buttonClassName="rounded border-2 border-white px-8 py-3 text-sm font-bold uppercase tracking-wide text-white transition hover:bg-white hover:text-[var(--footer-accent)]"
-            buttonStyle={{ backgroundColor: "#162238" }}
+            buttonStyle={{ backgroundColor: "var(--hunted-navy)" }}
           />
         </div>
       </div>
@@ -173,14 +153,17 @@ export default function Footer() {
         <div className="mx-auto max-w-[1240px] px-5 py-14 sm:px-6 lg:px-8">
         <div className="grid gap-10 lg:grid-cols-4">
           <div>
-            <Link href="/" className="mb-4 inline-flex items-center gap-2" aria-label="SavingsHub4u">
-              <Image
-                src="/final final logo.svg"
-                alt=""
-                width={160}
-                height={32}
-                className="h-8 w-auto object-contain"
-              />
+            <Link href="/" className="mb-4 inline-flex items-center gap-3" aria-label="Dekoupon">
+              <span
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--footer-accent)] text-lg font-black text-white ring-2 ring-white/20"
+                aria-hidden
+              >
+                D
+              </span>
+              <span className="text-xl font-extrabold leading-tight tracking-tight text-white" style={{ fontFamily: "var(--font-nav), system-ui, sans-serif" }}>
+                <span className="text-[var(--nav-accent)]">Deko</span>
+                upon
+              </span>
             </Link>
             <p className="text-sm leading-relaxed text-white/80">
               Your gateway to smart savings. We bring you verified coupon codes, exclusive deals and money-saving tips — all in one place.
@@ -257,7 +240,7 @@ export default function Footer() {
       <div className="relative w-full border-t border-white/10 py-5" style={{ backgroundColor: "#000000" }}>
         <div className="mx-auto flex max-w-[1240px] flex-col items-center justify-between gap-4 px-5 sm:flex-row sm:px-6 lg:px-8">
           <p className="text-center text-xs text-white/80 sm:text-left">
-            © {new Date().getFullYear()} SavingsHub4u. All Rights Reserved
+            © {new Date().getFullYear()} Dekoupon. All Rights Reserved
           </p>
           <div className="flex items-center gap-6">
             <div className="flex gap-2">

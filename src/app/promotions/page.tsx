@@ -3,12 +3,19 @@ import Link from "next/link";
 import Image from "next/image";
 import { preload } from "react-dom";
 import PromotionsFooter from "@/components/PromotionsFooter";
-import PromotionsHeader from "@/components/PromotionsHeader";
 import PromotionsHeroSearch from "@/components/PromotionsHeroSearch";
 import CategoryIcon from "@/components/CategoryIcon";
 import Pagination from "@/components/Pagination";
 import NewsletterSubscribe from "@/components/NewsletterSubscribe";
-import { getStoresCached, getCouponsCached, slugify, canonicalSlug, hasCouponData, slugMatches } from "@/lib/stores";
+import {
+  getStoresCached,
+  getCouponsCached,
+  slugify,
+  canonicalSlug,
+  hasCouponData,
+  precomputeSlugMatchFields,
+  slugMatchesFromFields,
+} from "@/lib/stores";
 import { getCachedBlogData } from "@/lib/blog";
 import { stripHtml } from "@/lib/slugify";
 import { STORE_CATEGORIES } from "@/data/categories";
@@ -96,12 +103,16 @@ export default async function PromotionsPage({
   const searchFilteredStores = filterStoresByQuery(uniqueStores, searchQuery ?? "");
 
   const enabledCoupons = allCouponsFromTable.filter((c) => c.status !== "disable");
+  const couponFields = enabledCoupons.map((c) => precomputeSlugMatchFields(c));
   const couponCountByKey = new Map<string, number>();
   for (const store of uniqueStores) {
     const wantRaw = (store.slug || slugify(store.name)).toLowerCase().trim() || (store.name ?? "").toLowerCase().trim();
     if (!wantRaw) continue;
     const key = canonicalSlug(wantRaw);
-    const count = enabledCoupons.filter((c) => slugMatches(c, wantRaw, key)).length;
+    let count = 0;
+    for (let i = 0; i < couponFields.length; i++) {
+      if (slugMatchesFromFields(couponFields[i], wantRaw, key)) count += 1;
+    }
     couponCountByKey.set(key, count);
   }
   const getCouponCount = (store: Store) => {
@@ -124,17 +135,27 @@ export default async function PromotionsPage({
   const pageStores = searchFilteredStores.slice((currentPage - 1) * PER_PAGE, currentPage * PER_PAGE);
 
   return (
-    <div className="min-h-screen bg-white text-zinc-900">
-      <PromotionsHeader />
+    <>
+      {/* Hero — full-width band; copy + search left, overlapping visuals right (LCP img stays in DOM early). */}
+      <section className="relative overflow-visible border-b border-emerald-900/10 bg-gradient-to-br from-zinc-900 via-emerald-950 to-zinc-900 px-4 py-12 text-white sm:px-6 sm:py-14 lg:px-8 lg:py-16">
+        <div className="mx-auto max-w-7xl">
+          <div className="grid items-center gap-10 lg:grid-cols-12 lg:gap-12">
+            <div className="relative z-10 min-w-0 lg:col-span-5 xl:col-span-5">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-300/90">Deals &amp; codes</p>
+              <h1 className="text-pretty text-3xl font-bold leading-tight tracking-tight sm:text-4xl lg:text-[2.35rem] xl:text-5xl">
+                Discover the best{" "}
+                <span className="text-emerald-300">affiliate coupons</span> &amp; promos
+              </h1>
+              <p className="mt-4 max-w-lg text-sm leading-relaxed text-white/80 sm:text-base">
+                Save on your favorite brands with verified codes, limited-time offers, and hand-picked deals — updated regularly.
+              </p>
+              <div className="mt-8 max-w-xl [&_.rounded-2xl]:border-white/20 [&_.rounded-2xl]:bg-white/95 [&_input]:text-zinc-900">
+                <PromotionsHeroSearch initialQuery={searchQuery ?? ""} />
+              </div>
+            </div>
 
-      {/* Hero - peach background, two banner images (no Total Categories / AVG Reviews). overflow-visible so search dropdown is not clipped. */}
-      <section className="relative overflow-visible bg-amber-50/95 px-4 py-12 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-6xl">
-          <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between lg:gap-10">
-            {/* Images first in DOM (earlier LCP discovery); order-2 keeps them on the right / below headline visually */}
-            <div className="order-2 flex flex-1 items-end justify-center gap-4 lg:order-2 lg:justify-end">
-              <div className="relative h-80 w-56 shrink-0 overflow-hidden rounded-2xl shadow-lg sm:h-96 sm:w-64">
-                {/* Native img so LCP exposes fetchpriority (matches home hero pattern). */}
+            <div className="relative z-0 mx-auto min-h-[260px] w-full max-w-md lg:col-span-7 xl:col-span-7 lg:mx-0 lg:max-w-none lg:min-h-[320px]">
+              <div className="pointer-events-none absolute -right-4 top-0 aspect-[3/4] w-[58%] max-w-[220px] overflow-hidden rounded-2xl shadow-2xl ring-2 ring-white/10 sm:max-w-[260px] lg:right-0 lg:max-w-[280px]">
                 <img
                   src="/banner-index-2.webp"
                   alt="Best affiliate coupons and discounts"
@@ -142,10 +163,10 @@ export default async function PromotionsPage({
                   height={768}
                   fetchPriority="high"
                   decoding="async"
-                  className="absolute inset-0 h-full w-full object-cover"
+                  className="h-full w-full object-cover"
                 />
               </div>
-              <div className="relative h-64 w-44 shrink-0 overflow-hidden rounded-2xl shadow-lg sm:h-72 sm:w-52">
+              <div className="pointer-events-none absolute bottom-0 left-0 aspect-[3/4] w-[52%] max-w-[200px] overflow-hidden rounded-2xl shadow-xl ring-2 ring-emerald-400/30 sm:max-w-[240px] lg:left-4 lg:max-w-[260px]">
                 <img
                   src="/banner-index-1.webp"
                   alt="Save with coupons and deals"
@@ -154,45 +175,36 @@ export default async function PromotionsPage({
                   fetchPriority="low"
                   loading="lazy"
                   decoding="async"
-                  className="absolute inset-0 h-full w-full object-cover"
+                  className="h-full w-full object-cover"
                 />
               </div>
-            </div>
-            <div className="order-1 flex-1 overflow-visible lg:order-1">
-              <h1 className="text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl">
-                Discover The Best Affiliate <span className="text-blue-600">Coupons</span>
-              </h1>
-              <p className="mt-3 max-w-xl text-base text-zinc-600">
-                Save big on your favorite brands with our exclusive coupons, discount codes, and deals.
-              </p>
-              <div className="mt-6 max-w-2xl">
-                <PromotionsHeroSearch initialQuery={searchQuery ?? ""} />
+              <div className="absolute inset-x-8 bottom-3 hidden rounded-xl bg-black/25 px-3 py-2 text-center text-[11px] font-medium text-white/90 backdrop-blur-sm sm:block lg:inset-x-12">
+                Search stores above — results open on this page
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
-        {/* Search only shows store suggestions in dropdown; below we always show promotions page content. */}
-
+      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-10 sm:px-6 sm:py-12 lg:px-8 lg:py-14">
+        <div className="min-w-0 space-y-14">
         {/* Popular Coupons */}
-        <section className="mb-14">
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-            <h2 className="text-2xl font-bold tracking-tight text-zinc-900">
+        <section id="popular-coupons">
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-emerald-900/10 pb-4">
+            <h2 className="text-xl font-bold tracking-tight text-zinc-900 sm:text-2xl">
               Popular Coupons
             </h2>
             <Link
-              href="/promotions"
-              className="text-sm font-semibold text-blue-600 hover:underline"
+              href="#all-stores"
+              className="text-sm font-semibold text-[var(--footer-accent)] hover:underline"
             >
-              View More →
+              Jump to all stores →
             </Link>
           </div>
           {popularCouponsStores.length === 0 ? (
             <div className="rounded-xl border border-zinc-200 bg-zinc-50/50 py-12 text-center">
               <p className="text-sm text-zinc-500">No coupons yet. Add stores and coupons from the admin.</p>
-              <Link href="/admin" className="mt-3 inline-block text-sm font-medium text-blue-600 hover:underline">Go to Admin</Link>
+              <Link href="/admin" className="mt-3 inline-block text-sm font-medium text-[var(--footer-accent)] hover:underline">Go to Admin</Link>
             </div>
           ) : (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -240,7 +252,7 @@ export default async function PromotionsPage({
                     </div>
                     <Link
                       href={`/promotions/${storeSlug}`}
-                      className="mt-4 inline-flex w-full items-center justify-center rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
+                      className="mt-4 inline-flex w-full items-center justify-center rounded-lg bg-[var(--footer-accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--footer-accent-hover)]"
                     >
                       Get Code
                     </Link>
@@ -259,7 +271,7 @@ export default async function PromotionsPage({
             </h2>
             <Link
               href="/promotions/brands"
-              className="text-sm font-semibold text-blue-600 hover:underline"
+              className="text-sm font-semibold text-[var(--footer-accent)] hover:underline"
             >
               View More →
             </Link>
@@ -274,7 +286,7 @@ export default async function PromotionsPage({
                 <Link
                   key={store.id}
                   href={`/promotions/${store.slug || slugify(store.name)}`}
-                  className="flex flex-col items-center gap-3 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm transition hover:border-blue-200 hover:shadow-md"
+                  className="flex flex-col items-center gap-3 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm transition hover:border-emerald-200/90 hover:shadow-md"
                 >
                   {store.logoUrl ? (
                     <div className="relative h-14 w-14">
@@ -302,14 +314,14 @@ export default async function PromotionsPage({
         </section>
 
         {/* Trending Categories - peach */}
-        <section className="mb-14 rounded-2xl bg-amber-50/80 px-6 py-10 sm:px-8">
+        <section className="mb-14 rounded-2xl border border-emerald-900/10 bg-[var(--card-bg)] px-6 py-10 sm:px-8 shadow-sm">
           <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
             <h2 className="text-2xl font-bold tracking-tight text-zinc-900">
               Trending Categories
             </h2>
             <Link
               href="/promotions/categories"
-              className="text-sm font-semibold text-blue-600 hover:underline"
+              className="text-sm font-semibold text-[var(--footer-accent)] hover:underline"
             >
               View More →
             </Link>
@@ -319,7 +331,7 @@ export default async function PromotionsPage({
               <Link
                 key={catSlug}
                 href={`/promotions/category/${catSlug}`}
-                className="flex items-center gap-4 rounded-xl border border-amber-100 bg-white p-4 transition hover:border-amber-200 hover:shadow-sm"
+                className="flex items-center gap-4 rounded-xl border border-emerald-100/90 bg-white p-4 transition hover:border-emerald-300/70 hover:shadow-sm"
               >
                 <CategoryIcon
                   categoryName={name}
@@ -332,7 +344,7 @@ export default async function PromotionsPage({
         </section>
 
         {/* How It Works */}
-        <section className="mb-14 rounded-2xl bg-[#e0f2f7] px-6 py-12 sm:px-8 lg:px-12">
+        <section className="mb-14 rounded-2xl border border-emerald-900/10 bg-gradient-to-br from-emerald-50/80 via-white to-teal-50/50 px-6 py-12 sm:px-8 lg:px-12 shadow-sm">
           <h2 className="mb-10 text-center text-2xl font-bold tracking-tight text-zinc-900">
             How It Works
           </h2>
@@ -359,13 +371,13 @@ export default async function PromotionsPage({
         </section>
 
         {/* Newsletter banner */}
-        <section className="mb-14 overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-10 text-white sm:px-10">
+        <section className="mb-14 overflow-hidden rounded-2xl bg-gradient-to-r from-emerald-900 via-teal-800 to-emerald-800 px-6 py-10 text-white sm:px-10 shadow-lg">
           <div className="flex flex-col items-center gap-6 text-center md:flex-row md:justify-between md:text-left">
             <div>
               <h2 className="text-2xl font-bold tracking-tight">
                 Join our newsletter for updates!
               </h2>
-              <p className="mt-2 text-sm text-blue-100">
+              <p className="mt-2 text-sm text-emerald-100">
                 Get the best deals and coupon codes delivered to your inbox.
               </p>
             </div>
@@ -374,8 +386,8 @@ export default async function PromotionsPage({
               buttonText="Subscribe"
               layout="row"
               className="flex w-full max-w-md flex-col gap-3 sm:flex-row sm:items-center"
-              inputClassName="min-w-0 flex-1 rounded-lg border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 shadow-sm placeholder:text-zinc-500 focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
-              buttonClassName="rounded-lg bg-amber-500 px-6 py-3 font-semibold text-zinc-900 transition hover:bg-amber-400"
+              inputClassName="min-w-0 flex-1 rounded-lg border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 shadow-sm placeholder:text-zinc-500 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
+              buttonClassName="rounded-lg bg-white px-6 py-3 font-semibold text-emerald-900 shadow-sm transition hover:bg-emerald-50"
             />
           </div>
         </section>
@@ -391,7 +403,7 @@ export default async function PromotionsPage({
           {uniqueStores.length === 0 ? (
             <div className="rounded-xl border-2 border-dashed border-zinc-200 bg-zinc-50 py-16 text-center">
               <p className="mb-2 text-zinc-600">No stores yet. Add coupons and deals from the admin panel.</p>
-              <Link href="/admin" className="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">Go to Admin</Link>
+              <Link href="/admin" className="inline-flex items-center rounded-md bg-[var(--footer-accent)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--footer-accent-hover)]">Go to Admin</Link>
             </div>
           ) : (
             <>
@@ -425,7 +437,7 @@ export default async function PromotionsPage({
                     </div>
                     <Link
                       href={`/promotions/${store.slug || slugify(store.name)}`}
-                      className="text-sm font-medium text-blue-600 hover:underline"
+                      className="text-sm font-medium text-[var(--footer-accent)] hover:underline"
                     >
                       View coupons →
                     </Link>
@@ -474,47 +486,34 @@ export default async function PromotionsPage({
                   ) : null}
                 </div>
                 <div className="flex flex-1 flex-col p-4" suppressHydrationWarning>
-                  <span className="mb-2 text-xs font-semibold uppercase tracking-wide text-red-600">{post.category}</span>
-                  <h3 className="mb-2 line-clamp-2 text-base font-bold text-zinc-900 group-hover:text-blue-600 [&_a]:text-red-600 [&_a]:underline" dangerouslySetInnerHTML={{ __html: post.title }} />
+                  <span className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--footer-accent)]">{post.category}</span>
+                  <h3 className="mb-2 line-clamp-2 text-base font-bold text-zinc-900 group-hover:text-[var(--footer-accent)] [&_a]:text-[var(--footer-accent)] [&_a]:underline" dangerouslySetInnerHTML={{ __html: post.title }} />
                   <div
                     className="blog-content mb-3 flex-1 line-clamp-2 text-sm text-zinc-600"
                     dangerouslySetInnerHTML={{ __html: post.excerpt }}
                     suppressHydrationWarning
                   />
-                  <span className="text-sm font-medium text-blue-600 group-hover:underline">Read More →</span>
+                  <span className="text-sm font-medium text-[var(--footer-accent)] group-hover:underline">Read More →</span>
                 </div>
               </Link>
             ))}
           </div>
           <div className="mt-6 text-center" suppressHydrationWarning>
-            <Link href="/" className="inline-flex text-sm font-medium text-blue-600 hover:underline">
+            <Link href="/" className="inline-flex text-sm font-medium text-[var(--footer-accent)] hover:underline">
               View all articles →
             </Link>
           </div>
         </section>
+        </div>
       </main>
 
-      {/* Newsletter - 70% width (15% margin each side), no bottom gap */}
-      <section className="relative mx-[15%] overflow-hidden rounded-2xl bg-blue-600 px-4 py-14 sm:px-6 lg:px-8">
-        <div
-          className="absolute left-4 top-1/2 hidden h-32 w-32 -translate-y-1/2 opacity-30 lg:block"
-          aria-hidden
-          suppressHydrationWarning
-        >
-          <Image src="/Group 1171275124.svg" alt="" width={128} height={128} className="h-full w-full object-contain" unoptimized />
-        </div>
-        <div
-          className="absolute right-4 top-1/2 hidden h-32 w-32 -translate-y-1/2 opacity-30 lg:block"
-          aria-hidden
-          suppressHydrationWarning
-        >
-          <Image src="/Group 1171275125.svg" alt="" width={128} height={128} className="h-full w-full object-contain" unoptimized />
-        </div>
+      {/* Newsletter — same horizontal rhythm as main (max-w-7xl + page padding) */}
+      <section className="relative mx-auto w-full max-w-7xl overflow-hidden rounded-2xl bg-gradient-to-r from-emerald-900 via-teal-800 to-emerald-800 px-4 py-14 shadow-lg sm:px-6 lg:px-8">
         <div className="relative mx-auto max-w-2xl text-center" suppressHydrationWarning>
           <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">
             Join our newsletter for updates!
           </h2>
-          <p className="mt-2 text-sm text-blue-100">
+          <p className="mt-2 text-sm text-emerald-100">
             Join our community with more than 300K active users
           </p>
           <NewsletterSubscribe
@@ -522,13 +521,13 @@ export default async function PromotionsPage({
             buttonText="Subscribe"
             layout="row"
             className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center"
-            inputClassName="min-w-0 flex-1 rounded-lg border border-zinc-200 bg-white px-4 py-3.5 text-sm text-zinc-900 shadow-sm placeholder:text-zinc-500 focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
-            buttonClassName="inline-flex items-center justify-center gap-2 rounded-lg bg-orange-500 px-6 py-3.5 font-semibold text-white transition hover:bg-orange-400"
+            inputClassName="min-w-0 flex-1 rounded-lg border border-zinc-200 bg-white px-4 py-3.5 text-sm text-zinc-900 shadow-sm placeholder:text-zinc-500 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
+            buttonClassName="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-6 py-3.5 font-semibold text-emerald-900 shadow-sm transition hover:bg-emerald-50"
           />
         </div>
       </section>
 
       <PromotionsFooter className="-mt-4 !mt-0 border-t-0" />
-    </div>
+    </>
   );
 }

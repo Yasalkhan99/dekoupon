@@ -68,7 +68,7 @@ export default function ContactForm() {
           type="text"
           required
           placeholder="Your name"
-          className="w-full rounded-xl border border-zinc-300 px-4 py-3 text-zinc-900 placeholder:text-zinc-400 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/20"
+          className="w-full rounded-xl border border-zinc-300 px-4 py-3 text-zinc-900 placeholder:text-zinc-400 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/25"
         />
       </div>
       <div>
@@ -81,7 +81,7 @@ export default function ContactForm() {
           type="email"
           required
           placeholder="you@example.com"
-          className="w-full rounded-xl border border-zinc-300 px-4 py-3 text-zinc-900 placeholder:text-zinc-400 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/20"
+          className="w-full rounded-xl border border-zinc-300 px-4 py-3 text-zinc-900 placeholder:text-zinc-400 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/25"
         />
       </div>
       <div>
@@ -94,7 +94,7 @@ export default function ContactForm() {
           type="text"
           required
           placeholder="What is this about?"
-          className="w-full rounded-xl border border-zinc-300 px-4 py-3 text-zinc-900 placeholder:text-zinc-400 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/20"
+          className="w-full rounded-xl border border-zinc-300 px-4 py-3 text-zinc-900 placeholder:text-zinc-400 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/25"
         />
       </div>
       <div>
@@ -107,13 +107,13 @@ export default function ContactForm() {
           required
           rows={5}
           placeholder="Your message..."
-          className="w-full rounded-xl border border-zinc-300 px-4 py-3 text-zinc-900 placeholder:text-zinc-400 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/20"
+          className="w-full rounded-xl border border-zinc-300 px-4 py-3 text-zinc-900 placeholder:text-zinc-400 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/25"
         />
       </div>
       <button
         type="submit"
         disabled={loading}
-        className="w-full rounded-xl bg-red-600 px-4 py-3 font-semibold text-white transition hover:bg-red-700 disabled:opacity-50"
+        className="w-full rounded-xl bg-[var(--footer-accent)] px-4 py-3 font-semibold text-white shadow-sm transition hover:bg-[var(--footer-accent-hover)] disabled:opacity-50"
       >
         {loading ? "Sending…" : "Send message"}
       </button>

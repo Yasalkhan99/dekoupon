@@ -63,7 +63,7 @@ export default function Pagination({
           p === currentPage ? (
             <span
               key={p}
-              className="rounded-lg border border-blue-600 bg-blue-600 px-3 py-2 text-sm font-medium text-white"
+              className="rounded-lg border border-[var(--footer-accent)] bg-[var(--footer-accent)] px-3 py-2 text-sm font-medium text-white"
               aria-current="page"
             >
               {p}

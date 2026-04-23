@@ -45,9 +45,9 @@ export default async function AboutPage() {
   const latestInsights = latestPosts.slice(0, 3);
 
   return (
-    <div className="min-h-screen bg-white text-zinc-900">
+    <>
       <PromotionsHeader />
-      <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-12 sm:px-6 lg:px-8">
         {/* Breadcrumbs */}
         <nav className="mb-6 text-sm text-zinc-500" aria-label="Breadcrumb">
           <ol className="flex flex-wrap items-center gap-1">
@@ -62,9 +62,9 @@ export default async function AboutPage() {
         </nav>
 
         {/* Hero */}
-        <section className="mb-12 flex flex-col gap-8 rounded-3xl border border-zinc-200 bg-gradient-to-br from-rose-50 via-white to-blue-50/70 p-8 shadow-sm lg:flex-row lg:items-center">
+        <section className="mb-12 flex flex-col gap-8 rounded-3xl border border-emerald-900/10 bg-gradient-to-br from-[var(--card-bg)] via-white to-emerald-50/50 p-8 shadow-md lg:flex-row lg:items-center">
           <div className="flex-1">
-            <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-teal-600">
+            <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-[var(--footer-accent)]">
               About SavingsHub4u
             </p>
             <h1 className="mb-4 text-3xl font-bold text-zinc-900 sm:text-4xl">
@@ -77,13 +77,13 @@ export default async function AboutPage() {
             <div className="flex flex-wrap gap-3">
               <Link
                 href="/promotions"
-                className="rounded-full bg-zinc-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-zinc-800"
+                className="rounded-full bg-[var(--footer-accent)] px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--footer-accent-hover)]"
               >
                 View All Deals
               </Link>
               <Link
                 href="/contact"
-                className="rounded-full border border-zinc-300 px-6 py-3 text-sm font-semibold text-zinc-700 transition hover:border-zinc-400"
+                className="rounded-full border border-emerald-200/80 bg-white px-6 py-3 text-sm font-semibold text-zinc-800 transition hover:border-emerald-300 hover:bg-emerald-50/50"
               >
                 Contact Us
               </Link>
@@ -102,7 +102,7 @@ export default async function AboutPage() {
         </section>
 
         {/* Metrics */}
-        <section className="mb-12 grid gap-4 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm sm:grid-cols-2 lg:grid-cols-3">
+        <section className="mb-12 grid gap-4 rounded-2xl border border-emerald-900/10 bg-[var(--card-bg)] p-6 shadow-sm sm:grid-cols-2 lg:grid-cols-3">
           <article>
             <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Stores</p>
             <p className="text-3xl font-bold text-zinc-900">{totalStores.toLocaleString()}</p>
@@ -121,11 +121,11 @@ export default async function AboutPage() {
         </section>
 
         {/* Values */}
-        <section className="mb-12 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
+        <section className="mb-12 rounded-2xl border border-emerald-900/10 bg-white p-6 shadow-sm">
           <h2 className="mb-4 text-2xl font-bold text-zinc-900">Why use SavingsHub4u</h2>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {VALUES.map((value) => (
-              <article key={value.title} className="rounded-xl border border-zinc-100 bg-zinc-50/60 p-5">
+              <article key={value.title} className="rounded-xl border border-emerald-900/8 bg-emerald-50/25 p-5">
                 <h3 className="mb-2 text-lg font-semibold text-zinc-900">{value.title}</h3>
                 <p className="text-sm text-zinc-600">{value.description}</p>
               </article>
@@ -134,11 +134,11 @@ export default async function AboutPage() {
         </section>
 
         {/* Latest insights */}
-        <section className="mb-12 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
+        <section className="mb-12 rounded-2xl border border-emerald-900/10 bg-[var(--card-bg)] p-6 shadow-sm">
           <h2 className="mb-4 text-2xl font-bold text-zinc-900">Latest from our blog</h2>
           <div className="grid gap-4 sm:grid-cols-3">
             {latestInsights.map((post) => (
-              <article key={post.id} className="rounded-xl border border-zinc-100 bg-zinc-50/70 p-4">
+              <article key={post.id} className="rounded-xl border border-emerald-900/8 bg-white p-4 shadow-sm">
                 <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">{post.category}</p>
                 <h3
                   className="mt-2 line-clamp-2 text-sm font-bold text-zinc-900 [&_a]:text-zinc-900"
@@ -146,7 +146,7 @@ export default async function AboutPage() {
                 />
                 <Link
                   href={`/blog/${post.slug}`}
-                  className="mt-3 inline-flex items-center text-sm font-semibold text-teal-600 hover:text-teal-500"
+                  className="mt-3 inline-flex items-center text-sm font-semibold text-[var(--footer-accent)] hover:opacity-90"
                 >
                   Read more →
                 </Link>
@@ -156,10 +156,10 @@ export default async function AboutPage() {
         </section>
 
         {/* CTA */}
-        <section className="rounded-3xl border border-zinc-900 bg-zinc-900 px-6 py-10 text-white">
+        <section className="rounded-3xl border border-emerald-950/30 bg-gradient-to-br from-emerald-950 via-zinc-900 to-teal-950 px-6 py-10 text-white shadow-lg">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.3em] text-teal-300">Get in touch</p>
+              <p className="text-sm font-semibold uppercase tracking-[0.3em] text-emerald-300">Get in touch</p>
               <h2 className="mt-3 text-2xl font-bold">Have a deal to share or a question?</h2>
               <p className="mt-2 max-w-xl text-sm text-zinc-300">
                 Use the form to contact us or submit a coupon so we can help more people save.
@@ -184,6 +184,6 @@ export default async function AboutPage() {
       </main>
 
       <PromotionsFooter />
-    </div>
+    </>
   );
 }

@@ -154,7 +154,7 @@ export default function CouponRevealModal({
 
           {/* Code block - only shown for coupon codes */}
           {isCode && code && (
-            <div className="mb-4 rounded-xl border-2 border-dashed border-amber-200 bg-amber-50/50 px-4 py-4">
+            <div className="mb-4 rounded-xl border-2 border-dashed border-emerald-200/90 bg-emerald-50/60 px-4 py-4">
               <p
                 role="button"
                 tabIndex={0}
@@ -175,7 +175,7 @@ export default function CouponRevealModal({
             <button
               type="button"
               onClick={handleContinueToStore}
-              className="w-full rounded-xl bg-amber-500 py-3.5 text-center font-semibold text-zinc-900 transition hover:bg-amber-400"
+              className="w-full rounded-xl bg-[var(--footer-accent)] py-3.5 text-center font-semibold text-white transition hover:bg-[var(--footer-accent-hover)]"
             >
               Continue to Store
             </button>

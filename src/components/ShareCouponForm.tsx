@@ -71,7 +71,7 @@ export default function ShareCouponForm() {
           value={form.fullName}
           onChange={(e) => setForm((f) => ({ ...f, fullName: e.target.value }))}
           placeholder="Your Full Name*"
-          className="w-full rounded border border-zinc-300 px-3 py-2.5 text-zinc-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="w-full rounded border border-zinc-300 px-3 py-2.5 text-zinc-900 focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-500/40"
         />
       </div>
       <div>
@@ -82,7 +82,7 @@ export default function ShareCouponForm() {
           value={form.email}
           onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
           placeholder="Your Email Address*"
-          className="w-full rounded border border-zinc-300 px-3 py-2.5 text-zinc-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="w-full rounded border border-zinc-300 px-3 py-2.5 text-zinc-900 focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-500/40"
         />
       </div>
       <div>
@@ -93,7 +93,7 @@ export default function ShareCouponForm() {
           value={form.storeLabel}
           onChange={(e) => setForm((f) => ({ ...f, storeLabel: e.target.value }))}
           placeholder="Store Label*"
-          className="w-full rounded border border-zinc-300 px-3 py-2.5 text-zinc-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="w-full rounded border border-zinc-300 px-3 py-2.5 text-zinc-900 focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-500/40"
         />
       </div>
       <div>
@@ -101,7 +101,7 @@ export default function ShareCouponForm() {
         <select
           value={form.couponType}
           onChange={(e) => setForm((f) => ({ ...f, couponType: e.target.value }))}
-          className="w-full rounded border border-zinc-300 px-3 py-2.5 text-zinc-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="w-full rounded border border-zinc-300 px-3 py-2.5 text-zinc-900 focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-500/40"
         >
           <option value="">Select option</option>
           <option value="code">Promo Code</option>
@@ -115,7 +115,7 @@ export default function ShareCouponForm() {
           value={form.promoCode}
           onChange={(e) => setForm((f) => ({ ...f, promoCode: e.target.value }))}
           placeholder="Promo Code"
-          className="w-full rounded border border-zinc-300 px-3 py-2.5 text-zinc-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="w-full rounded border border-zinc-300 px-3 py-2.5 text-zinc-900 focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-500/40"
         />
       </div>
       <div>
@@ -126,7 +126,7 @@ export default function ShareCouponForm() {
           onChange={(e) => setForm((f) => ({ ...f, couponDescription: e.target.value }))}
           placeholder="Coupon Description*"
           rows={4}
-          className="w-full rounded border border-zinc-300 px-3 py-2.5 text-zinc-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="w-full rounded border border-zinc-300 px-3 py-2.5 text-zinc-900 focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-500/40"
         />
       </div>
       <div>
@@ -137,7 +137,7 @@ export default function ShareCouponForm() {
             value={form.couponExpiration}
             onChange={(e) => setForm((f) => ({ ...f, couponExpiration: e.target.value }))}
             placeholder="mm/dd/yyyy"
-            className="w-full rounded border border-zinc-300 px-3 py-2.5 pr-10 text-zinc-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="w-full rounded border border-zinc-300 px-3 py-2.5 pr-10 text-zinc-900 focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-500/40"
           />
           <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400" aria-hidden>
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -149,7 +149,7 @@ export default function ShareCouponForm() {
       <button
         type="submit"
         disabled={submitting}
-        className="rounded bg-blue-600 px-6 py-3 font-medium text-white transition hover:bg-blue-700 disabled:opacity-50"
+        className="rounded bg-[var(--footer-accent)] px-6 py-3 font-medium text-white transition hover:bg-[var(--footer-accent-hover)] disabled:opacity-50"
       >
         {submitting ? "Submitting…" : "Submit"}
       </button>

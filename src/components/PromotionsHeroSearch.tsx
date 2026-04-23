@@ -127,7 +127,7 @@ export default function PromotionsHeroSearch({ initialQuery = "" }: { initialQue
     <div ref={wrapperRef} className="relative max-w-2xl">
       <form
         onSubmit={handleSubmit}
-        className="flex overflow-hidden rounded-2xl border-2 border-zinc-200 bg-white shadow-md transition focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20"
+        className="flex overflow-hidden rounded-2xl border-2 border-zinc-200 bg-white shadow-md transition focus-within:border-emerald-600 focus-within:ring-2 focus-within:ring-emerald-500/25"
       >
         <span className="flex items-center pl-5 text-zinc-400" aria-hidden>
           <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -148,7 +148,7 @@ export default function PromotionsHeroSearch({ initialQuery = "" }: { initialQue
         />
         <button
           type="submit"
-          className="shrink-0 bg-blue-600 px-6 font-semibold text-white transition hover:bg-blue-700 sm:px-8"
+          className="shrink-0 bg-[var(--footer-accent)] px-6 font-semibold text-white transition hover:bg-[var(--footer-accent-hover)] sm:px-8"
           suppressHydrationWarning
         >
           Search
@@ -180,7 +180,7 @@ export default function PromotionsHeroSearch({ initialQuery = "" }: { initialQue
                       initialsClassName="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-zinc-200 bg-zinc-100 text-xs font-semibold text-zinc-600"
                     />
                     <span className="min-w-0 flex-1 truncate">{store.name}</span>
-                    <span className="shrink-0 text-xs font-medium uppercase tracking-wide text-blue-500">View</span>
+                    <span className="shrink-0 text-xs font-medium uppercase tracking-wide text-[var(--footer-accent)]">View</span>
                   </button>
                 </li>
               ))}

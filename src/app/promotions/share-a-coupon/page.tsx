@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import PromotionsFooter from "@/components/PromotionsFooter";
-import PromotionsHeader from "@/components/PromotionsHeader";
 import ShareCouponForm from "@/components/ShareCouponForm";
 import { getStores, getStoreCategories } from "@/lib/stores";
 import { canonicalUrl } from "@/lib/site";
@@ -24,9 +23,8 @@ export default async function ShareACouponPage() {
   );
 
   return (
-    <div className="min-h-screen bg-white text-zinc-900">
-      <PromotionsHeader />
-      <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+    <>
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-10 sm:px-6 lg:px-8 lg:py-12">
         {/* Breadcrumbs */}
         <nav className="mb-6 text-sm text-zinc-500" aria-label="Breadcrumb">
           <ol className="flex flex-wrap items-center gap-1">
@@ -47,9 +45,9 @@ export default async function ShareACouponPage() {
         </nav>
 
         {/* Two columns: sidebar + form */}
-        <div className="flex flex-col gap-8 lg:flex-row lg:items-start">
+        <div className="grid gap-8 lg:grid-cols-12 lg:items-start lg:gap-10">
           {/* Left sidebar - Categories (from backend stores only) */}
-          <aside className="w-full shrink-0 rounded-lg border border-zinc-200 bg-zinc-50/50 p-5 lg:w-64">
+          <aside className="w-full rounded-xl border border-emerald-900/10 bg-[var(--card-bg)] p-5 shadow-sm lg:col-span-4 xl:col-span-3">
             <h2 className="mb-4 text-sm font-bold uppercase tracking-wide text-zinc-700">
               Categories
             </h2>
@@ -61,7 +59,7 @@ export default async function ShareACouponPage() {
                   <li key={name}>
                     <Link
                       href={`/promotions/category/${slug(name)}`}
-                      className="block text-sm text-zinc-600 hover:text-blue-600 hover:underline"
+                      className="block text-sm text-zinc-600 hover:text-[var(--footer-accent)] hover:underline"
                     >
                       {name}
                     </Link>
@@ -72,7 +70,7 @@ export default async function ShareACouponPage() {
           </aside>
 
           {/* Right - Share A Coupon form */}
-          <div className="min-w-0 flex-1 rounded-lg border border-zinc-200 bg-white p-6 shadow-sm lg:p-8">
+          <div className="min-w-0 rounded-xl border border-emerald-900/10 bg-white p-6 shadow-md lg:col-span-8 lg:p-8 xl:col-span-9">
             <h1 className="mb-2 text-2xl font-bold text-zinc-900">Share A Coupon</h1>
             <ShareCouponForm />
           </div>
@@ -80,6 +78,6 @@ export default async function ShareACouponPage() {
       </main>
 
       <PromotionsFooter />
-    </div>
+    </>
   );
 }

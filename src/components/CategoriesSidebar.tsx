@@ -6,7 +6,7 @@ import NewsletterSubscribe from "@/components/NewsletterSubscribe";
 
 export default function CategoriesSidebar() {
   return (
-    <aside className="w-full shrink-0 space-y-6 lg:w-72">
+    <aside className="w-full space-y-6">
       {/* Search Brands */}
       <div className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
         <label htmlFor="categories-search" className="sr-only">
@@ -30,7 +30,7 @@ export default function CategoriesSidebar() {
       {/* Affiliate disclaimer – blue box with favicon, links to promotions */}
       <Link
         href="/promotions"
-        className="flex flex-col items-center justify-center rounded-2xl bg-blue-600 px-4 py-6 text-center text-white shadow-lg transition hover:bg-blue-700"
+        className="flex flex-col items-center justify-center rounded-2xl bg-[var(--footer-accent)] px-4 py-6 text-center text-white shadow-lg transition hover:bg-[var(--footer-accent-hover)]"
       >
         <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-white/20">
           <Image

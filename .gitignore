@@ -43,3 +43,6 @@ next-env.d.ts
 
 # local Supabase data dumps (may contain PII; do not commit)
 supabase_data_dump.sql
+
+# ad-hoc CSV exports in public/
+public/stores_rows*.csv

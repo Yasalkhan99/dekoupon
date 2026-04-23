@@ -26,11 +26,10 @@ export default async function CouponRevealPage({ searchParams }: Props) {
   const returnUrl = params.returnUrl ?? "";
 
   return (
-    <div className="min-h-screen bg-zinc-100">
-      <Suspense
+    <Suspense
         fallback={
-          <div className="flex min-h-screen items-center justify-center bg-zinc-100">
-            <div className="h-10 w-10 animate-spin rounded-full border-2 border-amber-400 border-t-transparent" />
+          <div className="flex flex-1 items-center justify-center py-24">
+            <div className="h-10 w-10 animate-spin rounded-full border-2 border-[var(--footer-accent)] border-t-transparent" />
           </div>
         }
       >
@@ -47,6 +46,5 @@ export default async function CouponRevealPage({ searchParams }: Props) {
           returnUrl={returnUrl || undefined}
         />
       </Suspense>
-    </div>
   );
 }

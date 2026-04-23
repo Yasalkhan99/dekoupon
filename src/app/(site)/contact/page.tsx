@@ -13,11 +13,11 @@ export const metadata: Metadata = {
 
 export default function ContactPage() {
   return (
-    <div className="min-h-screen bg-zinc-50 text-zinc-900">
+    <>
       <Header />
-      <main className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
+      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-14 sm:px-6 lg:px-8 xl:max-w-6xl">
         {/* Hero */}
-        <div className="mb-12 text-center">
+        <div className="mb-12 rounded-2xl border border-emerald-900/10 bg-[var(--card-bg)] px-6 py-10 text-center shadow-sm sm:px-10">
           <h1 className="text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl">
             Contact Us
           </h1>
@@ -26,37 +26,37 @@ export default function ContactPage() {
           </p>
         </div>
 
-        <div className="grid gap-10 lg:grid-cols-5">
-          {/* Form - takes more space */}
-          <div className="lg:col-span-3">
-            <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
+        <div className="grid gap-10 lg:grid-cols-12 lg:gap-12">
+          {/* Form — wider column on large screens */}
+          <div className="lg:col-span-7">
+            <div className="rounded-2xl border border-emerald-900/10 bg-white p-6 shadow-md sm:p-8">
               <h2 className="mb-6 text-xl font-semibold text-zinc-900">Send a message</h2>
               <ContactForm />
             </div>
           </div>
 
           {/* Sidebar - contact info */}
-          <div className="lg:col-span-2 space-y-6">
-            <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
+          <div className="lg:col-span-5 space-y-6">
+            <div className="rounded-2xl border border-emerald-900/10 bg-white p-6 shadow-md">
               <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-zinc-500">
                 Get in touch
               </h3>
               <ul className="space-y-4">
                 <li className="flex items-start gap-3">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-zinc-100 text-zinc-600">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-[var(--footer-accent)]">
                     <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
                   </span>
                   <div>
                     <p className="font-medium text-zinc-900">Email</p>
-                    <a href="mailto:hello@savingshub4u.com" className="text-sm text-zinc-600 hover:text-red-600">
+                    <a href="mailto:hello@savingshub4u.com" className="text-sm text-zinc-600 hover:text-[var(--footer-accent)]">
                       info@savingshub4u.com
                     </a>
                   </div>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-zinc-100 text-zinc-600">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-[var(--footer-accent)]">
                     <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
@@ -69,7 +69,7 @@ export default function ContactPage() {
               </ul>
             </div>
 
-            <div className="rounded-2xl border border-zinc-200 bg-gradient-to-br from-zinc-100 to-zinc-50 p-6">
+            <div className="rounded-2xl border border-emerald-900/10 bg-gradient-to-br from-emerald-50/50 to-[var(--card-bg)] p-6 shadow-sm">
               <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-zinc-600">
                 Browse first
               </h3>
@@ -78,7 +78,7 @@ export default function ContactPage() {
               </p>
               <Link
                 href="/promotions"
-                className="inline-flex items-center gap-2 rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-zinc-800"
+                className="inline-flex items-center gap-2 rounded-lg bg-[var(--footer-accent)] px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-[var(--footer-accent-hover)]"
               >
                 View Promotions
                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
@@ -88,6 +88,6 @@ export default function ContactPage() {
         </div>
       </main>
       <Footer />
-    </div>
+    </>
   );
 }

@@ -5,7 +5,7 @@
  *   node scripts/import-stores-csv.mjs
  *   node scripts/import-stores-csv.mjs path/to/stores_rows.csv
  *
- * Reads NEXT_PUBLIC_SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY from .env.local (merged into process.env if unset).
+ * Reads NEXT_PUBLIC_SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY from .env then .env.local (local overrides).
  */
 
 import { parse } from "csv-parse/sync";
@@ -16,8 +16,8 @@ import { createClient } from "@supabase/supabase-js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-function loadEnvLocal() {
-  const envPath = path.join(process.cwd(), ".env.local");
+function loadEnvFile(rel) {
+  const envPath = path.join(process.cwd(), rel);
   if (!fs.existsSync(envPath)) return;
   const raw = fs.readFileSync(envPath, "utf8");
   for (const line of raw.split(/\r?\n/)) {
@@ -33,11 +33,12 @@ function loadEnvLocal() {
     ) {
       val = val.slice(1, -1).replace(/\\n/g, "\n");
     }
-    if (process.env[key] === undefined) process.env[key] = val;
+    process.env[key] = val;
   }
 }
 
-loadEnvLocal();
+loadEnvFile(".env");
+loadEnvFile(".env.local");
 
 const url = (process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL)?.trim();
 const key = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();

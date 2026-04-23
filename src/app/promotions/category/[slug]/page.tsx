@@ -5,7 +5,6 @@ import { notFound } from "next/navigation";
 import CategoriesSidebar from "@/components/CategoriesSidebar";
 import Pagination from "@/components/Pagination";
 import PromotionsFooter from "@/components/PromotionsFooter";
-import PromotionsHeader from "@/components/PromotionsHeader";
 import { getCategoryBySlug } from "@/data/categories";
 import { CATEGORY_META } from "@/data/category-meta";
 import { getStores, getStoreCategories, slugify } from "@/lib/stores";
@@ -72,9 +71,8 @@ export default async function CategoryPage({
   const basePath = `/promotions/category/${categorySlug}`;
 
   return (
-    <div className="min-h-screen bg-white text-zinc-900">
-      <PromotionsHeader />
-      <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+    <>
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-10 sm:px-6 lg:px-8 lg:py-12">
         {/* Breadcrumbs */}
         <nav className="mb-6 text-sm text-zinc-500" aria-label="Breadcrumb">
           <ol className="flex flex-wrap items-center gap-1">
@@ -100,9 +98,9 @@ export default async function CategoryPage({
           </ol>
         </nav>
 
-        <div className="flex flex-col gap-8 lg:flex-row lg:items-start">
+        <div className="grid gap-8 lg:grid-cols-12 lg:items-start lg:gap-10">
           {/* Left: Category name + stores grid */}
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0 lg:col-span-8 xl:col-span-9">
             <h1 className="mb-6 text-2xl font-bold text-zinc-900">{categoryName}</h1>
             <p className="mb-4 text-sm text-zinc-500">
               {uniqueStores.length} {uniqueStores.length === 1 ? "brand" : "brands"} in this category
@@ -138,7 +136,7 @@ export default async function CategoryPage({
                   </div>
                   <Link
                     href={`/promotions/${store.slug || slugify(store.name)}`}
-                    className="text-sm font-medium text-blue-600 hover:underline"
+                    className="text-sm font-medium text-[var(--footer-accent)] hover:underline"
                   >
                     View coupons
                   </Link>
@@ -153,11 +151,13 @@ export default async function CategoryPage({
             />
           </div>
 
-          <CategoriesSidebar />
+          <div className="lg:col-span-4 xl:col-span-3">
+            <CategoriesSidebar />
+          </div>
         </div>
       </main>
 
       <PromotionsFooter />
-    </div>
+    </>
   );
 }

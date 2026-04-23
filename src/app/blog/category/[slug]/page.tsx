@@ -36,16 +36,12 @@ export default async function BlogCategoryPage({ params }: Props) {
   const posts = await getPostsByCategory(category);
 
   return (
-    <div
-      className="body-outer min-h-screen w-full text-zinc-900"
-      style={{ backgroundColor: "#e5dfd6" }}
-      suppressHydrationWarning
-    >
+    <div className="flex min-h-0 flex-1 flex-col" suppressHydrationWarning>
       <JsonLd data={buildBlogCategoryJsonLd(category, slug.toLowerCase())} />
       <Header />
-      <main className="w-full">
+      <main className="w-full flex-1">
         {/* Hero – category header */}
-        <div className="border-b-2 border-[var(--footer-accent)] bg-gradient-to-b from-[var(--hunted-navy)] to-[var(--hunted-navy)]/95 px-5 py-10 text-white md:px-6">
+        <div className="border-b-2 border-[var(--footer-accent)] bg-gradient-to-br from-zinc-900 via-emerald-950 to-zinc-950 px-5 py-12 text-white shadow-md md:px-6">
           <div className="mx-auto max-w-7xl">
             <nav className="mb-3 text-xs text-white/80" aria-label="Breadcrumb">
               <Link href="/" className="hover:text-white">Home</Link>

@@ -267,7 +267,7 @@ export default function StorePageClient({
                 <button
                   type="button"
                   onClick={() => setViewMode("grid")}
-                  className={`p-2 ${viewMode === "grid" ? "bg-blue-600 text-white" : "text-zinc-500 hover:bg-zinc-100"}`}
+                  className={`p-2 ${viewMode === "grid" ? "bg-[var(--footer-accent)] text-white" : "text-zinc-500 hover:bg-zinc-100"}`}
                   aria-label="Grid view"
                 >
                   <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20"><path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
@@ -275,7 +275,7 @@ export default function StorePageClient({
                 <button
                   type="button"
                   onClick={() => setViewMode("list")}
-                  className={`p-2 ${viewMode === "list" ? "bg-blue-600 text-white" : "text-zinc-500 hover:bg-zinc-100"}`}
+                  className={`p-2 ${viewMode === "list" ? "bg-[var(--footer-accent)] text-white" : "text-zinc-500 hover:bg-zinc-100"}`}
                   aria-label="List view"
                 >
                   <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" /></svg>
@@ -284,7 +284,7 @@ export default function StorePageClient({
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as "ending" | "newest" | "used")}
-                className="rounded border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="rounded border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-700 focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-500/40"
               >
                 <option value="ending">Ending Soon</option>
                 <option value="newest">Newest</option>
@@ -312,7 +312,7 @@ export default function StorePageClient({
               >
                 {label}
                 {filter === key ? (
-                  <span className="absolute bottom-0 left-2 right-2 h-0.5 rounded-full bg-amber-400" aria-hidden />
+                  <span className="absolute bottom-0 left-2 right-2 h-0.5 rounded-full bg-emerald-400" aria-hidden />
                 ) : null}
               </button>
             ))}
@@ -321,7 +321,7 @@ export default function StorePageClient({
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as "ending" | "newest" | "used")}
-              className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-700 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-400"
+              className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-700 focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-500/35"
             >
               <option value="ending">Ending Soon</option>
               <option value="newest">Newest</option>
@@ -384,7 +384,7 @@ export default function StorePageClient({
                       className="flex w-full items-stretch gap-2 rounded-xl border border-zinc-200 bg-white p-2.5 text-left shadow-sm transition active:bg-zinc-50 md:hidden"
                     >
                       <div
-                        className="flex h-[3.25rem] w-[3.25rem] shrink-0 flex-col items-center justify-center gap-0 self-center overflow-hidden rounded-full bg-gradient-to-br from-amber-400 to-orange-500 px-1 py-0.5 text-center text-white shadow-inner"
+                        className="flex h-[3.25rem] w-[3.25rem] shrink-0 flex-col items-center justify-center gap-0 self-center overflow-hidden rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 px-1 py-0.5 text-center text-white shadow-inner"
                         aria-hidden
                       >
                         {badge.type === "text" ? (
@@ -414,7 +414,7 @@ export default function StorePageClient({
                       <div className="min-w-0 flex-1 py-0.5">
                         <span
                           className={`inline-block rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white ${
-                            isCode ? "bg-blue-600" : "bg-amber-500"
+                            isCode ? "bg-[var(--footer-accent)]" : "bg-teal-600"
                           }`}
                         >
                           {isCode ? "Code" : "Deal"}
@@ -429,7 +429,7 @@ export default function StorePageClient({
                           {isCode ? "Verified & Hand-Tested Code" : "Verified & Hand-Tested Deal"}
                         </p>
                         <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px]">
-                          <span className="flex items-center gap-0.5 font-medium text-amber-600">
+                          <span className="flex items-center gap-0.5 font-medium text-emerald-700">
                             <svg className="h-3.5 w-3.5 shrink-0" fill="currentColor" viewBox="0 0 20 20" aria-hidden>
                               <path
                                 fillRule="evenodd"
@@ -455,7 +455,7 @@ export default function StorePageClient({
                         </p>
                       </div>
                       <div className="flex shrink-0 flex-col items-center justify-center self-center pl-0.5">
-                        <span className="rounded-lg bg-blue-600 px-2 py-2 text-center text-[10px] font-semibold uppercase leading-tight text-white shadow-sm">
+                        <span className="rounded-lg bg-[var(--footer-accent)] px-2 py-2 text-center text-[10px] font-semibold uppercase leading-tight text-white shadow-sm">
                           {isCode ? "GET CODE" : "GET DEAL"}
                         </span>
                       </div>
@@ -468,7 +468,7 @@ export default function StorePageClient({
                       }`}
                     >
                       <div className="flex shrink-0 items-center justify-center">
-                        <div className="flex h-24 w-24 flex-shrink-0 flex-col items-center justify-center gap-0.5 overflow-hidden rounded-full bg-gradient-to-br from-amber-400 to-orange-500 px-1.5 py-1 text-center text-white shadow-inner lg:h-28 lg:w-28">
+                        <div className="flex h-24 w-24 flex-shrink-0 flex-col items-center justify-center gap-0.5 overflow-hidden rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 px-1.5 py-1 text-center text-white shadow-inner lg:h-28 lg:w-28">
                           {badge.type === "text" ? (
                             <>
                               <span className="break-words text-center text-xs font-bold leading-tight lg:text-sm">{badge.line1}</span>
@@ -508,7 +508,7 @@ export default function StorePageClient({
                             <button
                               type="button"
                               onClick={handleCouponClick}
-                              className="block max-w-full cursor-pointer text-left text-base font-bold text-zinc-900 transition hover:text-blue-600"
+                              className="block max-w-full cursor-pointer text-left text-base font-bold text-zinc-900 transition hover:text-[var(--footer-accent)]"
                             >
                               {dealTitle && dealTitle !== "Deal" ? dealTitle : `${percent}% Off All Products - Limited Stock`}
                             </button>
@@ -523,7 +523,7 @@ export default function StorePageClient({
                             <button
                               type="button"
                               onClick={handleCouponClick}
-                              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+                              className="rounded-lg bg-[var(--footer-accent)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--footer-accent-hover)]"
                             >
                               {isCode ? "GET CODE" : "GET DEAL"}
                             </button>
@@ -552,7 +552,7 @@ export default function StorePageClient({
                             <button
                               type="button"
                               onClick={handleCouponClick}
-                              className="block w-full max-w-full cursor-pointer text-left text-base font-bold text-zinc-900 transition hover:text-blue-600"
+                              className="block w-full max-w-full cursor-pointer text-left text-base font-bold text-zinc-900 transition hover:text-[var(--footer-accent)]"
                             >
                               {dealTitle && dealTitle !== "Deal" ? dealTitle : `${percent}% Off All Products - Limited Stock`}
                             </button>
@@ -567,7 +567,7 @@ export default function StorePageClient({
                             <button
                               type="button"
                               onClick={handleCouponClick}
-                              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+                              className="rounded-lg bg-[var(--footer-accent)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--footer-accent-hover)]"
                             >
                               {isCode ? "GET CODE" : "GET DEAL"}
                             </button>

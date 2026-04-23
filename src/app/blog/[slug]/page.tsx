@@ -73,14 +73,10 @@ export default async function BlogPostPage({ params }: Props) {
   const { before: contentBefore, after: contentAfter } = splitContentAtMiddle(safeContent);
 
   return (
-    <div
-      className="body-outer min-h-screen w-full text-zinc-900"
-      style={{ backgroundColor: "#e5dfd6" }}
-      suppressHydrationWarning
-    >
+    <div className="flex min-h-0 flex-1 flex-col" suppressHydrationWarning>
       <JsonLd data={buildBlogPostJsonLd(post, slug)} />
       <Header />
-      <main className="w-full">
+      <main className="w-full flex-1">
         {/* Hero – full image visible; blurred duplicate fills letterbox areas instead of black */}
         <div className={`relative flex min-h-[80px] w-full items-center justify-center overflow-hidden bg-zinc-800 sm:min-h-[100px] md:min-h-[120px] ${getBlogImageAspectClass(post.imageAspectRatio ?? "16/9")}`}>
           {/* Blurred background – same image fills empty areas (no harsh black) */}
@@ -139,12 +135,12 @@ export default async function BlogPostPage({ params }: Props) {
           <div className="main-container-sidebar main-container-sidebar-cc2 clearfix mx-auto max-w-7xl">
             <div className="site-content-sidebar site-content-sidebar-cc2">
               <article className="min-w-0 px-0 py-6 sm:pr-2">
-                <div className="prose prose-zinc mt-0 max-w-none [&_a]:text-blue-600 [&_a]:underline [&_a]:hover:text-blue-800">
+                <div className="prose prose-zinc mt-0 max-w-none [&_a]:text-[var(--footer-accent)] [&_a]:underline [&_a]:hover:text-[var(--footer-accent-hover)]">
                   <div className="blog-content text-lg text-zinc-600" dangerouslySetInnerHTML={{ __html: safeExcerpt }} />
                   {post.content ? (
                     <>
                       <div
-                        className="blog-content mt-4 text-zinc-700 [&_h1]:mt-8 [&_h1]:text-2xl [&_h1]:font-bold [&_h2]:mt-8 [&_h2]:text-xl [&_h2]:font-bold [&_h3]:mt-6 [&_h3]:text-lg [&_h3]:font-bold [&_ul]:list-disc [&_ul]:pl-6 [&_img]:rounded-lg [&_img]:my-4 [&_img]:w-full [&_img]:h-auto [&_a]:text-blue-600 [&_a]:underline [&_a]:hover:text-blue-800"
+                        className="blog-content mt-4 text-zinc-700 [&_h1]:mt-8 [&_h1]:text-2xl [&_h1]:font-bold [&_h2]:mt-8 [&_h2]:text-xl [&_h2]:font-bold [&_h3]:mt-6 [&_h3]:text-lg [&_h3]:font-bold [&_ul]:list-disc [&_ul]:pl-6 [&_img]:rounded-lg [&_img]:my-4 [&_img]:w-full [&_img]:h-auto [&_a]:text-[var(--footer-accent)] [&_a]:underline [&_a]:hover:text-[var(--footer-accent-hover)]"
                         dangerouslySetInnerHTML={{ __html: contentBefore }}
                       />
                       <div className="my-10 flex justify-center">
@@ -159,7 +155,7 @@ export default async function BlogPostPage({ params }: Props) {
                       </div>
                       {contentAfter ? (
                         <div
-                          className="blog-content text-zinc-700 [&_h1]:mt-8 [&_h1]:text-2xl [&_h1]:font-bold [&_h2]:mt-8 [&_h2]:text-xl [&_h2]:font-bold [&_h3]:mt-6 [&_h3]:text-lg [&_h3]:font-bold [&_ul]:list-disc [&_ul]:pl-6 [&_img]:rounded-lg [&_img]:my-4 [&_img]:w-full [&_img]:h-auto [&_a]:text-blue-600 [&_a]:underline [&_a]:hover:text-blue-800"
+                          className="blog-content text-zinc-700 [&_h1]:mt-8 [&_h1]:text-2xl [&_h1]:font-bold [&_h2]:mt-8 [&_h2]:text-xl [&_h2]:font-bold [&_h3]:mt-6 [&_h3]:text-lg [&_h3]:font-bold [&_ul]:list-disc [&_ul]:pl-6 [&_img]:rounded-lg [&_img]:my-4 [&_img]:w-full [&_img]:h-auto [&_a]:text-[var(--footer-accent)] [&_a]:underline [&_a]:hover:text-[var(--footer-accent-hover)]"
                           dangerouslySetInnerHTML={{ __html: contentAfter }}
                         />
                       ) : null}

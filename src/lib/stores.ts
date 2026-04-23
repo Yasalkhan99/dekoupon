@@ -220,30 +220,49 @@ function storeSlugMatches(row: { slug?: string; name?: string }, wantRaw: string
   return sSlug === wantRaw || sCanonical === wantCanonical;
 }
 
-/** Match store/coupon row to a page slug (e.g. "magic-hour"). Used for store pages and coupon counts. */
-export function slugMatches(row: { slug?: string; name?: string }, wantRaw: string, wantCanonical: string): boolean {
+/** Precomputed row fields for {@link slugMatchesFromFields} (avoids repeated slugify in hot loops). */
+export type SlugMatchFields = {
+  sSlug: string;
+  sCanonical: string;
+  nameSlug: string;
+  rowNorm: string;
+};
+
+export function precomputeSlugMatchFields(row: { slug?: string; name?: string }): SlugMatchFields {
   const sSlug = (row.slug || slugify(row.name ?? "")).toLowerCase().trim();
   const sCanonical = canonicalSlug(sSlug);
   const nameSlug = (row.name ?? "").toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
-  const wantNorm = normalizeForMatch(wantRaw);
   const rowNorm = normalizeForMatch(sSlug || nameSlug);
-  // Exact matches
+  return { sSlug, sCanonical, nameSlug, rowNorm };
+}
+
+/** Match precomputed coupon/store row to a page slug — same rules as {@link slugMatches}. */
+export function slugMatchesFromFields(f: SlugMatchFields, wantRaw: string, wantCanonical: string): boolean {
+  const wantNorm = normalizeForMatch(wantRaw);
   if (
-    sSlug === wantRaw ||
-    sCanonical === wantCanonical ||
-    nameSlug === wantRaw ||
-    canonicalSlug(nameSlug) === wantCanonical ||
-    rowNorm === wantNorm
+    f.sSlug === wantRaw ||
+    f.sCanonical === wantCanonical ||
+    f.nameSlug === wantRaw ||
+    canonicalSlug(f.nameSlug) === wantCanonical ||
+    f.rowNorm === wantNorm
   ) {
     return true;
   }
-  // Coupon slug can be store slug + suffix (e.g. magic-hour-20-off)
-  if (wantCanonical.length >= 2 && sCanonical.startsWith(wantCanonical + "-")) return true;
-  // Page URL can be store slug + suffix (e.g. /magic-hour-tea-discount-code vs store slug magic-hour-tea)
-  if (sCanonical.length >= 2 && wantCanonical.startsWith(sCanonical + "-")) return true;
-  // Normalized slug/name starts with page slug (e.g. "Magic Hour - 10% Off" → magichour10off)
-  if (wantNorm.length >= 2 && rowNorm.startsWith(wantNorm) && (rowNorm.length === wantNorm.length || /^[-0-9]/.test(rowNorm.slice(wantNorm.length)))) return true;
+  if (wantCanonical.length >= 2 && f.sCanonical.startsWith(wantCanonical + "-")) return true;
+  if (f.sCanonical.length >= 2 && wantCanonical.startsWith(f.sCanonical + "-")) return true;
+  if (
+    wantNorm.length >= 2 &&
+    f.rowNorm.startsWith(wantNorm) &&
+    (f.rowNorm.length === wantNorm.length || /^[-0-9]/.test(f.rowNorm.slice(wantNorm.length)))
+  ) {
+    return true;
+  }
   return false;
+}
+
+/** Match store/coupon row to a page slug (e.g. "magic-hour"). Used for store pages and coupon counts. */
+export function slugMatches(row: { slug?: string; name?: string }, wantRaw: string, wantCanonical: string): boolean {
+  return slugMatchesFromFields(precomputeSlugMatchFields(row), wantRaw, wantCanonical);
 }
 
 export async function getStorePageData(slug: string): Promise<StorePageData> {

@@ -42,6 +42,31 @@ function heroFallbackImageUrl(seed: string): string {
   return `https://picsum.photos/id/${id}/1200/600`;
 }
 
+/** Stable Picsum image when featured/body URLs 404 or are blocked (lists, wire desks). */
+export function blogListPlaceholderImageUrl(seed: string): string {
+  return heroFallbackImageUrl(seed.trim() || "post");
+}
+
+/**
+ * Lists / widgets: prefer featured image, then first in-article image (hero order is the opposite).
+ * Avoids a broken first in-body image hiding a good featured image.
+ */
+export function resolveFeaturedFirstImageUrl(
+  featuredImage: string | undefined,
+  contentHtml: string | undefined,
+  fallbackSeed?: string
+): string {
+  const feat = (featuredImage || "").trim();
+  if (feat && !isBrokenPlaceholderSrc(feat)) {
+    return absolutizeImageCandidate(feat);
+  }
+  const htmlSrc = getFirstImgSrcFromHtml(contentHtml)?.trim() || "";
+  if (htmlSrc && !isBrokenPlaceholderSrc(htmlSrc)) {
+    return absolutizeImageCandidate(htmlSrc);
+  }
+  return fallbackSeed?.trim() ? heroFallbackImageUrl(fallbackSeed.trim()) : DEFAULT_FALLBACK;
+}
+
 function supabasePublicUploadUrl(localPath: string): string | null {
   const filename = localPath.replace(/^.*\/uploads\//i, "").replace(/\?.*$/, "").trim();
   if (!filename) return null;

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import AnalyticsScripts from "@/components/AnalyticsScripts";
 import BlogDataProvider from "@/components/BlogDataProvider";
 import "./globals.css";
@@ -20,6 +20,14 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
   display: "swap",
   preload: false,
+  adjustFontFallback: true,
+});
+
+/** Navbar + mobile menu only — body copy stays Geist. */
+const navFont = Plus_Jakarta_Sans({
+  variable: "--font-nav",
+  subsets: ["latin"],
+  display: "swap",
   adjustFontFallback: true,
 });
 
@@ -82,7 +90,7 @@ export default async function RootLayout({
         <meta name="commission-factory-verification" content="e2943d7405c54258a7f58e3f0f8390a4" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${navFont.variable} min-h-screen antialiased`}
         suppressHydrationWarning
       >
         <JsonLd data={buildGlobalJsonLd()} />

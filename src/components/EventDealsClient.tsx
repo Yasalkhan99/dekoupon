@@ -161,14 +161,14 @@ export default function EventDealsClient({ eventName, eventDescription, coupons,
             <h2 className="text-xl font-bold text-zinc-900 sm:text-2xl">{eventName}</h2>
             <div className="flex items-center gap-2">
               <div className="flex overflow-hidden rounded border border-zinc-200 bg-white">
-                <button type="button" onClick={() => setViewMode("grid")} className={`p-2 ${viewMode === "grid" ? "bg-blue-600 text-white" : "text-zinc-500 hover:bg-zinc-100"}`} aria-label="Grid view">
+                <button type="button" onClick={() => setViewMode("grid")} className={`p-2 ${viewMode === "grid" ? "bg-[var(--footer-accent)] text-white" : "text-zinc-500 hover:bg-zinc-100"}`} aria-label="Grid view">
                   <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20"><path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
                 </button>
-                <button type="button" onClick={() => setViewMode("list")} className={`p-2 ${viewMode === "list" ? "bg-blue-600 text-white" : "text-zinc-500 hover:bg-zinc-100"}`} aria-label="List view">
+                <button type="button" onClick={() => setViewMode("list")} className={`p-2 ${viewMode === "list" ? "bg-[var(--footer-accent)] text-white" : "text-zinc-500 hover:bg-zinc-100"}`} aria-label="List view">
                   <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" /></svg>
                 </button>
               </div>
-              <select value={sortBy} onChange={(e) => setSortBy(e.target.value as "ending" | "newest" | "used")} className="rounded border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
+              <select value={sortBy} onChange={(e) => setSortBy(e.target.value as "ending" | "newest" | "used")} className="rounded border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-700 focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-500/40">
                 <option value="ending">Ending Soon</option>
                 <option value="newest">Newest</option>
                 <option value="used">Most Used</option>
@@ -213,7 +213,7 @@ export default function EventDealsClient({ eventName, eventDescription, coupons,
                   return (
                     <li key={c.id} id={`o-${encodeURIComponent(c.id)}`} className={`flex flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-md ${viewMode === "grid" ? "items-stretch gap-5 p-6" : "sm:flex-row sm:items-center sm:gap-6 sm:p-6"}`}>
                       <div className="flex shrink-0 items-center justify-center">
-                        <div className="flex h-24 w-24 flex-shrink-0 flex-col items-center justify-center gap-0.5 overflow-hidden rounded-full bg-gradient-to-br from-amber-400 to-orange-500 px-1.5 py-1 text-center text-white shadow-inner sm:h-28 sm:w-28">
+                        <div className="flex h-24 w-24 flex-shrink-0 flex-col items-center justify-center gap-0.5 overflow-hidden rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 px-1.5 py-1 text-center text-white shadow-inner sm:h-28 sm:w-28">
                           {badge.type === "text" ? (
                             <>
                               <span className="break-words text-center text-xs font-bold leading-tight sm:text-sm">{badge.line1}</span>
@@ -237,7 +237,7 @@ export default function EventDealsClient({ eventName, eventDescription, coupons,
                             {expiryDate}
                           </p>
                           <p className="text-xs font-medium text-zinc-600">{storeName}</p>
-                          <button type="button" onClick={handleRevealOnly} className="w-full break-words text-left font-bold text-zinc-900 transition hover:text-blue-600 cursor-pointer whitespace-normal">
+                          <button type="button" onClick={handleRevealOnly} className="w-full break-words text-left font-bold text-zinc-900 transition hover:text-[var(--footer-accent)] cursor-pointer whitespace-normal">
                             {dealTitle && dealTitle !== "Deal" ? dealTitle : `${percent}% Off - Limited Time`}
                           </button>
                           <p className="flex items-center gap-1 text-xs text-zinc-500">
@@ -246,7 +246,7 @@ export default function EventDealsClient({ eventName, eventDescription, coupons,
                           </p>
                         </div>
                         <div className="mt-5 flex w-full flex-shrink-0 items-center justify-start gap-3 sm:mt-0 sm:w-auto">
-                          <button type="button" onClick={handleCouponClick} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700">
+                          <button type="button" onClick={handleCouponClick} className="rounded-lg bg-[var(--footer-accent)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--footer-accent-hover)]">
                             {isCode ? "GET CODE" : "GET DEAL"}
                           </button>
                         </div>
