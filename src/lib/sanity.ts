@@ -1,17 +1,37 @@
-import { createClient } from "next-sanity";
-import { createImageUrlBuilder } from "@sanity/image-url";
+import { createClient, type SanityClient } from "next-sanity";
+import { createImageUrlBuilder, type SanityImageSource } from "@sanity/image-url";
 import { apiVersion, dataset, projectId } from "@/sanity/env";
 import type { BlogPost, BlogNiche, ImageAspectRatio } from "@/data/blog";
 
-export const sanityClient = createClient({
-  projectId,
-  dataset,
-  apiVersion,
-  useCdn: true,
-});
+/** Lazy so `next build` works when Sanity env vars are missing (e.g. Vercel preview). */
+let sanityClientSingleton: SanityClient | null = null;
+function getSanityClient(): SanityClient | null {
+  if (!projectId) return null;
+  if (!sanityClientSingleton) {
+    sanityClientSingleton = createClient({
+      projectId,
+      dataset,
+      apiVersion,
+      useCdn: true,
+    });
+  }
+  return sanityClientSingleton;
+}
 
-const builder = createImageUrlBuilder({ projectId, dataset });
-export function urlFor(source: Parameters<typeof builder.image>[0]) {
+let imageBuilder: ReturnType<typeof createImageUrlBuilder> | null = null;
+function getImageBuilder() {
+  if (!projectId) return null;
+  if (!imageBuilder) {
+    imageBuilder = createImageUrlBuilder({ projectId, dataset });
+  }
+  return imageBuilder;
+}
+
+export function urlFor(source: SanityImageSource) {
+  const builder = getImageBuilder();
+  if (!builder) {
+    throw new Error("Sanity urlFor: set NEXT_PUBLIC_SANITY_PROJECT_ID");
+  }
   return builder.image(source);
 }
 
@@ -167,9 +187,10 @@ export function sanityPostToBlogPost(raw: SanityBlogPostRaw): BlogPost & { conte
 }
 
 export async function fetchSanityBlogPosts(): Promise<(BlogPost & { content?: string; createdAt?: string; publishedDate?: string })[]> {
-  if (!projectId) return [];
+  const client = getSanityClient();
+  if (!client) return [];
   try {
-    const rawPosts: SanityBlogPostRaw[] = await sanityClient.fetch(
+    const rawPosts: SanityBlogPostRaw[] = await client.fetch(
       `*[_type == "blogPost"] | order(publishedDate desc) { ${BLOG_FIELDS} }`
     );
     return rawPosts.map(sanityPostToBlogPost);
@@ -182,9 +203,10 @@ export async function fetchSanityBlogPosts(): Promise<(BlogPost & { content?: st
 export async function fetchSanityPostBySlug(
   slug: string
 ): Promise<(BlogPost & { content?: string; createdAt?: string; publishedDate?: string }) | null> {
-  if (!projectId) return null;
+  const client = getSanityClient();
+  if (!client) return null;
   try {
-    const raw: SanityBlogPostRaw | null = await sanityClient.fetch(
+    const raw: SanityBlogPostRaw | null = await client.fetch(
       `*[_type == "blogPost" && slug.current == $slug][0] { ${BLOG_FIELDS} }`,
       { slug }
     );
